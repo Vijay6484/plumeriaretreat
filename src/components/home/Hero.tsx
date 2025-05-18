@@ -36,7 +36,7 @@ const Hero: React.FC = () => {
               size="lg"
               as={Link}
               to="/book"
-              className="bg-black/30 border-baby-powder text-baby-powder hover:bg-black/40"
+              className="text-baby-powder border-baby-powder bg-black/30 hover:bg-black/40 .btn-secondary"
             >
               Book Now
             </Button>
