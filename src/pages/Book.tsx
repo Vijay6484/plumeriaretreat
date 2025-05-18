@@ -7,7 +7,7 @@ import Button from '../components/ui/Button';
 
 const Book: React.FC = () => {
   const [selectedAccommodation, setSelectedAccommodation] = useState('');
-  const [selectedMealPlan, setSelectedMealPlan] = useState('');
+  // const [selectedMealPlan, setSelectedMealPlan] = useState('');
   const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
   const [dates, setDates] = useState({ checkIn: '', checkOut: '' });
   const [guests, setGuests] = useState({ adults: 1, children: 0 });
@@ -34,10 +34,10 @@ const Book: React.FC = () => {
     }
     
     // Add meal plan cost
-    const mealPlan = mealPlans.find(m => m.id.toString() === selectedMealPlan);
-    if (mealPlan) {
-      total += mealPlan.price * (guests.adults + guests.children);
-    }
+    // const mealPlan = mealPlans.find(m => m.id.toString() === selectedMealPlan);
+    // if (mealPlan) {
+    //   total += mealPlan.price * (guests.adults + guests.children);
+    // }
     
     // Add activities cost
     selectedActivities.forEach(activityId => {
@@ -149,7 +149,7 @@ const Book: React.FC = () => {
             </Card>
 
             {/* Meal Plan Selection */}
-            <Card>
+            {/* <Card>
               <CardContent>
                 <h2 className="text-2xl font-bold mb-4 text-brunswick-green">Select Meal Plan</h2>
                 <div className="space-y-4">
@@ -177,7 +177,7 @@ const Book: React.FC = () => {
                   ))}
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
 
             {/* Activities Selection */}
             <Card>
