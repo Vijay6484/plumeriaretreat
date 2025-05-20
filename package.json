@@ -10,10 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
     "axios": "^1.9.0",
+=======
+    "date-fns": "^2.30.0",
+>>>>>>> 6e60ae841efbb9819df7e59b6a686b1719b943c5
     "framer-motion": "^10.16.4",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
+    "react-day-picker": "^8.10.0",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.22.0",
     "react-slick": "^0.30.2",

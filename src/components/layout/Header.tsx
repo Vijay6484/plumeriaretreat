@@ -39,7 +39,7 @@ const Header: React.FC = () => {
           ? 'bg-baby-powder shadow-md' 
           : isHomePage && !isbookPage
             ? 'bg-transparent'
-            : 'bg-baby-powder'
+            : 'bg-brunswick-green'
       }`}
     >
       <div className="container-custom flex justify-between items-center py-4">

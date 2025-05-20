@@ -32,6 +32,7 @@ export interface Accommodation {
   image: string;
   hasAC: boolean;
   hasAttachedBath: boolean;
+  availableRooms: number;
 }
 
 export interface MealPlan {
@@ -56,4 +57,12 @@ export interface FAQ {
   id: number;
   question: string;
   answer: string;
+}
+
+export interface NearbyLocation {
+  id: number;
+  name: string;
+  distance: number;
+  image: string;
+  description: string;
 }

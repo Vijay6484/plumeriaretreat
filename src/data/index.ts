@@ -1,4 +1,4 @@
-import { NavItem, Testimonial, GalleryImage, Accommodation, MealPlan, Activity, FAQ } from '../types';
+import { NavItem, Testimonial, GalleryImage, Accommodation, MealPlan, Activity, FAQ, NearbyLocation } from '../types';
 
 export const navItems: NavItem[] = [
   { label: 'Home', path: '/' },
@@ -6,6 +6,86 @@ export const navItems: NavItem[] = [
   { label: 'Gallery', path: '/gallery' },
   { label: 'About', path: '/about' },
   { label: 'Contact', path: '/contact' },
+];
+
+export const nearbyLocations: NearbyLocation[] = [
+  {
+    id: 1,
+    name: 'Tikona Fort',
+    distance: 5,
+    image: 'https://images.pexels.com/photos/2832034/pexels-photo-2832034.jpeg',
+    description: 'A triangular shaped fort offering panoramic views of the surrounding valleys.'
+  },
+  {
+    id: 2,
+    name: 'Satya Sai Temple Hadshi',
+    distance: 12,
+    image: 'https://images.pexels.com/photos/5998495/pexels-photo-5998495.jpeg',
+    description: 'A peaceful spiritual retreat with beautiful architecture and serene surroundings.'
+  },
+  {
+    id: 3,
+    name: 'Tung Fort',
+    distance: 24,
+    image: 'https://images.pexels.com/photos/2832039/pexels-photo-2832039.jpeg',
+    description: 'Historic fort with challenging trek and rewarding mountain views.'
+  },
+  {
+    id: 4,
+    name: 'Lohagad Fort',
+    distance: 16,
+    image: 'https://images.pexels.com/photos/2832051/pexels-photo-2832051.jpeg',
+    description: 'One of the most popular forts near Lonavala, known for its monsoon beauty.'
+  },
+  {
+    id: 5,
+    name: 'Visapur Fort',
+    distance: 18,
+    image: 'https://images.pexels.com/photos/2832056/pexels-photo-2832056.jpeg',
+    description: 'Sister fort of Lohagad offering unique historical insights.'
+  },
+  {
+    id: 6,
+    name: 'Bedse Caves',
+    distance: 10,
+    image: 'https://images.pexels.com/photos/5998498/pexels-photo-5998498.jpeg',
+    description: 'Ancient Buddhist caves with intricate carvings and peaceful atmosphere.'
+  },
+  {
+    id: 7,
+    name: 'Bhaje Caves',
+    distance: 19,
+    image: 'https://images.pexels.com/photos/5998501/pexels-photo-5998501.jpeg',
+    description: 'Rock-cut caves featuring Buddhist architecture and stunning valley views.'
+  },
+  {
+    id: 8,
+    name: 'Karla Caves',
+    distance: 29,
+    image: 'https://images.pexels.com/photos/5998504/pexels-photo-5998504.jpeg',
+    description: 'Largest and best-preserved early Buddhist cave shrines in India.'
+  },
+  {
+    id: 9,
+    name: 'Prati Pandharpur Dudhivare',
+    distance: 11,
+    image: 'https://images.pexels.com/photos/5998507/pexels-photo-5998507.jpeg',
+    description: 'Religious site known for its spiritual significance and peaceful environment.'
+  },
+  {
+    id: 10,
+    name: 'Tiger Point',
+    distance: 29,
+    image: 'https://images.pexels.com/photos/5998510/pexels-photo-5998510.jpeg',
+    description: 'Scenic viewpoint offering spectacular sunset views and valley panoramas.'
+  },
+  {
+    id: 11,
+    name: 'Bhushi Dam',
+    distance: 25,
+    image: 'https://images.pexels.com/photos/5998513/pexels-photo-5998513.jpeg',
+    description: 'Popular waterfall and dam site, perfect for monsoon visits.'
+  }
 ];
 
 export const testimonials: Testimonial[] = [
@@ -114,6 +194,7 @@ export const accommodations: Accommodation[] = [
     image: 'https://images.pexels.com/photos/9144680/pexels-photo-9144680.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
     hasAC: true,
     hasAttachedBath: true,
+    availableRooms: 10,
   },
   {
     id: 2,
@@ -126,6 +207,7 @@ export const accommodations: Accommodation[] = [
     image: 'https://images.pexels.com/photos/803975/pexels-photo-803975.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
     hasAC: false,
     hasAttachedBath: true,
+    availableRooms: 10,
   },
   {
     id: 3,
@@ -138,6 +220,7 @@ export const accommodations: Accommodation[] = [
     image: 'https://images.pexels.com/photos/6640068/pexels-photo-6640068.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
     hasAC: false,
     hasAttachedBath: false,
+    availableRooms: 10,
   },
   {
     id: 4,
@@ -150,6 +233,7 @@ export const accommodations: Accommodation[] = [
     image: 'https://images.pexels.com/photos/2526025/pexels-photo-2526025.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
     hasAC: false,
     hasAttachedBath: false,
+    availableRooms: 10,
   },
 ];
 

@@ -6,9 +6,9 @@ import Testimonials from '../components/home/Testimonials';
 import GalleryPreview from '../components/home/GalleryPreview';
 import WeatherWidget from '../components/home/WeatherWidget';
 import CallToAction from '../components/home/CallToAction';
+import NearbyLocations from '../components/home/NearbyLocations';
 
 const Home: React.FC = () => {
-  // Change page title on component mount
   useEffect(() => {
     document.title = 'Plumeria Retreat - Lakeside Camping & Cottages';
   }, []);
@@ -19,6 +19,7 @@ const Home: React.FC = () => {
       <Highlights />
       <FeaturedCampsites />
       <WeatherWidget />
+      <NearbyLocations />
       <Testimonials />
       <GalleryPreview />
       <CallToAction />
