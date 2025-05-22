@@ -10,11 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-<<<<<<< HEAD
     "axios": "^1.9.0",
-=======
     "date-fns": "^2.30.0",
->>>>>>> 6e60ae841efbb9819df7e59b6a686b1719b943c5
+    "dotenv": "^16.5.0",
     "framer-motion": "^10.16.4",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",

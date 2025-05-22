@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -10,13 +11,12 @@ const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === '/';
-  const isbookPage = location.pathname === '/book';
   
   const toggleMenu = () => setIsOpen(!isOpen);
   
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 100) {
+      if (window.scrollY > 50) {
         setIsScrolled(true);
       } else {
         setIsScrolled(false);
@@ -37,18 +37,18 @@ const Header: React.FC = () => {
       className={`fixed w-full top-0 z-50 transition-all duration-300 ${
         isScrolled 
           ? 'bg-baby-powder shadow-md' 
-          : isHomePage && !isbookPage
+          : isHomePage 
             ? 'bg-transparent'
             : 'bg-brunswick-green'
       }`}
     >
       <div className="container-custom flex justify-between items-center py-4">
         <Link to="/" className="flex items-center">
-          <Logo color={isScrolled ? '#065143' : isHomePage && !isbookPage ? 'white' : 'white'} />
+          <Logo color={isScrolled ? '#065143' : isHomePage ? 'white' : 'white'} />
           <span className={`ml-2 text-2xl font-bold font-montserrat ${
             isScrolled 
               ? 'text-brunswick-green'
-              :isbookPage ? 'text-brunswick-green' : 'text-baby-powder'
+              : 'text-baby-powder'
           }`}>Plumeria</span>
         </Link>
         
@@ -84,17 +84,9 @@ const Header: React.FC = () => {
           aria-label="Toggle menu"
         >
           {isOpen ? (
-            <X size={24} className= {
-            isScrolled 
-              ? 'text-brunswick-green'
-              :isbookPage ? 'text-brunswick-green' : 'text-baby-powder'
-          } />
+            <X size={24} className={isScrolled ? 'text-brunswick-green' : 'text-baby-powder'} />
           ) : (
-            <Menu size={24} className={
-            isScrolled 
-              ? 'text-brunswick-green'
-              :isbookPage ? 'text-brunswick-green' : 'text-baby-powder'
-          } />
+            <Menu size={24} className={isScrolled ? 'text-brunswick-green' : 'text-baby-powder'} />
           )}
         </button>
       </div>

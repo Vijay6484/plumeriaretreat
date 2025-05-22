@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DayPicker, DateRange } from 'react-day-picker';
 import { format, addDays } from 'date-fns';
-import { accommodations, mealPlans, activities } from '../data';
 import { formatCurrency } from '../utils/helpers';
 import Card, { CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Sparkles, Calendar, Clock } from 'lucide-react';
+import { Sparkles, Calendar, Clock, Loader2, Check, X } from 'lucide-react';
 import 'react-day-picker/dist/style.css';
+
+const API_BASE_URL = 'http://localhost:5000/api';
 
 interface BookingSummary {
   accommodation?: {
@@ -30,7 +31,42 @@ interface BookingSummary {
   };
 }
 
+interface Accommodation {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  available_rooms: number;
+  amenities: string[];
+  image_url: string;
+  available: boolean;
+}
+
+interface MealPlan {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  available: boolean;
+}
+
+interface Activity {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  duration: string;
+  max_participants: number;
+  available: boolean;
+}
+
 const Book: React.FC = () => {
+  // State for data from backend
+  const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
+  const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  
+  // Booking form state
   const [selectedAccommodation, setSelectedAccommodation] = useState('');
   const [selectedRooms, setSelectedRooms] = useState(1);
   const [selectedMealPlan, setSelectedMealPlan] = useState('');
@@ -40,10 +76,56 @@ const Book: React.FC = () => {
   const [coupon, setCoupon] = useState('');
   const [discount, setDiscount] = useState(0);
   const [showCouponSuccess, setShowCouponSuccess] = useState(false);
+  
+  // UI state
+  const [loading, setLoading] = useState(true);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookingId, setBookingId] = useState<number | null>(null);
+  
+  // Guest information
+  const [guestInfo, setGuestInfo] = useState({
+    name: '',
+    email: '',
+    phone: ''
+  });
 
   useEffect(() => {
     document.title = 'Book Now - Plumeria Retreat';
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [accommodationsRes, mealPlansRes, activitiesRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/accommodations`),
+        fetch(`${API_BASE_URL}/meal-plans`),
+        fetch(`${API_BASE_URL}/activities`)
+      ]);
+
+      if (!accommodationsRes.ok || !mealPlansRes.ok || !activitiesRes.ok) {
+        throw new Error('Failed to fetch data');
+      }
+
+      const [accommodationsData, mealPlansData, activitiesData] = await Promise.all([
+        accommodationsRes.json(),
+        mealPlansRes.json(),
+        activitiesRes.json()
+      ]);
+
+      setAccommodations(accommodationsData);
+      setMealPlans(mealPlansData);
+      setActivities(activitiesData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError('Failed to load booking data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleActivityToggle = (activityId: number) => {
     setSelectedActivities(prev => 
@@ -53,11 +135,114 @@ const Book: React.FC = () => {
     );
   };
 
-  const handleCouponApply = () => {
-    if (coupon.toLowerCase() === 'welcome10') {
-      setDiscount(10);
-      setShowCouponSuccess(true);
-      setTimeout(() => setShowCouponSuccess(false), 3000);
+  const handleCouponApply = async () => {
+    if (!coupon.trim()) return;
+    
+    try {
+      setCouponLoading(true);
+      const response = await fetch(`${API_BASE_URL}/coupons/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: coupon }),
+      });
+
+      const result = await response.json();
+      
+      if (result.valid) {
+        setDiscount(result.discount);
+        setShowCouponSuccess(true);
+        setTimeout(() => setShowCouponSuccess(false), 3000);
+      } else {
+        setError('Invalid or expired coupon code');
+        setTimeout(() => setError(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error validating coupon:', error);
+      setError('Failed to validate coupon');
+      setTimeout(() => setError(''), 3000);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const checkAvailability = async () => {
+    if (!selectedAccommodation || !dateRange?.from || !dateRange?.to) {
+      return true;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/check-availability`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          accommodation_id: selectedAccommodation,
+          check_in_date: format(dateRange.from, 'yyyy-MM-dd'),
+          check_out_date: format(dateRange.to, 'yyyy-MM-dd'),
+          rooms: selectedRooms
+        }),
+      });
+
+      const result = await response.json();
+      return result.available;
+    } catch (error) {
+      console.error('Error checking availability:', error);
+      return false;
+    }
+  };
+
+  const handleBookingSubmit = async () => {
+    if (!guestInfo.name || !guestInfo.email || !dateRange?.from || !dateRange?.to || !selectedAccommodation) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    const isAvailable = await checkAvailability();
+    if (!isAvailable) {
+      setError('Selected accommodation is not available for the chosen dates');
+      return;
+    }
+
+    try {
+      setBookingLoading(true);
+      const response = await fetch(`${API_BASE_URL}/bookings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          guest_name: guestInfo.name,
+          guest_email: guestInfo.email,
+          guest_phone: guestInfo.phone,
+          check_in_date: format(dateRange.from, 'yyyy-MM-dd'),
+          check_out_date: format(dateRange.to, 'yyyy-MM-dd'),
+          adults: guests.adults,
+          children: guests.children,
+          accommodation_id: parseInt(selectedAccommodation),
+          rooms: selectedRooms,
+          meal_plan_id: selectedMealPlan ? parseInt(selectedMealPlan) : null,
+          activities: selectedActivities,
+          coupon_code: discount > 0 ? coupon : null,
+          total_amount: calculateTotal()
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setBookingSuccess(true);
+        setBookingId(result.booking_id);
+      } else {
+        setError(result.error || 'Failed to create booking');
+      }
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      setError('Failed to create booking. Please try again.');
+    } finally {
+      setBookingLoading(false);
     }
   };
 
@@ -88,42 +273,42 @@ const Book: React.FC = () => {
     return total;
   };
 
-  const getBookingSummary = (): BookingSummary => {
-    const summary: BookingSummary = {
-      dates: dateRange,
-      guests,
-      activities: [],
-    };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-baby-powder flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="animate-spin mx-auto mb-4 text-brunswick-green" size={48} />
+          <p className="text-brunswick-green">Loading booking options...</p>
+        </div>
+      </div>
+    );
+  }
 
-    const accommodation = accommodations.find(a => a.id.toString() === selectedAccommodation);
-    if (accommodation) {
-      summary.accommodation = {
-        title: accommodation.title,
-        price: accommodation.price,
-        rooms: selectedRooms,
-      };
-    }
-
-    const mealPlan = mealPlans.find(m => m.id.toString() === selectedMealPlan);
-    if (mealPlan) {
-      summary.mealPlan = {
-        title: mealPlan.title,
-        price: mealPlan.price,
-      };
-    }
-
-    selectedActivities.forEach(activityId => {
-      const activity = activities.find(a => a.id === activityId);
-      if (activity) {
-        summary.activities.push({
-          title: activity.title,
-          price: activity.price,
-        });
-      }
-    });
-
-    return summary;
-  };
+  if (bookingSuccess) {
+    return (
+      <div className="min-h-screen bg-baby-powder flex items-center justify-center">
+        <Card className="max-w-md mx-4">
+          <CardContent className="text-center">
+            <Check className="text-green-500 mx-auto mb-4" size={64} />
+            <h2 className="text-2xl font-bold text-brunswick-green mb-4">Booking Confirmed!</h2>
+            <p className="text-gray-600 mb-4">
+              Your booking has been successfully created. Booking ID: <strong>#{bookingId}</strong>
+            </p>
+            <p className="text-sm text-gray-500 mb-6">
+              A confirmation email has been sent to {guestInfo.email}
+            </p>
+            <Button 
+              variant="primary" 
+              onClick={() => window.location.href = '/'}
+              fullWidth
+            >
+              Return to Home
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-baby-powder">
@@ -143,8 +328,66 @@ const Book: React.FC = () => {
       </div>
 
       <div className="container-custom py-16">
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center"
+          >
+            <X className="mr-2" size={20} />
+            {error}
+          </motion.div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
+            {/* Guest Information */}
+            <Card>
+              <CardContent>
+                <h2 className="text-2xl font-bold mb-4 text-brunswick-green">Guest Information</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={guestInfo.name}
+                      onChange={(e) => setGuestInfo(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brunswick-green focus:border-transparent"
+                      placeholder="Enter your full name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={guestInfo.email}
+                      onChange={(e) => setGuestInfo(prev => ({ ...prev, email: e.target.value }))}
+                      className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brunswick-green focus:border-transparent"
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={guestInfo.phone}
+                      onChange={(e) => setGuestInfo(prev => ({ ...prev, phone: e.target.value }))}
+                      className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brunswick-green focus:border-transparent"
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Calendar and Check-in/out Times */}
             <Card>
               <CardContent>
@@ -233,18 +476,32 @@ const Book: React.FC = () => {
                         setSelectedRooms(1);
                       }}
                     >
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-semibold text-lg">{accommodation.title}</h3>
-                          <p className="text-black/70">{accommodation.description}</p>
-                          <p className="text-sm text-brunswick-green mt-2">
-                            {accommodation.availableRooms} rooms available
+                          <p className="text-black/70 mb-2">{accommodation.description}</p>
+                          {accommodation.amenities && accommodation.amenities.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {accommodation.amenities.map((amenity, index) => (
+                                <span 
+                                  key={index}
+                                  className="px-2 py-1 bg-brunswick-green/10 text-brunswick-green text-xs rounded-full"
+                                >
+                                  {amenity}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-sm text-brunswick-green">
+                            {accommodation.available_rooms} rooms available
                           </p>
                         </div>
-                        <p className="font-bold text-brunswick-green">
-                          {formatCurrency(accommodation.price)}
-                          <span className="text-black/60 font-normal text-sm"> / night</span>
-                        </p>
+                        <div className="text-right">
+                          <p className="font-bold text-brunswick-green text-lg">
+                            {formatCurrency(accommodation.price)}
+                          </p>
+                          <span className="text-black/60 text-sm">per night</span>
+                        </div>
                       </div>
                       {selectedAccommodation === accommodation.id.toString() && (
                         <div className="mt-4">
@@ -254,7 +511,7 @@ const Book: React.FC = () => {
                           <input
                             type="number"
                             min="1"
-                            max={accommodation.availableRooms}
+                            max={accommodation.available_rooms}
                             value={selectedRooms}
                             onChange={(e) => setSelectedRooms(parseInt(e.target.value))}
                             className="w-32 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brunswick-green focus:border-transparent"
@@ -318,6 +575,11 @@ const Book: React.FC = () => {
                           <h3 className="font-semibold text-lg">{activity.title}</h3>
                           <p className="text-black/70">{activity.description}</p>
                           <p className="text-sm text-black/60">Duration: {activity.duration}</p>
+                          {activity.max_participants && (
+                            <p className="text-sm text-black/60">
+                              Max participants: {activity.max_participants}
+                            </p>
+                          )}
                         </div>
                         <p className="font-bold text-brunswick-green">
                           {formatCurrency(activity.price)}
@@ -366,6 +628,9 @@ const Book: React.FC = () => {
                         {accommodations.find(a => a.id.toString() === selectedAccommodation)?.title}
                         {selectedRooms > 1 && ` (${selectedRooms} rooms)`}
                       </p>
+                      <p className="text-sm text-brunswick-green">
+                        {formatCurrency(accommodations.find(a => a.id.toString() === selectedAccommodation)?.price || 0)} × {selectedRooms}
+                      </p>
                     </div>
                   )}
 
@@ -375,19 +640,28 @@ const Book: React.FC = () => {
                       <p className="text-black/70">
                         {mealPlans.find(m => m.id.toString() === selectedMealPlan)?.title}
                       </p>
+                      <p className="text-sm text-brunswick-green">
+                        {formatCurrency(mealPlans.find(m => m.id.toString() === selectedMealPlan)?.price || 0)} × {guests.adults + guests.children} guests
+                      </p>
                     </div>
                   )}
 
                   {selectedActivities.length > 0 && (
                     <div className="border-b pb-2">
                       <p className="font-medium">Activities</p>
-                      <ul className="text-black/70">
-                        {selectedActivities.map(id => (
-                          <li key={id}>
-                            {activities.find(a => a.id === id)?.title}
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="space-y-1">
+                        {selectedActivities.map(id => {
+                          const activity = activities.find(a => a.id === id);
+                          return (
+                            <div key={id}>
+                              <p className="text-black/70">{activity?.title}</p>
+                              <p className="text-sm text-brunswick-green">
+                                {formatCurrency(activity?.price || 0)} × {guests.adults + guests.children} guests
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
 
@@ -407,8 +681,9 @@ const Book: React.FC = () => {
                       <Button
                         variant="primary"
                         onClick={handleCouponApply}
+                        disabled={couponLoading || !coupon.trim()}
                       >
-                        Apply
+                        {couponLoading ? <Loader2 className="animate-spin" size={16} /> : 'Apply'}
                       </Button>
                     </div>
                   </div>
@@ -423,10 +698,22 @@ const Book: React.FC = () => {
                         className="flex items-center justify-center text-brunswick-green"
                       >
                         <Sparkles className="mr-2" />
-                        <span>Coupon applied successfully!</span>
+                        <span>Coupon applied! {discount}% discount</span>
                       </motion.div>
                     )}
                   </AnimatePresence>
+
+                  {/* Discount Display */}
+                  {discount > 0 && (
+                    <div className="border-b pb-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-green-600">Discount ({discount}%)</span>
+                        <span className="text-sm text-green-600">
+                          -{formatCurrency((calculateTotal() / (1 - discount / 100)) * (discount / 100))}
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Total Amount */}
                   <div className="flex justify-between items-center pt-4">
@@ -436,8 +723,21 @@ const Book: React.FC = () => {
                     </span>
                   </div>
 
-                  <Button variant="primary" size="lg" fullWidth>
-                    Confirm Booking
+                  <Button 
+                    variant="primary" 
+                    size="lg" 
+                    fullWidth
+                    onClick={handleBookingSubmit}
+                    disabled={bookingLoading || !guestInfo.name || !guestInfo.email || !dateRange?.from || !dateRange?.to || !selectedAccommodation}
+                  >
+                    {bookingLoading ? (
+                      <>
+                        <Loader2 className="animate-spin mr-2" size={20} />
+                        Processing...
+                      </>
+                    ) : (
+                      'Confirm Booking'
+                    )}
                   </Button>
 
                   <p className="text-sm text-black/60 text-center">
