@@ -17,9 +17,9 @@ const Home: React.FC = () => {
     <div>
       <Hero />
       <Highlights />
+      <NearbyLocations />
       <FeaturedCampsites />
       <WeatherWidget />
-      <NearbyLocations />
       <Testimonials />
       <GalleryPreview />
       <CallToAction />
