@@ -526,7 +526,7 @@ const Book: React.FC = () => {
                         <div>
                           <h3 className="font-semibold text-lg">{accommodation.title}</h3>
                           <p className="text-gray-600 mb-2">{accommodation.description}</p>
-                          {accommodation.amenities && accommodation.amenities.length > 0 && (
+                          {accommodation.amenities && Array.isArray(accommodation.amenities) && accommodation.amenities.length > 0 && (
                             <div className="flex flex-wrap gap-2 mb-2">
                               {accommodation.amenities.map((amenity, index) => (
                                 <span 
@@ -850,7 +850,7 @@ const Book: React.FC = () => {
                 <Button
                   onClick={() => {
                     setBookingSuccess(false);
-                    // Reset form or redirect
+                    // Reset form or redirecta
                     window.location.href = '/';
                   }}
                   className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"

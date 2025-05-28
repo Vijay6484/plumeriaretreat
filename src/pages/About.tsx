@@ -4,6 +4,10 @@ import { Heart, Shield, Users, TreePine } from 'lucide-react';
 import Card, { CardContent } from '../components/ui/Card';
 
 const About: React.FC = () => {
+  const handleBookNow = () => {
+    // Navigate to booking page with accommodation ID
+    window.location.href = `/book`;
+  };
   useEffect(() => {
     document.title = 'About Us - Plumeria Retreat';
   }, []);
@@ -104,7 +108,9 @@ const About: React.FC = () => {
               Whether you're seeking adventure, relaxation, or a bit of both, we invite you to 
               experience the magic of Plumeria Retreat. Come be part of our story.
             </p>
-            <button className="bg-rose-taupe text-baby-powder px-8 py-3 rounded-full font-medium hover:bg-rose-taupe/90 transition-colors">
+            <button className="bg-rose-taupe text-baby-powder px-8 py-3 rounded-full font-medium hover:bg-rose-taupe/90 transition-colors"
+            onClick={() => handleBookNow()}
+            > 
               Book Your Stay
             </button>
           </div>
