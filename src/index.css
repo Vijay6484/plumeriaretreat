@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-brunswick-green: #065143;
+  --color-rose-taupe: #7E5555;
+  --color-mardi-gras: #8C2578;
+  --color-baby-powder: #FDFFFC;
+  --color-black: #040403;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: var(--color-baby-powder);
+  color: var(--color-black);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
+  line-height: 1.2;
+}
+
+p {
+  line-height: 1.5;
+}
+
+.gradient-bg {
+  background: linear-gradient(to bottom, rgba(6, 81, 67, 0.9), rgba(126, 85, 85, 0.9));
+}
+
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Calendar Styles */
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: var(--color-brunswick-green);
+  --rdp-background-color: var(--color-brunswick-green);
+  --rdp-accent-color-dark: var(--color-brunswick-green);
+  --rdp-background-color-dark: var(--color-brunswick-green);
+  --rdp-outline: 2px solid var(--rdp-accent-color);
+  --rdp-outline-selected: 2px solid var(--rdp-accent-color);
+  margin: 0;
+}
+
+.rdp-day_selected:not([disabled]) {
+  background-color: var(--color-brunswick-green);
+  color: var(--color-baby-powder);
+}
+
+.rdp-day_selected:hover:not([disabled]) {
+  background-color: var(--color-brunswick-green);
+  opacity: 0.8;
+}
+
+.rdp-day_range_start:not([disabled]),
+.rdp-day_range_end:not([disabled]) {
+  background-color: var(--color-brunswick-green) !important;
+  color: var(--color-baby-powder) !important;
+}
+
+.rdp-day_range_middle {
+  background-color: rgba(6, 81, 67, 0.1) !important;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brunswick-green text-baby-powder py-2 px-6 rounded-md font-medium transition-all duration-300 hover:bg-brunswick-green/90 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-brunswick-green/50;
+  }
+  
+  .btn-secondary {
+    @apply bg-rose-taupe text-baby-powder py-2 px-6 rounded-md font-medium transition-all duration-300 hover:bg-rose-taupe/90 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-rose-taupe/50;
+  }
+  
+  .btn-accent {
+    @apply bg-mardi-gras text-baby-powder py-2 px-6 rounded-md font-medium transition-all duration-300 hover:bg-mardi-gras/90 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-mardi-gras/50;
+  }
+  
+  .card {
+    @apply bg-baby-powder rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-lg hover:translate-y-[-4px];
+  }
+  
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+  
+  .container-custom {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
