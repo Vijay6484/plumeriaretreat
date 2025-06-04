@@ -753,18 +753,28 @@ const Book: React.FC = () => {
                     </div>
                     
                     <AnimatePresence>
-                      {showCouponSuccess && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="flex items-center text-green-600 text-sm"
-                        >
-                          <Check size={16} className="mr-1" />
-                          Coupon applied successfully!
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+  {showCouponSuccess && (
+    <motion.div
+      initial={{ opacity: 0, y: -10, scale: 0.8 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -10, scale: 0.8 }}
+      transition={{ type: "spring", stiffness: 400, damping: 20 }}
+      className="flex items-center text-green-600 text-sm relative"
+    >
+      <motion.span
+        initial={{ scale: 0, rotate: -30, opacity: 0 }}
+        animate={{ scale: 1.3, rotate: 0, opacity: 1 }}
+        exit={{ scale: 0, rotate: 30, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 15 }}
+        className="mr-1"
+      >
+        <Sparkles className="text-yellow-400 drop-shadow" size={22} />
+      </motion.span>
+      <Check size={16} className="mr-1" />
+      Coupon applied successfully!
+    </motion.div>
+  )}
+</AnimatePresence>
                   </div>
 
                   {/* Price Breakdown */}
