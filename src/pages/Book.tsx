@@ -39,6 +39,33 @@ interface Activity {
   available: boolean;
 }
 
+const SPARKLE_COUNT = 12;
+
+const SparkleBurst: React.FC<{ show: boolean }> = ({ show }) => {
+  if (!show) return null;
+  return (
+    <div className="absolute left-1/2 top-0 z-50 pointer-events-none" style={{ transform: 'translateX(-50%)' }}>
+      {Array.from({ length: SPARKLE_COUNT }).map((_, i) => {
+        const angle = (360 / SPARKLE_COUNT) * i;
+        const distance = 32;
+        const x = Math.cos((angle * Math.PI) / 180) * distance;
+        const y = Math.sin((angle * Math.PI) / 180) * distance;
+        return (
+          <motion.span
+            key={i}
+            initial={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+            animate={{ opacity: 0, x, y, scale: 0.7 }}
+            transition={{ duration: 0.7, delay: 0.05 * i }}
+            className="absolute"
+          >
+            <Sparkles className="text-yellow-400 drop-shadow" size={18} />
+          </motion.span>
+        );
+      })}
+    </div>
+  );
+};
+
 const Book: React.FC = () => {
   // State for data from backend
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
@@ -752,29 +779,23 @@ const Book: React.FC = () => {
                       </Button>
                     </div>
                     
-                    <AnimatePresence>
-  {showCouponSuccess && (
-    <motion.div
-      initial={{ opacity: 0, y: -10, scale: 0.8 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -10, scale: 0.8 }}
-      transition={{ type: "spring", stiffness: 400, damping: 20 }}
-      className="flex items-center text-green-600 text-sm relative"
-    >
-      <motion.span
-        initial={{ scale: 0, rotate: -30, opacity: 0 }}
-        animate={{ scale: 1.3, rotate: 0, opacity: 1 }}
-        exit={{ scale: 0, rotate: 30, opacity: 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 15 }}
-        className="mr-1"
-      >
-        <Sparkles className="text-yellow-400 drop-shadow" size={22} />
-      </motion.span>
-      <Check size={16} className="mr-1" />
-      Coupon applied successfully!
-    </motion.div>
-  )}
-</AnimatePresence>
+                    <div className="relative min-h-[32px]">
+                      <SparkleBurst show={showCouponSuccess} />
+                      <AnimatePresence>
+                        {showCouponSuccess && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10, scale: 0.8 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.8 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                            className="flex items-center text-green-600 text-sm relative"
+                          >
+                            <Check size={16} className="mr-1" />
+                            Coupon applied successfully!
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
 
                   {/* Price Breakdown */}
