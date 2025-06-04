@@ -535,6 +535,11 @@ const Book: React.FC = () => {
             <Card>
               <CardContent>
                 <h2 className="text-2xl font-bold mb-4 text-green-800">Select Accommodation</h2>
+                {!dateRange?.from || !dateRange?.to ? (
+                  <div className="p-4 text-center text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-300 mb-4">
+                    Please select your check-in and check-out dates first.
+                  </div>
+                ) : null}
                 <div className="space-y-4">
                   {accommodations.map((accommodation) => (
                     <div
@@ -543,10 +548,12 @@ const Book: React.FC = () => {
                         selectedAccommodation === accommodation.id.toString()
                           ? 'border-green-600 bg-green-50'
                           : 'border-gray-200 hover:border-green-300'
-                      }`}
+                      } ${!dateRange?.from || !dateRange?.to ? 'pointer-events-none opacity-50' : ''}`}
                       onClick={() => {
-                        setSelectedAccommodation(accommodation.id.toString());
-                        setSelectedRooms(1);
+                        if (dateRange?.from && dateRange?.to) {
+                          setSelectedAccommodation(accommodation.id.toString());
+                          setSelectedRooms(1);
+                        }
                       }}
                     >
                       <div className="flex justify-between items-start">
@@ -598,6 +605,7 @@ const Book: React.FC = () => {
             </Card>
 
             {/* Meal Plan Selection */}
+            {/*
             <Card>
               <CardContent>
                 <h2 className="text-2xl font-bold mb-4 text-green-800">Select Meal Plan (Optional)</h2>
@@ -643,11 +651,17 @@ const Book: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
+            */}
 
             {/* Activities Selection */}
             <Card>
               <CardContent>
                 <h2 className="text-2xl font-bold mb-4 text-green-800">Add Activities (Optional)</h2>
+                {!dateRange?.from || !dateRange?.to ? (
+                  <div className="p-4 text-center text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-300 mb-4">
+                    Please select your check-in and check-out dates first.
+                  </div>
+                ) : null}
                 <div className="space-y-4">
                   {activities.map((activity) => (
                     <div
@@ -656,8 +670,10 @@ const Book: React.FC = () => {
                         selectedActivities.includes(activity.id)
                           ? 'border-green-600 bg-green-50'
                           : 'border-gray-200 hover:border-green-300'
-                      }`}
-                      onClick={() => handleActivityToggle(activity.id)}
+                      } ${!dateRange?.from || !dateRange?.to ? 'pointer-events-none opacity-50' : ''}`}
+                      onClick={() => {
+                        if (dateRange?.from && dateRange?.to) handleActivityToggle(activity.id);
+                      }}
                     >
                       <div className="flex justify-between items-center">
                         <div>
