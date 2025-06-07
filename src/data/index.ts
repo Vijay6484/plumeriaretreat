@@ -1,8 +1,10 @@
+import { label } from 'framer-motion/client';
 import { NavItem, Testimonial, GalleryImage, Accommodation, MealPlan, Activity, FAQ, NearbyLocation } from '../types';
 
 export const navItems: NavItem[] = [
   { label: 'Home', path: '/' },
   { label: 'Campsites', path: '/campsites' },
+  { label: 'Packages', path: '/packages' },
   { label: 'Gallery', path: '/gallery' },
   { label: 'About', path: '/about' },
   { label: 'Contact', path: '/contact' },

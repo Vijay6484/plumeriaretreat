@@ -9,6 +9,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Book from './pages/Book';
 import NotFound from './pages/NotFound';
+import Packages from './pages/Packages';
 import { Success, Failure, Cancel } from './pages/Payments';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/campsites" element={<Campsites />} />
+            <Route path="/packages" element={<Packages />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
