@@ -35,10 +35,10 @@ const Hero: React.FC = () => {
               variant="outline" 
               size="lg"
               as={Link}
-              to="/book"
+              to="/packages"
               className="text-baby-powder border-baby-powder bg-black/30 hover:bg-black/40 .btn-secondary"
             >
-              Book Now
+              View Packages
             </Button>
           </div>
         </motion.div>

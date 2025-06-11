@@ -25,16 +25,16 @@ const CallToAction: React.FC = () => {
             Ready to Escape to Nature?
           </h2>
           <p className="text-lg mb-8 text-black/70">
-            Book your stay now and experience the perfect blend of adventure and relaxation at Plumeria Retreat.
+            Explore our accommodations and packages to find the perfect getaway at Plumeria Retreat.
             Special summer packages available for a limited time!
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button variant="primary" size="lg">
-              <Link to="/book">Book Your Stay</Link>
+              <Link to="/campsites">View Accommodations</Link>
             </Button>
             <Button variant="outline" size="lg">
-              <Link to="/contact">Contact Us</Link>
+              <Link to="/packages">Explore Packages</Link>
             </Button>
           </div>
         </motion.div>

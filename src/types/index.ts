@@ -33,6 +33,23 @@ export interface Accommodation {
   hasAC: boolean;
   hasAttachedBath: boolean;
   availableRooms: number;
+  detailedInfo?: {
+    totalCottages: number;
+    meals: {
+      included: boolean;
+      description: string;
+      snacks?: string;
+      dinner?: {
+        veg: string;
+        nonVeg: string;
+      };
+      breakfast?: string;
+    };
+    activities: Array<{
+      name: string;
+      price: number;
+    }>;
+  };
 }
 
 export interface MealPlan {
@@ -65,4 +82,24 @@ export interface NearbyLocation {
   distance: number;
   image: string;
   description: string;
+}
+
+export interface Package {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  duration: number;
+  max_guests: number;
+  image_url: string;
+  includes: string[];
+  active: boolean;
+  detailedInfo?: {
+    accommodation: string;
+    meals: string;
+    activities: string[];
+    checkIn: string;
+    checkOut: string;
+    cancellation: string;
+  };
 }

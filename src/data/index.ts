@@ -188,55 +188,165 @@ export const accommodations: Accommodation[] = [
   {
     id: 1,
     type: 'AC Cottage',
-    title: 'Premium Lake-View Cottage',
-    description: 'Our most luxurious accommodation featuring a private balcony with stunning lake views, modern amenities, and premium furnishings for the ultimate comfort.',
-    price: 199,
-    capacity: 4,
-    features: ['Lake view', 'Private balcony', 'Premium bedding', 'Mini kitchen', 'Free Wi-Fi'],
+    title: 'AC Lake View Cottages',
+    description: 'Luxurious air-conditioned cottages with stunning lake views, perfect for couples seeking comfort and romance.',
+    price: 4500,
+    capacity: 2,
+    features: [
+      '🎸 Live Music Every Saturday',
+      '🏠 Separate cottage for couples',
+      '❄️ Air conditioning',
+      '🌊 Private lake view balcony',
+      '📺 Android TV',
+      '🛁 Attached toilet & bathroom',
+      '🏊‍♂️ Swimming pool access',
+      '📶 Free WiFi'
+    ],
     image: 'https://images.pexels.com/photos/9144680/pexels-photo-9144680.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
     hasAC: true,
     hasAttachedBath: true,
     availableRooms: 10,
+    detailedInfo: {
+      totalCottages: 10,
+      meals: {
+        included: true,
+        description: 'Including evening snacks, dinner, and morning breakfast',
+        snacks: 'Tea/coffee, Kanda bhaji',
+        dinner: {
+          veg: 'Matar paneer, veg kofta, dal, tandoor roti, rice, salad, sweet',
+          nonVeg: 'Dry chicken, gravy, tandoor roti, rice, salad'
+        },
+        breakfast: 'Tea/coffee, poha/upma'
+      },
+      activities: [
+        { name: 'Archery', price: 0 },
+        { name: 'Badminton', price: 0 },
+        { name: 'Carrom', price: 0 },
+        { name: 'Cards', price: 0 },
+        { name: 'Paddle boating', price: 100 },
+        { name: 'Kayaking', price: 200 },
+        { name: 'Motor boating', price: 200 },
+        { name: 'Speed boating', price: 300 }
+      ]
+    }
   },
   {
     id: 2,
-    type: 'Non-AC Cottage',
-    title: 'Rustic Forest Cottage',
-    description: 'Experience authentic nature living in our charming rustic cottages, nestled among trees with natural ventilation and a cozy atmosphere.',
-    price: 129,
+    type: 'Triangular Tent',
+    title: 'Triangular Adventure Tents',
+    description: 'Unique triangular-shaped tents offering an authentic camping experience with modern amenities.',
+    price: 2500,
     capacity: 3,
-    features: ['Forest view', 'Wooden furnishings', 'Porch swing', 'Reading nook', 'Sustainable design'],
-    image: 'https://images.pexels.com/photos/803975/pexels-photo-803975.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    hasAC: false,
-    hasAttachedBath: true,
-    availableRooms: 10,
-  },
-  {
-    id: 3,
-    type: 'Luxury Tent',
-    title: 'Spacious Safari Tent',
-    description: 'Glamping at its finest with our spacious safari-style tents featuring real beds, beautiful furnishings, and all the comforts of home under canvas.',
-    price: 149,
-    capacity: 2,
-    features: ['Queen bed', 'Furnished deck', 'Lantern lighting', 'Rugs & furnishings', 'Charging outlets'],
+    features: ['Unique triangular design', 'Comfortable bedding', 'Shared facilities', 'Campfire access', 'Nature immersion'],
     image: 'https://images.pexels.com/photos/6640068/pexels-photo-6640068.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
     hasAC: false,
     hasAttachedBath: false,
-    availableRooms: 10,
+    availableRooms: 8,
+    detailedInfo: {
+      totalCottages: 8,
+      meals: {
+        included: false,
+        description: 'Meals can be arranged separately'
+      },
+      activities: [
+        { name: 'Hiking trails', price: 0 },
+        { name: 'Stargazing', price: 0 },
+        { name: 'Campfire', price: 0 },
+        { name: 'Nature walks', price: 0 }
+      ]
+    }
   },
   {
-    id: 4,
-    type: 'Normal Tent',
-    title: 'Backpacker\'s Tent',
-    description: 'Perfect for adventurous souls, our standard tents provide a comfortable yet authentic camping experience with all necessary basics.',
-    price: 69,
-    capacity: 2,
-    features: ['Sleeping mats', 'Campsite location', 'Shared facilities', 'Fire pit access', 'Stargazing spot'],
+    id: 3,
+    type: 'U-Shaped Dome',
+    title: 'U-Shaped Dome Tents',
+    description: 'Spacious U-shaped dome tents designed for families and groups seeking adventure in comfort.',
+    price: 3000,
+    capacity: 4,
+    features: ['Spacious dome design', 'Family-friendly', 'Weather resistant', 'Comfortable sleeping', 'Group activities'],
     image: 'https://images.pexels.com/photos/2526025/pexels-photo-2526025.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
     hasAC: false,
     hasAttachedBath: false,
-    availableRooms: 10,
+    availableRooms: 6,
+    detailedInfo: {
+      totalCottages: 6,
+      meals: {
+        included: false,
+        description: 'Meals can be arranged separately'
+      },
+      activities: [
+        { name: 'Group games', price: 0 },
+        { name: 'Outdoor cooking', price: 0 },
+        { name: 'Team building', price: 0 },
+        { name: 'Adventure sports', price: 0 }
+      ]
+    }
+  }
+];
+
+export const packages: any[] = [
+  {
+    id: 1,
+    name: 'Weekend Getaway Package',
+    description: 'Perfect 2-day escape with accommodation, meals, and activities included.',
+    price: 8999,
+    duration: 2,
+    max_guests: 2,
+    image_url: 'https://images.pexels.com/photos/1051838/pexels-photo-1051838.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2',
+    includes: [
+      'AC Lake View Cottage for 2 nights',
+      'All meals included',
+      'Complimentary activities',
+      'Live music on Saturday',
+      'Swimming pool access'
+    ],
+    active: true,
+    detailedInfo: {
+      accommodation: 'AC Lake View Cottage',
+      meals: 'All meals included (breakfast, lunch, dinner, snacks)',
+      activities: [
+        'Archery',
+        'Badminton',
+        'Swimming',
+        'Boating (extra charges apply)',
+        'Live music on Saturday evening'
+      ],
+      checkIn: '3:00 PM',
+      checkOut: '11:00 AM',
+      cancellation: 'Free cancellation up to 24 hours before check-in'
+    }
   },
+  {
+    id: 2,
+    name: 'Adventure Camping Package',
+    description: 'Thrilling outdoor adventure with tent accommodation and exciting activities.',
+    price: 5999,
+    duration: 2,
+    max_guests: 4,
+    image_url: 'https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2',
+    includes: [
+      'Dome tent accommodation',
+      'Outdoor cooking experience',
+      'Adventure activities',
+      'Campfire evening',
+      'Nature guided tours'
+    ],
+    active: true,
+    detailedInfo: {
+      accommodation: 'U-Shaped Dome Tent',
+      meals: 'Outdoor cooking experience and campfire meals',
+      activities: [
+        'Trekking',
+        'Rock climbing',
+        'Kayaking',
+        'Campfire cooking',
+        'Stargazing sessions'
+      ],
+      checkIn: '2:00 PM',
+      checkOut: '12:00 PM',
+      cancellation: 'Free cancellation up to 48 hours before check-in'
+    }
+  }
 ];
 
 export const mealPlans: MealPlan[] = [

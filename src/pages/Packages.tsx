@@ -1,25 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Calendar, Users, Clock, CheckCircle } from 'lucide-react';
-
-const API_BASE_URL = 'https://plumeriaretreatback-production.up.railway.app/api';
-// const API_BASE_URL = 'http://localhost:5000/api'; // Use local API for development
-
-interface Package {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  duration: number;
-  max_guests: number;
-  image_url: string;
-  includes: string[];
-  active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { packages } from '../data';
 
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
   }).format(amount);
@@ -36,65 +21,9 @@ const formatDuration = (days: number): string => {
 };
 
 const Packages: React.FC = () => {
-  const [packages, setPackages] = useState<Package[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     document.title = 'Retreat Packages - Plumeria Retreat';
-    
-    const fetchPackages = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/packages`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch packages');
-        }
-        const data = await response.json();
-        setPackages(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPackages();
   }, []);
-
-  const handleBookNow = (packageId: number) => {
-    // Navigate to booking page with package ID
-    window.location.href = `/book?package=${packageId}`;
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-emerald-600 mx-auto"></div>
-          <p className="mt-4 text-emerald-800 font-medium">Loading retreat packages...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-red-800 mb-4">Unable to Load Packages</h2>
-            <p className="text-red-600 mb-6">{error}</p>
-            <button 
-              onClick={() => window.location.reload()}
-              className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -216,17 +145,16 @@ const Packages: React.FC = () => {
                         / {pkg.duration === 1 ? 'day' : 'package'}
                       </span>
                     </div>
-                    <button 
-                      onClick={() => handleBookNow(pkg.id)}
-                      disabled={!pkg.active}
+                    <Link 
+                      to={`/packages/${pkg.id}`}
                       className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
                         pkg.active
                           ? 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-lg transform hover:-translate-y-0.5'
-                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed pointer-events-none'
                       }`}
                     >
                       {pkg.active ? 'Book Now' : 'Coming Soon'}
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>

@@ -7,8 +7,8 @@ import Card, { CardImage, CardContent, CardTitle } from '../ui/Card';
 import Button from '../ui/Button';
 
 const FeaturedCampsites: React.FC = () => {
-  // Display only the first 3 accommodations
-  const featuredCampsites = accommodations.slice(0, 3);
+  // Display only the first 2 accommodations
+  const featuredCampsites = accommodations.slice(0, 2);
   
   return (
     <section className="section-padding bg-brunswick-green/5">
@@ -27,7 +27,7 @@ const FeaturedCampsites: React.FC = () => {
           </p>
         </motion.div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {featuredCampsites.map((campsite, index) => (
             <motion.div
               key={campsite.id}

@@ -7,9 +7,10 @@ import Campsites from './pages/Campsites';
 import Gallery from './pages/Gallery';
 import About from './pages/About';
 import Contact from './pages/Contact';
-import Book from './pages/Book';
 import NotFound from './pages/NotFound';
 import Packages from './pages/Packages';
+import PackageBooking from './pages/PackageBooking';
+import CampsiteBooking from './pages/CampsiteBooking';
 import { Success, Failure, Cancel } from './pages/Payments';
 
 function App() {
@@ -21,11 +22,12 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/campsites" element={<Campsites />} />
+            <Route path="/campsites/:id" element={<CampsiteBooking />} />
             <Route path="/packages" element={<Packages />} />
+            <Route path="/packages/:id" element={<PackageBooking />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/book" element={<Book />} />
             <Route path="/success" element={<Success />} />
             <Route path="/failure" element={<Failure />} />
             <Route path="/cancel" element={<Cancel />} />
