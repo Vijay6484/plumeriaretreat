@@ -36,6 +36,9 @@ p {
 .text-shadow {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
+.slick-arrow:before {
+  color: #295C3D !important; /* Brunswick Green */
+}
 
 /* Calendar Styles */
 .rdp {

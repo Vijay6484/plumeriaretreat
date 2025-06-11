@@ -4,6 +4,8 @@ import Slider from 'react-slick';
 import { nearbyLocations } from '../../data';
 import Card, { CardImage, CardContent } from '../ui/Card';
 import { MapPin } from 'lucide-react';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 const NearbyLocations: React.FC = () => {
   const settings = {
@@ -12,8 +14,8 @@ const NearbyLocations: React.FC = () => {
     speed: 500,
     slidesToShow: 3,
     slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 3000,
+    autoplay: false,
+    arrows: true,
     responsive: [
       {
         breakpoint: 1024,
@@ -33,7 +35,7 @@ const NearbyLocations: React.FC = () => {
   };
 
   return (
-    <section className="section-padding bg-brunswick-green/5">
+    <section className="section-padding bg-brunswick-green/5 py-16">
       <div className="container-custom">
         <motion.div
           initial={{ opacity: 0 }}
@@ -49,34 +51,39 @@ const NearbyLocations: React.FC = () => {
           </p>
         </motion.div>
 
-        <Slider {...settings} className="nearby-locations-slider">
-          {nearbyLocations.map((location, index) => (
-            <div key={location.id} className="px-2">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="h-full">
-                  <CardImage
-                    src={location.image}
-                    alt={location.name}
-                    className="h-48"
-                  />
-                  <CardContent>
-                    <h3 className="text-xl font-bold mb-2 text-brunswick-green">{location.name}</h3>
-                    <div className="flex items-center mb-2 text-rose-taupe">
-                      <MapPin size={16} className="mr-1" />
-                      <span>{location.distance} km away</span>
-                    </div>
-                    <p className="text-black/70">{location.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
-          ))}
-        </Slider>
+        <div className="relative">
+          <Slider {...settings} className="nearby-locations-slider">
+            {nearbyLocations.map((location, index) => (
+              <div key={location.id} className="px-2 h-full">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="h-full"
+                >
+                  <Card className="h-full flex flex-col shadow-lg rounded-lg overflow-hidden bg-white">
+                    <CardImage
+                      src={location.image}
+                      alt={location.name}
+                      className="h-48 w-full object-cover"
+                    />
+                    <CardContent className="flex-1 flex flex-col justify-between p-4">
+                      <div>
+                        <h3 className="text-xl font-bold mb-2 text-brunswick-green">{location.name}</h3>
+                        <div className="flex items-center mb-2 text-rose-taupe">
+                          <MapPin size={16} className="mr-1" />
+                          <span>{location.distance} km away</span>
+                        </div>
+                        <p className="text-black/70">{location.description}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </div>
+            ))}
+          </Slider>
+        </div>
       </div>
     </section>
   );

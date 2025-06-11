@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import Hero from '../components/home/Hero';
 import Highlights from '../components/home/Highlights';
 import FeaturedCampsites from '../components/home/FeaturedCampsites';
-import Testimonials from '../components/home/Testimonials';
 import GalleryPreview from '../components/home/GalleryPreview';
 import WeatherWidget from '../components/home/WeatherWidget';
 import CallToAction from '../components/home/CallToAction';
@@ -17,11 +16,10 @@ const Home: React.FC = () => {
     <div>
       <Hero />
       <Highlights />
-      <NearbyLocations />
       <FeaturedCampsites />
       <WeatherWidget />
-      <Testimonials />
       <GalleryPreview />
+      <NearbyLocations />
       <CallToAction />
     </div>
   );

@@ -36,7 +36,7 @@ const Hero: React.FC = () => {
               size="lg"
               as={Link}
               to="/packages"
-              className="text-baby-powder border-baby-powder bg-black/30 hover:bg-black/40 .btn-secondary"
+              className="!text-baby-powder !border-baby-powder !bg-transparent !hover:bg-white/10 !hover:text-baby-powder !hover:border-baby-powder"
             >
               View Packages
             </Button>

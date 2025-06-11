@@ -45,11 +45,11 @@ const Header: React.FC = () => {
       <div className="container-custom flex justify-between items-center py-4">
         <Link to="/" className="flex items-center">
           <Logo color={isScrolled ? '#065143' : isHomePage ? 'white' : 'white'} />
-          <span className={`ml-2 text-2xl font-bold font-montserrat ${
+          {/* <span className={`ml-2 text-2xl font-bold font-montserrat ${
             isScrolled 
               ? 'text-brunswick-green'
               : 'text-baby-powder'
-          }`}>Plumeria</span>
+          }`}>Plumeria</span> */}
         </Link>
         
         {/* Desktop Navigation */}
@@ -69,12 +69,12 @@ const Header: React.FC = () => {
               {item.label}
             </Link>
           ))}
-          <Button 
+          {/* <Button 
             variant={isScrolled ? "primary" : "secondary"} 
             size="md"
           >
             <Link to="/book">Book Now</Link>
-          </Button>
+          </Button> */}
         </nav>
         
         {/* Mobile Menu Button */}
@@ -106,9 +106,9 @@ const Header: React.FC = () => {
                 {item.label}
               </Link>
             ))}
-            <Button variant="secondary" size="md" fullWidth className="mt-4">
+            {/* <Button variant="secondary" size="md" fullWidth className="mt-4">
               <Link to="/book">Book Now</Link>
-            </Button>
+            </Button> */}
           </nav>
         </div>
       )}
