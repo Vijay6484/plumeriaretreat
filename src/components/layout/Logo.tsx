@@ -18,7 +18,6 @@ const Logo: React.FC<LogoProps> = ({ color = 'currentColor', size = 32, bgColor,
         padding: 2,
         transform: `scale(${scale})`, // Zoom out the logo
         transformOrigin: 'center',
-        mixBlendMode: 'darken', // Ensure the logo blends well with the background
       }}
     >
       <img 
@@ -29,9 +28,7 @@ const Logo: React.FC<LogoProps> = ({ color = 'currentColor', size = 32, bgColor,
           height: size,
           width: 'auto',
           display: 'block',
-          background: 'transparent',
         }}
-        className="bg-transparent"
       />
     </span>
   );

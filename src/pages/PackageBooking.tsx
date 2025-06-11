@@ -337,6 +337,19 @@ const PackageBooking: React.FC = () => {
 
           {/* Booking Summary Sidebar */}
           <div className="lg:sticky lg:top-24 h-fit">
+            {/* Embedded Google Map */}
+            <div className="mb-8 rounded-lg overflow-hidden shadow">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6103.946344270747!2d73.49323289387719!3d18.66382967533796!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2a9180b52a2fd%3A0xa5d86c10d8d9846d!2sPlumeria%20Retreat%20%7C%20Pawna%20Lakeside%20Cottages!5e1!3m2!1sen!2sin!4v1749631888045!5m2!1sen!2sin"
+                width="100%"
+                height="250"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Plumeria Retreat Location"
+              ></iframe>
+            </div>
             <Card>
               <CardContent>
                 <h3 className="text-2xl font-bold text-green-800 mb-6">Package Summary</h3>

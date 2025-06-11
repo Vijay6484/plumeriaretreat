@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
           <div>
             <Link to="/" className="flex items-center mb-4">
               <Logo color="white" />
-              <span className="ml-2 text-2xl font-bold font-montserrat">Plumeria</span>
+              {/* <span className="ml-2 text-2xl font-bold font-montserrat">Plumeria</span> */}
             </Link>
             <p className="mb-4 text-baby-powder/80">
               Experience the perfect lakeside getaway with our premium cottages, luxury tents and exciting activities.
