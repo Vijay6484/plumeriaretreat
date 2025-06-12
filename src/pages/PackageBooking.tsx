@@ -22,7 +22,7 @@ import Card, { CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import 'react-day-picker/dist/style.css';
 
-const PARTIAL_PAYMENT_PERCENT = 0.3; // 30% advance
+const MIN_ADVANCE_PERCENT = 0.3; // 30% minimum
 const MAX_ROOMS = 4;
 const VALID_COUPONS: { [key: string]: number } = {
   'PLUM10': 0.10, // 10% off
@@ -53,6 +53,7 @@ const PackageBooking: React.FC = () => {
   const [coupon, setCoupon] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
+  const [advancePercent, setAdvancePercent] = useState(MIN_ADVANCE_PERCENT);
 
   useEffect(() => {
     if (id) {
@@ -79,8 +80,8 @@ const PackageBooking: React.FC = () => {
     return subtotal - discount;
   };
 
-  const calculatePartialPayment = () => {
-    return Math.round(calculateTotal() * PARTIAL_PAYMENT_PERCENT);
+  const calculateAdvance = () => {
+    return Math.round(calculateTotal() * advancePercent);
   };
 
   const handleApplyCoupon = () => {
@@ -497,35 +498,27 @@ const PackageBooking: React.FC = () => {
                       <span>-{formatCurrency(discount)}</span>
                     </div>
                   )}
-                  <div className="mb-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
-                    <div className="flex gap-2">
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Advance to Pay Now
+                    </label>
+                    <div className="flex items-center gap-2">
                       <input
-                        type="text"
-                        value={coupon}
-                        onChange={e => {
-                          setCoupon(e.target.value);
-                          setCouponApplied(false);
-                          setDiscount(0);
-                        }}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                        placeholder="Enter coupon code"
-                        disabled={couponApplied}
+                        type="range"
+                        min={MIN_ADVANCE_PERCENT * 100}
+                        max={100}
+                        step={1}
+                        value={advancePercent * 100}
+                        onChange={e => setAdvancePercent(Number(e.target.value) / 100)}
+                        className="w-full"
                       />
-                      <Button
-                        type="button"
-                        onClick={handleApplyCoupon}
-                        disabled={couponApplied || !coupon}
-                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
-                      >
-                        {couponApplied ? 'Applied' : 'Apply'}
-                      </Button>
+                      <span className="w-16 text-right text-green-700 font-semibold">
+                        {Math.round(advancePercent * 100)}%
+                      </span>
                     </div>
-                    {couponApplied && discount > 0 && (
-                      <p className="text-green-700 text-sm mt-2">
-                        Coupon applied! You saved {formatCurrency(discount)}.
-                      </p>
-                    )}
+                    <div className="text-xs text-gray-500 mt-1">
+                      Move slider to pay minimum 30% or any higher amount up to 100%.
+                    </div>
                   </div>
                   <div className="border-t pt-4">
                     <div className="flex justify-between text-xl font-bold text-green-800">
@@ -533,12 +526,12 @@ const PackageBooking: React.FC = () => {
                       <span>{formatCurrency(calculateTotal())}</span>
                     </div>
                     <div className="flex justify-between text-lg font-semibold text-blue-700 mt-2">
-                      <span>Advance (30%)</span>
-                      <span>{formatCurrency(calculatePartialPayment())}</span>
+                      <span>Advance ({Math.round(advancePercent * 100)}%)</span>
+                      <span>{formatCurrency(calculateAdvance())}</span>
                     </div>
                     <div className="flex justify-between text-sm text-gray-600 mt-1">
                       <span>Pay at property</span>
-                      <span>{formatCurrency(calculateTotal() - calculatePartialPayment())}</span>
+                      <span>{formatCurrency(calculateTotal() - calculateAdvance())}</span>
                     </div>
                     <p className="text-sm text-gray-500 mt-1">All inclusive package price</p>
                   </div>
@@ -561,7 +554,7 @@ const PackageBooking: React.FC = () => {
                   </Button>
                   <p className="text-xs text-gray-500 text-center">
                     Secure booking with instant confirmation.<br />
-                    Pay {formatCurrency(calculatePartialPayment())} now, and the rest at the property.
+                    Pay {formatCurrency(calculateAdvance())} now, and the rest at the property.
                   </p>
                 </div>
               </CardContent>

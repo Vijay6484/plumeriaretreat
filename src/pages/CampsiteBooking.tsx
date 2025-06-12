@@ -35,7 +35,7 @@ const VALID_COUPONS: { [key: string]: number } = {
 };
 
 
-const PARTIAL_PAYMENT_PERCENT = 0.3; // 30% advance
+const PARTIAL_PAYMENT_MIN_PERCENT = 0.3; // 30% minimum
 
 const CampsiteBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -54,6 +54,7 @@ const CampsiteBooking: React.FC = () => {
   const [couponApplied, setCouponApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [foodChoice, setFoodChoice] = useState<'veg' | 'nonveg' | 'jain'>('veg');
+  const [advancePercent, setAdvancePercent] = useState(PARTIAL_PAYMENT_MIN_PERCENT);
 
   useEffect(() => {
     if (id) {
@@ -79,8 +80,8 @@ const CampsiteBooking: React.FC = () => {
     return subtotal - discount;
   };
 
-  const calculatePartialPayment = () => {
-    return Math.round(calculateTotal() * PARTIAL_PAYMENT_PERCENT);
+  const calculateAdvance = () => {
+    return Math.round(calculateTotal() * advancePercent);
   };
 
   const handleApplyCoupon = () => {
@@ -523,12 +524,36 @@ const CampsiteBooking: React.FC = () => {
                       <span>{formatCurrency(calculateTotal())}</span>
                     </div>
                     <div className="flex justify-between text-lg font-semibold text-blue-700 mt-2">
-                      <span>Advance (30%)</span>
-                      <span>{formatCurrency(calculatePartialPayment())}</span>
+                      <span>Advance ({Math.round(advancePercent * 100)}%)</span>
+                      <span>{formatCurrency(calculateAdvance())}</span>
                     </div>
                     <div className="flex justify-between text-sm text-gray-600 mt-1">
                       <span>Pay at property</span>
-                      <span>{formatCurrency(calculateTotal() - calculatePartialPayment())}</span>
+                      <span>{formatCurrency(calculateTotal() - calculateAdvance())}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Advance Payment Slider */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Advance to Pay Now
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="range"
+                        min={PARTIAL_PAYMENT_MIN_PERCENT * 100}
+                        max={100}
+                        step={1}
+                        value={advancePercent * 100}
+                        onChange={e => setAdvancePercent(Number(e.target.value) / 100)}
+                        className="w-full"
+                      />
+                      <span className="w-16 text-right text-green-700 font-semibold">
+                        {Math.round(advancePercent * 100)}%
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Move slider to pay minimum 30% or any higher amount up to 100%.
                     </div>
                   </div>
                   
@@ -552,7 +577,7 @@ const CampsiteBooking: React.FC = () => {
                   
                   <p className="text-xs text-gray-500 text-center">
                     Secure booking with instant confirmation.<br />
-                    Pay {formatCurrency(calculatePartialPayment())} now, and the rest at the property.
+                    Pay {formatCurrency(calculateAdvance())} now, and the rest at the property.
                   </p>
                 </div>
               </CardContent>
