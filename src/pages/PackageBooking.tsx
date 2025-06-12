@@ -22,6 +22,13 @@ import Card, { CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import 'react-day-picker/dist/style.css';
 
+const PARTIAL_PAYMENT_PERCENT = 0.3; // 30% advance
+const MAX_ROOMS = 4;
+const VALID_COUPONS: { [key: string]: number } = {
+  'PLUM10': 0.10, // 10% off
+  'WELCOME5': 0.05 // 5% off
+};
+
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -35,12 +42,17 @@ const PackageBooking: React.FC = () => {
   const [packageData, setPackageData] = useState<any>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [guests, setGuests] = useState({ adults: 1, children: 0 });
+  const [rooms, setRooms] = useState(1);
+  const [foodChoice, setFoodChoice] = useState<'veg' | 'nonveg' | 'jain'>('veg');
   const [guestInfo, setGuestInfo] = useState({
     name: '',
     email: '',
     phone: ''
   });
   const [loading, setLoading] = useState(false);
+  const [coupon, setCoupon] = useState('');
+  const [couponApplied, setCouponApplied] = useState(false);
+  const [discount, setDiscount] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -54,9 +66,41 @@ const PackageBooking: React.FC = () => {
     }
   }, [id, navigate]);
 
+  // Calculate total price based on rooms, guests, and coupon
   const calculateTotal = () => {
     if (!packageData) return 0;
-    return packageData.price;
+    // Assume package price is for 1 room, 2 guests (adults+children), for the full duration
+    // You can adjust this logic as per your pricing model
+    const baseGuests = 2;
+    const basePrice = packageData.price;
+    const extraGuests = Math.max(0, guests.adults + guests.children - baseGuests * rooms);
+    const extraGuestCharge = extraGuests > 0 ? extraGuests * 1000 : 0; // Example: ₹1000 per extra guest
+    const subtotal = (basePrice * rooms) + extraGuestCharge;
+    return subtotal - discount;
+  };
+
+  const calculatePartialPayment = () => {
+    return Math.round(calculateTotal() * PARTIAL_PAYMENT_PERCENT);
+  };
+
+  const handleApplyCoupon = () => {
+    const code = coupon.trim().toUpperCase();
+    if (VALID_COUPONS[code]) {
+      const subtotal = (() => {
+        if (!packageData) return 0;
+        const baseGuests = 2;
+        const basePrice = packageData.price;
+        const extraGuests = Math.max(0, guests.adults + guests.children - baseGuests * rooms);
+        const extraGuestCharge = extraGuests > 0 ? extraGuests * 1000 : 0;
+        return (basePrice * rooms) + extraGuestCharge;
+      })();
+      setDiscount(subtotal * VALID_COUPONS[code]);
+      setCouponApplied(true);
+    } else {
+      setDiscount(0);
+      setCouponApplied(false);
+      alert('Invalid coupon code');
+    }
   };
 
   const handleBooking = async () => {
@@ -305,6 +349,28 @@ const PackageBooking: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Number of Rooms */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Rooms</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={MAX_ROOMS}
+                      value={rooms}
+                      onChange={e => {
+                        const newRooms = Math.max(1, Math.min(Number(e.target.value), MAX_ROOMS));
+                        setRooms(newRooms);
+                        // Optionally reset guests if over new max
+                        setGuests(prev => ({
+                          adults: Math.min(prev.adults, newRooms * packageData.max_guests),
+                          children: Math.min(prev.children, newRooms * packageData.max_guests)
+                        }));
+                      }}
+                      className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                    />
+                    <span className="text-xs text-gray-500">Max {MAX_ROOMS} rooms</span>
+                  </div>
+
                   {/* Number of Guests */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -312,9 +378,9 @@ const PackageBooking: React.FC = () => {
                       <input
                         type="number"
                         min="1"
-                        max={packageData.max_guests}
+                        max={rooms * packageData.max_guests}
                         value={guests.adults}
-                        onChange={(e) => setGuests(prev => ({ ...prev, adults: parseInt(e.target.value) || 1 }))}
+                        onChange={(e) => setGuests(prev => ({ ...prev, adults: Math.max(1, Math.min(Number(e.target.value), rooms * packageData.max_guests)) }))}
                         className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
                       />
                     </div>
@@ -323,11 +389,51 @@ const PackageBooking: React.FC = () => {
                       <input
                         type="number"
                         min="0"
-                        max={Math.max(0, packageData.max_guests - guests.adults)}
+                        max={rooms * packageData.max_guests}
                         value={guests.children}
-                        onChange={(e) => setGuests(prev => ({ ...prev, children: parseInt(e.target.value) || 0 }))}
+                        onChange={(e) => setGuests(prev => ({ ...prev, children: Math.max(0, Math.min(Number(e.target.value), rooms * packageData.max_guests)) }))}
                         className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
                       />
+                    </div>
+                  </div>
+
+                  {/* Food Preference */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Food Preference</h3>
+                    <div className="flex gap-4">
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="foodChoice"
+                          value="veg"
+                          checked={foodChoice === 'veg'}
+                          onChange={() => setFoodChoice('veg')}
+                          className="accent-green-600"
+                        />
+                        <span className="ml-2">Veg</span>
+                      </label>
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="foodChoice"
+                          value="nonveg"
+                          checked={foodChoice === 'nonveg'}
+                          onChange={() => setFoodChoice('nonveg')}
+                          className="accent-green-600"
+                        />
+                        <span className="ml-2">Non Veg</span>
+                      </label>
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="foodChoice"
+                          value="jain"
+                          checked={foodChoice === 'jain'}
+                          onChange={() => setFoodChoice('jain')}
+                          className="accent-green-600"
+                        />
+                        <span className="ml-2">Jain</span>
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -359,12 +465,14 @@ const PackageBooking: React.FC = () => {
                     <span className="font-medium">Package</span>
                     <span className="text-green-600">{packageData.name}</span>
                   </div>
-                  
+                  <div className="flex justify-between">
+                    <span className="font-medium">Rooms</span>
+                    <span className="text-gray-600">{rooms}</span>
+                  </div>
                   <div className="flex justify-between">
                     <span className="font-medium">Duration</span>
                     <span className="text-gray-600">{packageData.duration} days</span>
                   </div>
-                  
                   {dateRange?.from && (
                     <div className="flex justify-between">
                       <span className="font-medium">Dates</span>
@@ -373,22 +481,67 @@ const PackageBooking: React.FC = () => {
                       </span>
                     </div>
                   )}
-                  
                   <div className="flex justify-between">
                     <span className="font-medium">Guests</span>
                     <span className="text-gray-600">
                       {guests.adults} Adults{guests.children > 0 && `, ${guests.children} Children`}
                     </span>
                   </div>
-                  
+                  <div className="flex justify-between">
+                    <span className="font-medium">Food</span>
+                    <span className="text-gray-600 capitalize">{foodChoice}</span>
+                  </div>
+                  {couponApplied && discount > 0 && (
+                    <div className="flex justify-between text-green-700">
+                      <span className="font-medium">Discount</span>
+                      <span>-{formatCurrency(discount)}</span>
+                    </div>
+                  )}
+                  <div className="mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={coupon}
+                        onChange={e => {
+                          setCoupon(e.target.value);
+                          setCouponApplied(false);
+                          setDiscount(0);
+                        }}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                        placeholder="Enter coupon code"
+                        disabled={couponApplied}
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={couponApplied || !coupon}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                      >
+                        {couponApplied ? 'Applied' : 'Apply'}
+                      </Button>
+                    </div>
+                    {couponApplied && discount > 0 && (
+                      <p className="text-green-700 text-sm mt-2">
+                        Coupon applied! You saved {formatCurrency(discount)}.
+                      </p>
+                    )}
+                  </div>
                   <div className="border-t pt-4">
                     <div className="flex justify-between text-xl font-bold text-green-800">
                       <span>Total Package Price</span>
                       <span>{formatCurrency(calculateTotal())}</span>
                     </div>
+                    <div className="flex justify-between text-lg font-semibold text-blue-700 mt-2">
+                      <span>Advance (30%)</span>
+                      <span>{formatCurrency(calculatePartialPayment())}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-gray-600 mt-1">
+                      <span>Pay at property</span>
+                      <span>{formatCurrency(calculateTotal() - calculatePartialPayment())}</span>
+                    </div>
                     <p className="text-sm text-gray-500 mt-1">All inclusive package price</p>
                   </div>
-                  
                   <Button
                     onClick={handleBooking}
                     disabled={loading || !dateRange?.from || !guestInfo.name || !guestInfo.email}
@@ -406,9 +559,9 @@ const PackageBooking: React.FC = () => {
                       </>
                     )}
                   </Button>
-                  
                   <p className="text-xs text-gray-500 text-center">
-                    Secure booking with instant confirmation
+                    Secure booking with instant confirmation.<br />
+                    Pay {formatCurrency(calculatePartialPayment())} now, and the rest at the property.
                   </p>
                 </div>
               </CardContent>
