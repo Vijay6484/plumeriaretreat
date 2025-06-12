@@ -28,14 +28,15 @@ import Button from '../components/ui/Button';
 import 'react-day-picker/dist/style.css';
 
 const MAX_ROOMS = 4;
+const MAX_ADULTS_PER_ROOM = 2;
+const MAX_CHILDREN_PER_ROOM = 2;
+const PARTIAL_PAYMENT_MIN_PERCENT = 0.3; // 30% minimum
 
 const VALID_COUPONS: { [key: string]: number } = {
   'PLUM10': 0.10, // 10% off
   'WELCOME5': 0.05 // 5% off
 };
 
-
-const PARTIAL_PAYMENT_MIN_PERCENT = 0.3; // 30% minimum
 
 const CampsiteBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,6 +45,9 @@ const CampsiteBooking: React.FC = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [guests, setGuests] = useState({ adults: 1, children: 0 });
   const [rooms, setRooms] = useState(1);
+  const [roomGuests, setRoomGuests] = useState(
+    Array.from({ length: MAX_ROOMS }, () => ({ adults: 2, children: 0 }))
+  );
   const [guestInfo, setGuestInfo] = useState({
     name: '',
     email: '',
@@ -54,7 +58,8 @@ const CampsiteBooking: React.FC = () => {
   const [couponApplied, setCouponApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [foodChoice, setFoodChoice] = useState<'veg' | 'nonveg' | 'jain'>('veg');
-  const [advancePercent, setAdvancePercent] = useState(PARTIAL_PAYMENT_MIN_PERCENT);
+  const [advanceAmount, setAdvanceAmount] = useState<number | null>(null);
+  const [foodCounts, setFoodCounts] = useState({ veg: 0, nonveg: 0, jain: 0 });
 
   useEffect(() => {
     if (id) {
@@ -68,21 +73,30 @@ const CampsiteBooking: React.FC = () => {
     }
   }, [id, navigate]);
 
-  const ADULT_RATE = accommodation?.price || 0; // Per adult per night (default to accommodation price)
-  const CHILD_RATE = Math.round(ADULT_RATE * 0.6); // Example: 60% of adult rate
+  // Calculate total guests
+  const totalAdults = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.adults, 0);
+  const totalChildren = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.children, 0);
+
+  // Pricing logic
+  const ADULT_RATE = accommodation?.price || 0;
+  const CHILD_RATE = Math.round(ADULT_RATE * 0.6);
 
   const calculateTotal = () => {
     if (!accommodation || !dateRange?.from || !dateRange?.to) return 0;
     const nights = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
-    const adultsTotal = guests.adults * ADULT_RATE * nights;
-    const childrenTotal = guests.children * CHILD_RATE * nights;
+    const adultsTotal = totalAdults * ADULT_RATE * nights;
+    const childrenTotal = totalChildren * CHILD_RATE * nights;
     const subtotal = adultsTotal + childrenTotal;
     return subtotal - discount;
   };
 
-  const calculateAdvance = () => {
-    return Math.round(calculateTotal() * advancePercent);
-  };
+  const totalAmount = calculateTotal();
+  const minAdvance = Math.round(totalAmount * PARTIAL_PAYMENT_MIN_PERCENT);
+
+  // Update advanceAmount if totalAmount changes
+  useEffect(() => {
+    setAdvanceAmount(minAdvance);
+  }, [totalAmount]);
 
   const handleApplyCoupon = () => {
     const code = coupon.trim().toUpperCase();
@@ -116,6 +130,33 @@ const CampsiteBooking: React.FC = () => {
       setLoading(false);
       navigate('/');
     }, 2000);
+  };
+
+  // Room count change
+  const handleRoomsChange = (newRooms: number) => {
+    setRooms(newRooms);
+    setRoomGuests(prev => {
+      const updated = [...prev];
+      while (updated.length < MAX_ROOMS) updated.push({ adults: 2, children: 0 });
+      return updated;
+    });
+  };
+
+  // Room guest change
+  const handleRoomGuestChange = (roomIdx: number, type: 'adults' | 'children', value: number) => {
+    setRoomGuests(prev => {
+      const updated = [...prev];
+      updated[roomIdx][type] = value;
+      return updated;
+    });
+  };
+
+  // Food count change
+  const handleFoodCount = (type: 'veg' | 'nonveg' | 'jain', delta: number) => {
+    setFoodCounts(prev => {
+      const newValue = Math.max(0, prev[type] + delta);
+      return { ...prev, [type]: newValue };
+    });
   };
 
   if (!accommodation) {
@@ -334,97 +375,75 @@ const CampsiteBooking: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Guests and Rooms */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Adults</label>
-                      <input
-                        type="number"
-                        min="1"
-                        max={rooms * accommodation.capacity}
-                        value={guests.adults}
-                        onChange={(e) => setGuests(prev => ({
-                          ...prev,
-                          adults: Math.max(1, Math.min(Number(e.target.value), rooms * accommodation.capacity))
-                        }))}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                      />
-                      <span className="text-xs text-gray-500">Max {rooms * accommodation.capacity} adults</span>
+                  {/* Room Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Rooms</label>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Button
+                        type="button"
+                        onClick={() => handleRoomsChange(Math.max(1, rooms - 1))}
+                        disabled={rooms <= 1}
+                        className="px-3 py-1 bg-green-700 text-white rounded"
+                      >-</Button>
+                      <span className="font-bold text-lg">{rooms}</span>
+                      <Button
+                        type="button"
+                        onClick={() => handleRoomsChange(Math.min(MAX_ROOMS, rooms + 1))}
+                        disabled={rooms >= Math.min(MAX_ROOMS, accommodation.availableRooms)}
+                        className="px-3 py-1 bg-green-700 text-white rounded"
+                      >+</Button>
+                      <span className="text-xs text-gray-500">{Math.min(MAX_ROOMS, accommodation.availableRooms) - rooms} rooms remaining</span>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Children</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max={rooms * accommodation.capacity}
-                        value={guests.children}
-                        onChange={(e) => setGuests(prev => ({
-                          ...prev,
-                          children: Math.max(0, Math.min(Number(e.target.value), rooms * accommodation.capacity))
-                        }))}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                      />
-                      <span className="text-xs text-gray-500">Max {rooms * accommodation.capacity} children</span>
+                    <div className="border rounded p-2 bg-gray-50">
+                      {Array.from({ length: rooms }).map((_, idx) => (
+                        <div key={idx} className="flex items-center gap-4 mb-2">
+                          <span className="w-16 font-medium">Room {idx + 1}</span>
+                          <select
+                            value={roomGuests[idx].adults}
+                            onChange={e => handleRoomGuestChange(idx, 'adults', Number(e.target.value))}
+                            className="border rounded px-2 py-1"
+                          >
+                            {[...Array(MAX_ADULTS_PER_ROOM + 1).keys()].slice(1).map(n => (
+                              <option key={n} value={n}>{n} Adults</option>
+                            ))}
+                          </select>
+                          <select
+                            value={roomGuests[idx].children}
+                            onChange={e => handleRoomGuestChange(idx, 'children', Number(e.target.value))}
+                            className="border rounded px-2 py-1"
+                          >
+                            {[...Array(MAX_CHILDREN_PER_ROOM + 1).keys()].map(n => (
+                              <option key={n} value={n}>{n} Children</option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Rooms</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={Math.min(MAX_ROOMS, accommodation.availableRooms)}
-                        value={rooms}
-                        onChange={(e) => {
-                          const newRooms = Math.max(1, Math.min(Number(e.target.value), Math.min(MAX_ROOMS, accommodation.availableRooms)));
-                          setRooms(newRooms);
-                          // Optionally reset guests if over new max
-                          setGuests(prev => ({
-                            adults: Math.min(prev.adults, newRooms * accommodation.capacity),
-                            children: Math.min(prev.children, newRooms * accommodation.capacity)
-                          }));
-                        }}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                      />
-                      <span className="text-xs text-gray-500">Max {Math.min(MAX_ROOMS, accommodation.availableRooms)} rooms</span>
+                    <div className="mt-2 text-sm">
+                      <span className="font-medium">Total:</span> {totalAdults} Adults, {totalChildren} Children
                     </div>
                   </div>
 
-                  {/* Food Choice */}
+                  {/* Food Preferences */}
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">Food Preference</h3>
-                    <div className="flex gap-4">
-                      <label className="flex items-center cursor-pointer">
-                        <input
-                          type="radio"
-                          name="foodChoice"
-                          value="veg"
-                          checked={foodChoice === 'veg'}
-                          onChange={() => setFoodChoice('veg')}
-                          className="accent-green-600"
-                        />
-                        <span className="ml-2">Veg</span>
-                      </label>
-                      <label className="flex items-center cursor-pointer">
-                        <input
-                          type="radio"
-                          name="foodChoice"
-                          value="nonveg"
-                          checked={foodChoice === 'nonveg'}
-                          onChange={() => setFoodChoice('nonveg')}
-                          className="accent-green-600"
-                        />
-                        <span className="ml-2">Non Veg</span>
-                      </label>
-                      <label className="flex items-center cursor-pointer">
-                        <input
-                          type="radio"
-                          name="foodChoice"
-                          value="jain"
-                          checked={foodChoice === 'jain'}
-                          onChange={() => setFoodChoice('jain')}
-                          className="accent-green-600"
-                        />
-                        <span className="ml-2">Jain</span>
-                      </label>
+                    <h3 className="text-lg font-semibold mb-4">Food Preferences</h3>
+                    <div className="space-y-3 bg-gray-50 p-4 rounded border">
+                      {(['veg', 'nonveg', 'jain'] as const).map(type => (
+                        <div key={type} className="flex items-center gap-4">
+                          <span className="w-32 capitalize">{type === 'nonveg' ? 'Non veg' : type} count</span>
+                          <Button
+                            type="button"
+                            onClick={() => handleFoodCount(type, -1)}
+                            className="rounded-full bg-gray-200 text-lg w-8 h-8 flex items-center justify-center"
+                          >-</Button>
+                          <span className="w-6 text-center">{foodCounts[type]}</span>
+                          <Button
+                            type="button"
+                            onClick={() => handleFoodCount(type, 1)}
+                            className="rounded-full bg-gray-200 text-lg w-8 h-8 flex items-center justify-center"
+                          >+</Button>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -475,17 +494,17 @@ const CampsiteBooking: React.FC = () => {
                   )}
                   
                   <div className="flex justify-between">
-                    <span className="font-medium">Guests</span>
-                    <span className="text-gray-600">
-                      {guests.adults} Adults{guests.children > 0 && `, ${guests.children} Children`}
-                    </span>
-                  </div>
-                  
-                  <div className="flex justify-between">
                     <span className="font-medium">Rooms</span>
                     <span className="text-gray-600">{rooms}</span>
                   </div>
 
+                  <div className="flex justify-between">
+                    <span className="font-medium">Guests</span>
+                    <span className="text-gray-600">
+                      {totalAdults} Adults{totalChildren > 0 && `, ${totalChildren} Children`}
+                    </span>
+                  </div>
+                  
                   {/* Coupon Code Section */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
@@ -518,48 +537,63 @@ const CampsiteBooking: React.FC = () => {
                     )}
                   </div>
                   
-                  <div className="border-t pt-4">
-                    <div className="flex justify-between text-xl font-bold text-green-800">
-                      <span>Total</span>
-                      <span>{formatCurrency(calculateTotal())}</span>
-                    </div>
-                    <div className="flex justify-between text-lg font-semibold text-blue-700 mt-2">
-                      <span>Advance ({Math.round(advancePercent * 100)}%)</span>
-                      <span>{formatCurrency(calculateAdvance())}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-gray-600 mt-1">
-                      <span>Pay at property</span>
-                      <span>{formatCurrency(calculateTotal() - calculateAdvance())}</span>
-                    </div>
-                  </div>
-                  
-                  {/* Advance Payment Slider */}
+                  {/* Advance Payment Input */}
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Advance to Pay Now
                     </label>
                     <div className="flex items-center gap-2">
                       <input
-                        type="range"
-                        min={PARTIAL_PAYMENT_MIN_PERCENT * 100}
-                        max={100}
-                        step={1}
-                        value={advancePercent * 100}
-                        onChange={e => setAdvancePercent(Number(e.target.value) / 100)}
-                        className="w-full"
+                        type="number"
+                        min={minAdvance}
+                        max={totalAmount}
+                        value={advanceAmount ?? ''}
+                        onChange={e => {
+                          const val = Number(e.target.value);
+                          setAdvanceAmount(isNaN(val) ? null : val);
+                        }}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                        placeholder={`Min ${formatCurrency(minAdvance)}`}
                       />
-                      <span className="w-16 text-right text-green-700 font-semibold">
-                        {Math.round(advancePercent * 100)}%
+                      <span className="text-green-700 font-semibold whitespace-nowrap">
+                        / {formatCurrency(totalAmount)}
                       </span>
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      Move slider to pay minimum 30% or any higher amount up to 100%.
+                      Enter any amount between {formatCurrency(minAdvance)} and {formatCurrency(totalAmount)}.
+                    </div>
+                    {advanceAmount !== null && advanceAmount < minAdvance && (
+                      <div className="text-xs text-red-600 mt-1">
+                        Advance must be at least {formatCurrency(minAdvance)} (30%).
+                      </div>
+                    )}
+                  </div>
+                  <div className="border-t pt-4">
+                    <div className="flex justify-between text-xl font-bold text-green-800">
+                      <span>Total</span>
+                      <span>{formatCurrency(totalAmount)}</span>
+                    </div>
+                    <div className="flex justify-between text-lg font-semibold text-blue-700 mt-2">
+                      <span>Advance</span>
+                      <span>{formatCurrency(advanceAmount ?? 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-gray-600 mt-1">
+                      <span>Pay at property</span>
+                      <span>{formatCurrency(totalAmount - (advanceAmount ?? 0))}</span>
                     </div>
                   </div>
-                  
                   <Button
                     onClick={handleBooking}
-                    disabled={loading || !dateRange?.from || !dateRange?.to || !guestInfo.name || !guestInfo.email}
+                    disabled={
+                      loading ||
+                      !dateRange?.from ||
+                      !dateRange?.to ||
+                      !guestInfo.name ||
+                      !guestInfo.email ||
+                      !advanceAmount ||
+                      advanceAmount < minAdvance ||
+                      advanceAmount > totalAmount
+                    }
                     className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors flex items-center justify-center"
                   >
                     {loading ? (
@@ -574,10 +608,9 @@ const CampsiteBooking: React.FC = () => {
                       </>
                     )}
                   </Button>
-                  
                   <p className="text-xs text-gray-500 text-center">
                     Secure booking with instant confirmation.<br />
-                    Pay {formatCurrency(calculateAdvance())} now, and the rest at the property.
+                    Pay {formatCurrency(advanceAmount ?? 0)} now, and the rest at the property.
                   </p>
                 </div>
               </CardContent>

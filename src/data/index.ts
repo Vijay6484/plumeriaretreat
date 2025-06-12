@@ -1,6 +1,6 @@
-import { label } from 'framer-motion/client';
 import { NavItem, Testimonial, GalleryImage, Accommodation, MealPlan, Activity, FAQ, NearbyLocation } from '../types';
 
+// Navigation Items
 export const navItems: NavItem[] = [
   { label: 'Home', path: '/' },
   { label: 'Campsites', path: '/campsites' },
@@ -10,6 +10,7 @@ export const navItems: NavItem[] = [
   { label: 'Contact', path: '/contact' },
 ];
 
+// Nearby Locations
 export const nearbyLocations: NearbyLocation[] = [
   {
     id: 1,
@@ -90,6 +91,7 @@ export const nearbyLocations: NearbyLocation[] = [
   }
 ];
 
+// Testimonials
 export const testimonials: Testimonial[] = [
   {
     id: 1,
@@ -117,6 +119,7 @@ export const testimonials: Testimonial[] = [
   },
 ];
 
+// Gallery Images
 export const galleryImages: GalleryImage[] = [
   {
     id: 1,
@@ -184,6 +187,7 @@ export const galleryImages: GalleryImage[] = [
   },
 ];
 
+// Accommodations (for CampsiteBooking)
 export const accommodations: Accommodation[] = [
   {
     id: 1,
@@ -237,7 +241,13 @@ export const accommodations: Accommodation[] = [
     description: 'Unique triangular-shaped tents offering an authentic camping experience with modern amenities.',
     price: 2500,
     capacity: 3,
-    features: ['Unique triangular design', 'Comfortable bedding', 'Shared facilities', 'Campfire access', 'Nature immersion'],
+    features: [
+      'Unique triangular design',
+      'Comfortable bedding',
+      'Shared facilities',
+      'Campfire access',
+      'Nature immersion'
+    ],
     image: 'https://images.pexels.com/photos/6640068/pexels-photo-6640068.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
     hasAC: false,
     hasAttachedBath: false,
@@ -263,7 +273,13 @@ export const accommodations: Accommodation[] = [
     description: 'Spacious U-shaped dome tents designed for families and groups seeking adventure in comfort.',
     price: 3000,
     capacity: 4,
-    features: ['Spacious dome design', 'Family-friendly', 'Weather resistant', 'Comfortable sleeping', 'Group activities'],
+    features: [
+      'Spacious dome design',
+      'Family-friendly',
+      'Weather resistant',
+      'Comfortable sleeping',
+      'Group activities'
+    ],
     image: 'https://images.pexels.com/photos/2526025/pexels-photo-2526025.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
     hasAC: false,
     hasAttachedBath: false,
@@ -284,6 +300,7 @@ export const accommodations: Accommodation[] = [
   }
 ];
 
+// Packages (for PackageBooking)
 export const packages: any[] = [
   {
     id: 1,
@@ -349,6 +366,7 @@ export const packages: any[] = [
   }
 ];
 
+// Meal Plans
 export const mealPlans: MealPlan[] = [
   {
     id: 1,
@@ -368,6 +386,7 @@ export const mealPlans: MealPlan[] = [
   },
 ];
 
+// Activities
 export const activities: Activity[] = [
   {
     id: 1,
@@ -395,6 +414,7 @@ export const activities: Activity[] = [
   },
 ];
 
+// FAQs
 export const faqs: FAQ[] = [
   {
     id: 1,
@@ -422,3 +442,13 @@ export const faqs: FAQ[] = [
     answer: 'Your stay includes access to hiking trails, the private beach area, fire pit usage, and board games in the common area. Additional activities like boating and paragliding are available for an extra fee.',
   },
 ];
+
+// Coupon Codes (for reference in booking pages)
+export const VALID_COUPONS: { [key: string]: number } = {
+  PLUM10: 0.10,
+  WELCOME5: 0.05,
+};
+
+// Payment Constants
+export const PARTIAL_PAYMENT_MIN_PERCENT = 0.3; // 30% minimum advance
+export const MAX_ROOMS = 4;
