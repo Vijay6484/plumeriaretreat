@@ -36,6 +36,8 @@ const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
+const MAX_PEOPLE_PER_ROOM = 4;
+
 const PackageBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -78,6 +80,7 @@ const PackageBooking: React.FC = () => {
 
   const totalAdults = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.adults, 0);
   const totalChildren = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.children, 0);
+  const totalGuests = totalAdults + totalChildren;
 
   const calculateTotal = () => {
     if (!packageData) return 0;
@@ -145,21 +148,40 @@ const PackageBooking: React.FC = () => {
     });
   };
 
-  // Update guests for a specific room
+  // Room guest change with max 4 per room
   const handleRoomGuestChange = (roomIdx: number, type: 'adults' | 'children', value: number) => {
     setRoomGuests(prev => {
       const updated = [...prev];
-      updated[roomIdx][type] = value;
+      const otherType = type === 'adults' ? 'children' : 'adults';
+      const otherValue = updated[roomIdx][otherType];
+      // Ensure sum does not exceed 4
+      if (value + otherValue > MAX_PEOPLE_PER_ROOM) {
+        updated[roomIdx][type] = MAX_PEOPLE_PER_ROOM - otherValue;
+      } else {
+        updated[roomIdx][type] = value;
+      }
       return updated;
     });
   };
 
-  // Helper to update food counts
+  // Food count change, cannot exceed total guests
   const handleFoodCount = (type: 'veg' | 'nonveg' | 'jain', delta: number) => {
     setFoodCounts(prev => {
       const newValue = Math.max(0, prev[type] + delta);
+      const newTotal = Object.values(prev).reduce((sum, v, idx) => sum + (type === Object.keys(prev)[idx] ? newValue : v), 0);
+      if (newTotal > totalGuests) return prev;
       return { ...prev, [type]: newValue };
     });
+  };
+
+  // Only allow advance to be exactly 30% or 100%
+  useEffect(() => {
+    setAdvanceAmount(minAdvance);
+  }, [totalAmount]);
+  const handleAdvanceChange = (val: number) => {
+    if (val === minAdvance || val === totalAmount) {
+      setAdvanceAmount(val);
+    }
   };
 
   if (!packageData) {
@@ -421,7 +443,8 @@ const PackageBooking: React.FC = () => {
                             onChange={e => handleRoomGuestChange(idx, 'adults', Number(e.target.value))}
                             className="border rounded px-2 py-1"
                           >
-                            {[...Array(MAX_ADULTS_PER_ROOM + 1).keys()].slice(1).map(n => (
+                            {[...Array(MAX_PEOPLE_PER_ROOM + 1).keys()].map(n => (
+                              n + roomGuests[idx].children <= MAX_PEOPLE_PER_ROOM &&
                               <option key={n} value={n}>{n} Adults</option>
                             ))}
                           </select>
@@ -430,7 +453,8 @@ const PackageBooking: React.FC = () => {
                             onChange={e => handleRoomGuestChange(idx, 'children', Number(e.target.value))}
                             className="border rounded px-2 py-1"
                           >
-                            {[...Array(MAX_CHILDREN_PER_ROOM + 1).keys()].map(n => (
+                            {[...Array(MAX_PEOPLE_PER_ROOM + 1).keys()].map(n => (
+                              n + roomGuests[idx].adults <= MAX_PEOPLE_PER_ROOM &&
                               <option key={n} value={n}>{n} Children</option>
                             ))}
                           </select>
@@ -462,6 +486,12 @@ const PackageBooking: React.FC = () => {
                           >+</Button>
                         </div>
                       ))}
+                      <div className="text-xs text-gray-500 mt-2">
+                        Total food count: {foodCounts.veg + foodCounts.nonveg + foodCounts.jain} / {totalGuests}
+                        {foodCounts.veg + foodCounts.nonveg + foodCounts.jain > totalGuests && (
+                          <span className="text-red-600 ml-2">Cannot exceed total guests!</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -530,30 +560,18 @@ const PackageBooking: React.FC = () => {
                       Advance to Pay Now
                     </label>
                     <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        min={minAdvance}
-                        max={totalAmount}
-                        value={advanceAmount ?? ''}
-                        onChange={e => {
-                          const val = Number(e.target.value);
-                          setAdvanceAmount(isNaN(val) ? null : val);
-                        }}
+                      <select
+                        value={advanceAmount ?? minAdvance}
+                        onChange={e => handleAdvanceChange(Number(e.target.value))}
                         className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                        placeholder={`Min ${formatCurrency(minAdvance)}`}
-                      />
+                      >
+                        <option value={minAdvance}>{formatCurrency(minAdvance)} (30%)</option>
+                        <option value={totalAmount}>{formatCurrency(totalAmount)} (100%)</option>
+                      </select>
                       <span className="text-green-700 font-semibold whitespace-nowrap">
                         / {formatCurrency(totalAmount)}
                       </span>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Enter any amount between {formatCurrency(minAdvance)} and {formatCurrency(totalAmount)}.
-                    </div>
-                    {advanceAmount !== null && advanceAmount < minAdvance && (
-                      <div className="text-xs text-red-600 mt-1">
-                        Advance must be at least {formatCurrency(minAdvance)} (30%).
-                      </div>
-                    )}
                   </div>
                   <div className="border-t pt-4">
                     <div className="flex justify-between text-xl font-bold text-green-800">
@@ -578,8 +596,8 @@ const PackageBooking: React.FC = () => {
                       !guestInfo.name ||
                       !guestInfo.email ||
                       !advanceAmount ||
-                      advanceAmount < minAdvance ||
-                      advanceAmount > totalAmount
+                      (advanceAmount !== minAdvance && advanceAmount !== totalAmount) ||
+                      (foodCounts.veg + foodCounts.nonveg + foodCounts.jain > totalGuests)
                     }
                     className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors flex items-center justify-center"
                   >
@@ -602,7 +620,6 @@ const PackageBooking: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-
             {/* Contact Information */}
             <Card className="mt-6">
               <CardContent>
