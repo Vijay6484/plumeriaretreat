@@ -16,77 +16,77 @@ export const nearbyLocations: NearbyLocation[] = [
     id: 1,
     name: 'Tikona Fort',
     distance: 5,
-    image: 'https://images.pexels.com/photos/2832034/pexels-photo-2832034.jpeg',
+    image: 'https://www.trawell.in/admin/images/upload/080966340Lonavala_Tikona_Fort_Main.jpg',
     description: 'A triangular shaped fort offering panoramic views of the surrounding valleys.'
   },
   {
     id: 2,
     name: 'Satya Sai Temple Hadshi',
     distance: 12,
-    image: 'https://images.pexels.com/photos/5998495/pexels-photo-5998495.jpeg',
+    image: 'https://www.rsm.ac.uk/media/1912/deccan-gymkhana.jpg?anchor=center&mode=crop&width=540&height=405&rnd=131921931430000000',
     description: 'A peaceful spiritual retreat with beautiful architecture and serene surroundings.'
   },
   {
     id: 3,
     name: 'Tung Fort',
     distance: 24,
-    image: 'https://images.pexels.com/photos/2832039/pexels-photo-2832039.jpeg',
+    image: 'https://i.pinimg.com/736x/99/39/6b/99396b5f278aff74714b998e3d901b97--trek-fort.jpg',
     description: 'Historic fort with challenging trek and rewarding mountain views.'
   },
   {
     id: 4,
     name: 'Lohagad Fort',
     distance: 16,
-    image: 'https://images.pexels.com/photos/2832051/pexels-photo-2832051.jpeg',
+    image: 'https://static2.tripoto.com/media/filter/nl/img/423292/TripDocument/1543300164_1.jpg',
     description: 'One of the most popular forts near Lonavala, known for its monsoon beauty.'
   },
   {
     id: 5,
     name: 'Visapur Fort',
     distance: 18,
-    image: 'https://images.pexels.com/photos/2832056/pexels-photo-2832056.jpeg',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/b/bc/Visapur_fort_in_monsoon.jpg',
     description: 'Sister fort of Lohagad offering unique historical insights.'
   },
   {
     id: 6,
     name: 'Bedse Caves',
     distance: 10,
-    image: 'https://images.pexels.com/photos/5998498/pexels-photo-5998498.jpeg',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Bedsa_Caves2.JPG/1200px-Bedsa_Caves2.JPG',
     description: 'Ancient Buddhist caves with intricate carvings and peaceful atmosphere.'
   },
   {
     id: 7,
     name: 'Bhaje Caves',
     distance: 19,
-    image: 'https://images.pexels.com/photos/5998501/pexels-photo-5998501.jpeg',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Bhaja_Caves_Entrance_Side_View.jpg/1200px-Bhaja_Caves_Entrance_Side_View.jpg',
     description: 'Rock-cut caves featuring Buddhist architecture and stunning valley views.'
   },
   {
     id: 8,
     name: 'Karla Caves',
     distance: 29,
-    image: 'https://images.pexels.com/photos/5998504/pexels-photo-5998504.jpeg',
+    image: 'https://static2.tripoto.com/media/filter/tst/img/2059001/TripDocument/1625752738_karla_caves.jpg.webp',
     description: 'Largest and best-preserved early Buddhist cave shrines in India.'
   },
   {
     id: 9,
     name: 'Prati Pandharpur Dudhivare',
     distance: 11,
-    image: 'https://images.pexels.com/photos/5998507/pexels-photo-5998507.jpeg',
+    image: 'https://lh3.googleusercontent.com/gps-cs-s/AC9h4noOlbgHbKx0WpDmBY9wrPtbqkYZtUe75lXDGguTqu7BuBfcSzgPY_7HSjWbhJNt6Jh2prKENMiXFA_F0wAfgS_Fon15tcnqOBlIxC9MFh7KkfKLXMqu8iFAu9x3i2kSewyG6NUg=s1360-w1360-h1020-rw',
     description: 'Religious site known for its spiritual significance and peaceful environment.'
   },
   {
     id: 10,
     name: 'Tiger Point',
     distance: 29,
-    image: 'https://images.pexels.com/photos/5998510/pexels-photo-5998510.jpeg',
+    image: 'https://assets.traveltriangle.com/blog/wp-content/uploads/2018/04/823.jpg',
     description: 'Scenic viewpoint offering spectacular sunset views and valley panoramas.'
   },
   {
     id: 11,
     name: 'Bhushi Dam',
     distance: 25,
-    image: 'https://images.pexels.com/photos/5998513/pexels-photo-5998513.jpeg',
+    image: 'https://images.tv9marathi.com/wp-content/uploads/2024/07/LONAVALA-1.jpg',
     description: 'Popular waterfall and dam site, perfect for monsoon visits.'
   }
 ];
@@ -123,7 +123,7 @@ export const testimonials: Testimonial[] = [
 export const galleryImages: GalleryImage[] = [
   {
     id: 1,
-    src: 'https://images.pexels.com/photos/3045272/pexels-photo-3045272.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    src: 'https://lh3.googleusercontent.com/p/AF1QipPnxhPxlciPAVnUXFCu9rY6YwyafrgZC7NbTmot=s1360-w1360-h1020-rw',
     alt: 'Lake view at sunset',
     category: 'nature',
     width: 800,
@@ -131,7 +131,7 @@ export const galleryImages: GalleryImage[] = [
   },
   {
     id: 2,
-    src: 'https://images.pexels.com/photos/2351287/pexels-photo-2351287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    src: 'https://lh3.googleusercontent.com/p/AF1QipOYgIvf1SDqRqhlwBFwmv5h6SCkeBewi6ikDez3=s1360-w1360-h1020-rw',
     alt: 'Luxury cottage interior',
     category: 'accommodation',
     width: 600,
@@ -139,7 +139,7 @@ export const galleryImages: GalleryImage[] = [
   },
   {
     id: 3,
-    src: 'https://images.pexels.com/photos/6271625/pexels-photo-6271625.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    src: 'https://lh3.googleusercontent.com/p/AF1QipMIRwGOOxk8LTWJ_u0q-ddmj-OJaDUIT6yFf1Qc=s1360-w1360-h1020-rw',
     alt: 'Paragliding over the lake',
     category: 'nature',
     width: 800,
@@ -155,7 +155,7 @@ export const galleryImages: GalleryImage[] = [
   },
   {
     id: 5,
-    src: 'https://images.pexels.com/photos/6271620/pexels-photo-6271620.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    src: 'https://lh3.googleusercontent.com/gps-cs-s/AC9h4nps6lbchOLruyOKGuYfvuplg9OXyR_ZkEzq4fJvocSj6aunRq-bPxL1r47OvPkqRqQBA0G1dq4UPb1ZRaNljCmVcx1TqvbCD0mCKM3aVnBKIQy-7BiilxLviLhKACuw1nM6nX4e9A=s1360-w1360-h1020-rw',
     alt: 'Evening campfire',
     category: 'nature',
     width: 600,
@@ -163,7 +163,7 @@ export const galleryImages: GalleryImage[] = [
   },
   {
     id: 6,
-    src: 'https://images.pexels.com/photos/6492397/pexels-photo-6492397.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    src: 'https://lh3.googleusercontent.com/gps-cs-s/AC9h4nrNuMy2jlAyXxHXB-cBGcX6roj03-5W7AyZWU1Z7GmtLBRDdJNKDKU1dSkOEOuuVY7lRF9g_jPXO8Cgzn7HU-fOr64CNKEcwPw4DUs4E00cMTUyCbZ26V_mZLr8Bs3Uw9BIdGRu=s1360-w1360-h1020-rw',
     alt: 'Forest hiking trail',
     category: 'nature',
     width: 800,
@@ -171,7 +171,7 @@ export const galleryImages: GalleryImage[] = [
   },
   {
     id: 7,
-    src: 'https://images.pexels.com/photos/172872/pexels-photo-172872.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    src: 'https://lh3.googleusercontent.com/p/AF1QipNgt2pohwNkw58LE_fghjXX1T1hh6MrStOMWsIh=s1360-w1360-h1020-rw',
     alt: 'Cottage exterior',
     category: 'accommodation',
     width: 800,
@@ -179,7 +179,7 @@ export const galleryImages: GalleryImage[] = [
   },
   {
     id: 8,
-    src: 'https://images.pexels.com/photos/2325446/pexels-photo-2325446.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    src: 'https://lh3.googleusercontent.com/gps-cs-s/AC9h4nq9QvsNK0CKCpIrn32fqIkX2Zh3RQhmWm0xOAHN8Sm09TNzZR0wF9qNAVdblnKUhiwuMp0oAYVRIi_uVnv2CjtD7jpY3o_B8mABFu5In-x4yUMyCXPUebfUq0PopqUbIq8F_wqzoA=s1360-w1360-h1020-rw',
     alt: 'Boating on the lake',
     category: 'nature',
     width: 600,
