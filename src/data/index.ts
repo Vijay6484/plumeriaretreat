@@ -3,8 +3,8 @@ import { NavItem, Testimonial, GalleryImage, Accommodation, MealPlan, Activity, 
 // Navigation Items
 export const navItems: NavItem[] = [
   { label: 'Home', path: '/' },
-  { label: 'Campsites', path: '/campsites' },
-  { label: 'Packages', path: '/packages' },
+  { label: 'Tents', path: '/campsites' },
+  { label: 'Cottages', path: '/packages' },
   { label: 'Gallery', path: '/gallery' },
   { label: 'About', path: '/about' },
   { label: 'Contact', path: '/contact' },
@@ -443,12 +443,13 @@ export const faqs: FAQ[] = [
   },
 ];
 
-// Coupon Codes (for reference in booking pages)
+// Payment Constants
+export const MAX_ROOMS = 4;
+export const MAX_ADULTS_PER_ROOM = 2;
+export const MAX_CHILDREN_PER_ROOM = 2;
+export const MAX_PEOPLE_PER_ROOM = MAX_ADULTS_PER_ROOM + MAX_CHILDREN_PER_ROOM;
+export const PARTIAL_PAYMENT_MIN_PERCENT = 0.3; // 30%
 export const VALID_COUPONS: { [key: string]: number } = {
   PLUM10: 0.10,
   WELCOME5: 0.05,
 };
-
-// Payment Constants
-export const PARTIAL_PAYMENT_MIN_PERCENT = 0.3; // 30% minimum advance
-export const MAX_ROOMS = 4;

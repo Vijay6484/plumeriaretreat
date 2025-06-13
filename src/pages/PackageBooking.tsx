@@ -17,19 +17,17 @@ import {
   Bed,
   Activity
 } from 'lucide-react';
-import { packages } from '../data';
+import {
+  packages,
+  MAX_ROOMS,
+  MAX_ADULTS_PER_ROOM,
+  MAX_CHILDREN_PER_ROOM,
+  PARTIAL_PAYMENT_MIN_PERCENT,
+  VALID_COUPONS
+} from '../data';
 import Card, { CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import 'react-day-picker/dist/style.css';
-
-const MIN_ADVANCE_PERCENT = 0.3; // 30% minimum
-const MAX_ROOMS = 4;
-const MAX_ADULTS_PER_ROOM = 2;
-const MAX_CHILDREN_PER_ROOM = 2;
-const VALID_COUPONS: { [key: string]: number } = {
-  'PLUM10': 0.10, // 10% off
-  'WELCOME5': 0.05 // 5% off
-};
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-IN', {
@@ -58,7 +56,7 @@ const PackageBooking: React.FC = () => {
   const [coupon, setCoupon] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
-  const [advancePercent, setAdvancePercent] = useState(MIN_ADVANCE_PERCENT);
+  const [advancePercent, setAdvancePercent] = useState(PARTIAL_PAYMENT_MIN_PERCENT);
   const [foodCounts, setFoodCounts] = useState({ veg: 0, nonveg: 0, jain: 0 });
   const [advanceAmount, setAdvanceAmount] = useState<number | null>(null);
 
@@ -94,7 +92,7 @@ const PackageBooking: React.FC = () => {
   };
 
   const totalAmount = calculateTotal();
-  const minAdvance = Math.round(totalAmount * MIN_ADVANCE_PERCENT);
+  const minAdvance = Math.round(totalAmount * PARTIAL_PAYMENT_MIN_PERCENT);
 
   // Update advanceAmount if totalAmount changes
   useEffect(() => {
