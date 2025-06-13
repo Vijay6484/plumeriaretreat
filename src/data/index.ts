@@ -147,7 +147,7 @@ export const galleryImages: GalleryImage[] = [
   },
   {
     id: 4,
-    src: 'https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    src: 'https://lh3.googleusercontent.com/p/AF1QipMi-GwaxR1sazknne73yCqY5sCdnLNRSJnJvaE1=s1360-w1360-h1020-rw',
     alt: 'Luxury tent setup',
     category: 'accommodation',
     width: 800,
@@ -206,7 +206,7 @@ export const accommodations: Accommodation[] = [
       '🏊‍♂️ Swimming pool access',
       '📶 Free WiFi'
     ],
-    image: 'https://images.pexels.com/photos/9144680/pexels-photo-9144680.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    image: 'https://lh3.googleusercontent.com/gps-cs-s/AC9h4nqJGEsNa3hzCieO_bfx7bA2T86n7Vpdi0XM_dQ4vd2jX5XUANrEjW_wimZre8MMiwcFVk92JU7ZpkWhljUfn7rjnqf5zxXWr_78NHHgnYHHUfN_3BB-fJleNKk99W8UyDknPv1b=s1360-w1360-h1020-rw',
     hasAC: true,
     hasAttachedBath: true,
     availableRooms: 10,

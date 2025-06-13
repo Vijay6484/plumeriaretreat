@@ -64,15 +64,20 @@ const Footer: React.FC = () => {
             <ul className="space-y-3">
               <li className="flex items-start">
                 <MapPin size={20} className="mr-2 mt-1 flex-shrink-0" />
-                <span>123 Lakeside Drive, Nature Valley, CA 94123</span>
+                <span>Pawna lakeside Cottages
+Address:
+At-Bramhanoli, Fangne,
+Post- Pawna nagar, Tel- Maval,
+Dist- Pune, Pawna Lake,
+Maharashtra 410406</span>
               </li>
               <li className="flex items-center">
                 <Phone size={20} className="mr-2 flex-shrink-0" />
-                <span>+1 (555) 123-4567</span>
+                <span>+919226869678</span>
               </li>
               <li className="flex items-center">
                 <Mail size={20} className="mr-2 flex-shrink-0" />
-                <span>info@plumeriaretreat.com</span>
+                <span> campatpawna@gmail.com</span>
               </li>
             </ul>
           </div>

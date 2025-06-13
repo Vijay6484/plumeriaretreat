@@ -60,16 +60,29 @@ const About: React.FC = () => {
             viewport={{ once: true }}
             className="text-center"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-brunswick-green">Our Story</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-brunswick-green">About Us <br /> Plumeria Retreat Cottage Stay</h2>
             <p className="text-lg text-black/70 mb-4">
-              Founded in 2020, Plumeria Retreat was born from a passion for connecting people with nature. 
-              What started as a simple campground has grown into a premier destination for outdoor enthusiasts 
-              seeking both adventure and comfort.
+              Welcome to Plumeria Retreat Cottage Stay, your ideal getaway near the serene Pawna Lake. Nestled amidst lush greenery, just a stone’s throw from the tranquil waters of Pawna Lake, our retreat offers a perfect blend of nature and luxury. At Plumeria Retreat, we are dedicated to providing an unforgettable experience that goes beyond just a stay; it’s a journey into relaxation, adventure, and rejuvenation.
             </p>
             <p className="text-lg text-black/70">
-              Today, we pride ourselves on offering diverse accommodation options and activities that cater to 
-              every type of traveler, while maintaining our commitment to environmental stewardship and 
-              authentic outdoor experiences.
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-brunswick-green">Our Vision</h2>
+
+Our vision is to create a sanctuary where guests can unwind and reconnect with nature, all while enjoying the stunning backdrop of Pawna Lake. We strive to offer a unique blend of comfort, outdoor adventure, and personalized service, ensuring that every moment spent with us is cherished.
+
+ <h2 className="text-3xl md:text-4xl font-bold mb-6 text-brunswick-green">What We Offer</h2>
+
+At Plumeria Retreat, our cottages are thoughtfully designed to complement the natural beauty of the Pawna Lake area. Each stay includes an all-inclusive package, featuring delicious meals made with locally sourced ingredients and a variety of activities to suit every traveler, whether you’re here to explore or simply relax by the lake.
+<h2 className="text-3xl md:text-4xl font-bold mb-6 text-brunswick-green">Why Choose Us?</h2>
+
+Prime Location near Pawna Lake: Enjoy the beauty and tranquility of Pawna Lake right at your doorstep.
+Comfortable Cottages: Our cottages offer a cozy and intimate atmosphere, perfect for relaxing after a day of exploring.
+All-Inclusive Packages: We provide everything you need for a stress-free stay, including meals and activities.
+Activities for Every Guest: Whether you’re into water sports, hiking, or simply lounging by the lake, we have something for everyone. <br />
+<h2 className="text-3xl md:text-4xl font-bold mb-6 text-brunswick-green">Our Commitment</h2>
+
+At Plumeria Retreat, we are committed to exceeding your expectations with exceptional service and attention to detail. Whether you’re seeking a peaceful getaway, an adventure-filled retreat, or simply a place to relax and unwind, we promise an experience that will leave you rejuvenated and longing to return.
+
+
             </p>
           </motion.div>
         </div>
@@ -105,8 +118,9 @@ const About: React.FC = () => {
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">Join Our Journey</h2>
             <p className="text-lg mb-8 opacity-90">
-              Whether you're seeking adventure, relaxation, or a bit of both, we invite you to 
-              experience the magic of Plumeria Retreat. Come be part of our story.
+            Whether you’re looking for a weekend escape, a romantic retreat, or a family vacation, Plumeria Retreat Cottage Stay near Pawna Lake is your perfect destination. Come and experience the ultimate blend of nature, comfort, and adventure with us.
+
+Contact: 9226869678
             </p>
             <button className="bg-rose-taupe text-baby-powder px-8 py-3 rounded-full font-medium hover:bg-rose-taupe/90 transition-colors"
             onClick={() => handleBookNow()}

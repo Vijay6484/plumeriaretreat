@@ -85,21 +85,21 @@ const Contact: React.FC = () => {
                 <MapPin size={24} className="text-brunswick-green mt-1" />
                 <div className="ml-4">
                   <h3 className="font-semibold text-lg">Address</h3>
-                  <p className="text-black/70">123 Lakeside Drive, Nature Valley, CA 94123</p>
+                  <p className="text-black/70">At- Bramhanoli fangne post, tal, pawnanagar,maval, Maharashtra 410406</p>
                 </div>
               </div>
               <div className="flex items-start">
                 <Phone size={24} className="text-brunswick-green mt-1" />
                 <div className="ml-4">
                   <h3 className="font-semibold text-lg">Phone</h3>
-                  <p className="text-black/70">+1 (555) 123-4567</p>
+                  <p className="text-black/70">+91 9226869678</p>
                 </div>
               </div>
               <div className="flex items-start">
                 <Mail size={24} className="text-brunswick-green mt-1" />
                 <div className="ml-4">
                   <h3 className="font-semibold text-lg">Email</h3>
-                  <p className="text-black/70">info@plumeriaretreat.com</p>
+                  <p className="text-black/70">campatpawna@gmail.com</p>
                 </div>
               </div>
             </div>
