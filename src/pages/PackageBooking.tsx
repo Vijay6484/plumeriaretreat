@@ -18,7 +18,7 @@ import {
   Activity
 } from 'lucide-react';
 import {
-  packages,
+  accommodations,
   MAX_ROOMS,
   MAX_ADULTS_PER_ROOM,
   MAX_CHILDREN_PER_ROOM,
@@ -42,6 +42,7 @@ const PackageBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [packageData, setPackageData] = useState<any>(null);
+  const [accommodation, setAccommodation] = useState<any>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [guests, setGuests] = useState({ adults: 1, children: 0 });
   const [rooms, setRooms] = useState(1);
@@ -64,10 +65,20 @@ const PackageBooking: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      const found = packages.find(pkg => pkg.id === parseInt(id));
-      if (found) {
-        setPackageData(found);
-        document.title = `${found.name} - Plumeria Retreat`;
+      let foundPkg = null;
+      let foundAcc = null;
+      for (const acc of accommodations) {
+        const pkg = acc.packages?.find(pkg => pkg.id === parseInt(id));
+        if (pkg) {
+          foundPkg = pkg;
+          foundAcc = acc;
+          break;
+        }
+      }
+      if (foundPkg) {
+        setPackageData(foundPkg);
+        setAccommodation(foundAcc); // optional: if you want to show tent/cottage info
+        document.title = `${foundPkg.name} - Plumeria Retreat`;
       } else {
         navigate('/packages');
       }

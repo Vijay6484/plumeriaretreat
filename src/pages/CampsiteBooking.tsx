@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DayPicker, DateRange } from 'react-day-picker';
@@ -31,6 +31,7 @@ import {
 import { formatCurrency } from '../utils/helpers';
 import Card, { CardContent, CardImage } from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import { Package } from '../types';
 import 'react-day-picker/dist/style.css';
 
 const CampsiteBooking: React.FC = () => {
@@ -55,6 +56,8 @@ const CampsiteBooking: React.FC = () => {
   const [foodChoice, setFoodChoice] = useState<'veg' | 'nonveg' | 'jain'>('veg');
   const [advanceAmount, setAdvanceAmount] = useState<number | null>(null);
   const [foodCounts, setFoodCounts] = useState({ veg: 0, nonveg: 0, jain: 0 });
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarTempRange, setCalendarTempRange] = useState<DateRange | undefined>(undefined);
 
   useEffect(() => {
     if (id) {
@@ -67,6 +70,14 @@ const CampsiteBooking: React.FC = () => {
       }
     }
   }, [id, navigate]);
+
+  // Set default date range: today and tomorrow
+  useEffect(() => {
+    if (!dateRange) {
+      const today = new Date();
+      setDateRange({ from: today, to: addDays(today, 1) });
+    }
+  }, [dateRange]);
 
   // Calculate total guests
   const totalAdults = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.adults, 0);
@@ -362,15 +373,47 @@ const CampsiteBooking: React.FC = () => {
                     <h3 className="text-lg font-semibold mb-4">Select Dates</h3>
                     <div className="flex flex-col lg:flex-row gap-6">
                       <div className="flex-1">
-                        <DayPicker
-                          mode="range"
-                          selected={dateRange}
-                          onSelect={setDateRange}
-                          numberOfMonths={2}
-                          fromDate={new Date()}
-                          toDate={addDays(new Date(), 365)}
-                          className="mx-auto"
-                        />
+                        {/* Date input that toggles calendar */}
+                        <button
+                          type="button"
+                          className="w-full px-4 py-2 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-600"
+                          onClick={() => {
+                            setShowCalendar(true);
+                            setCalendarTempRange(undefined); // Calendar opens empty
+                          }}
+                        >
+                          {dateRange?.from && dateRange?.to
+                            ? `${format(dateRange.from, 'dd MMM yyyy')} to ${format(dateRange.to, 'dd MMM yyyy')}`
+                            : 'Select your stay dates'}
+                        </button>
+                        {showCalendar && (
+                          <div className="relative z-10 mt-2">
+                            <DayPicker
+                              mode="range"
+                              selected={calendarTempRange}
+                              onSelect={setCalendarTempRange}
+                              numberOfMonths={1}
+                              fromDate={new Date()}
+                              toDate={addDays(new Date(), 365)}
+                              className="mx-auto bg-white p-2 rounded-lg shadow-lg"
+                            />
+                            <div className="flex justify-end mt-2">
+                              <button
+                                type="button"
+                                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                onClick={() => {
+                                  if (calendarTempRange?.from && calendarTempRange?.to) {
+                                    setDateRange(calendarTempRange);
+                                    setShowCalendar(false);
+                                  }
+                                }}
+                                disabled={!calendarTempRange?.from || !calendarTempRange?.to}
+                              >
+                                Select
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <div className="lg:w-64">
                         <div className="bg-green-50 p-4 rounded-lg">
@@ -469,6 +512,36 @@ const CampsiteBooking: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Special Packages Section */}
+            {accommodation.packages && accommodation.packages.length > 0 && (
+              <Card>
+                <CardContent>
+                  <h2 className="text-2xl font-bold text-green-800 mb-4">Special Packages</h2>
+                  <div className="space-y-6">
+                    {accommodation.packages.map((pkg: Package) => (
+                      <div key={pkg.id} className="border rounded-lg p-4 flex flex-col md:flex-row items-center gap-4">
+                        <img src={pkg.image_url} alt={pkg.name} className="w-32 h-24 object-cover rounded" />
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold">{pkg.name}</h3>
+                          <p className="text-gray-600">{pkg.description}</p>
+                          <div className="flex items-center gap-4 mt-2">
+                            <span className="text-green-700 font-bold">{formatCurrency(pkg.price)}</span>
+                            <span className="text-sm text-gray-500">{pkg.duration} Days</span>
+                          </div>
+                        </div>
+                        <Button
+                          className="bg-green-600 text-white px-4 py-2 rounded-lg"
+                          onClick={() => navigate(`/packages/${pkg.id}`)}
+                        >
+                          Book Package
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Booking Summary Sidebar */}

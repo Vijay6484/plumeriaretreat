@@ -33,23 +33,8 @@ export interface Accommodation {
   hasAC: boolean;
   hasAttachedBath: boolean;
   availableRooms: number;
-  detailedInfo?: {
-    totalCottages: number;
-    meals: {
-      included: boolean;
-      description: string;
-      snacks?: string;
-      dinner?: {
-        veg: string;
-        nonVeg: string;
-      };
-      breakfast?: string;
-    };
-    activities: Array<{
-      name: string;
-      price: number;
-    }>;
-  };
+  detailedInfo: any;
+  packages?: Package[]; // <-- Add this line
 }
 
 export interface MealPlan {
@@ -94,7 +79,7 @@ export interface Package {
   image_url: string;
   includes: string[];
   active: boolean;
-  detailedInfo?: {
+  detailedInfo: {
     accommodation: string;
     meals: string;
     activities: string[];

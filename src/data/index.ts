@@ -4,7 +4,7 @@ import { NavItem, Testimonial, GalleryImage, Accommodation, MealPlan, Activity, 
 export const navItems: NavItem[] = [
   { label: 'Home', path: '/' },
   { label: 'Tents', path: '/campsites' },
-  { label: 'Cottages', path: '/packages' },
+  // { label: 'Cottages', path: '/packages' },
   { label: 'Gallery', path: '/gallery' },
   { label: 'About', path: '/about' },
   { label: 'Contact', path: '/contact' },
@@ -210,6 +210,39 @@ export const accommodations: Accommodation[] = [
     hasAC: true,
     hasAttachedBath: true,
     availableRooms: 10,
+    packages: [
+      {
+        id: 101,
+        name: 'Romantic Lake View Package',
+        description: 'Perfect for couples, includes all meals and a candlelight dinner.',
+        price: 9999,
+        duration: 2,
+        max_guests: 2,
+        image_url: 'https://images.pexels.com/photos/1051838/pexels-photo-1051838.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2',
+        includes: [
+          'AC Lake View Cottage for 2 nights',
+          'All meals included',
+          'Candlelight dinner',
+          'Live music on Saturday',
+          'Swimming pool access'
+        ],
+        active: true,
+        detailedInfo: {
+          accommodation: 'AC Lake View Cottage',
+          meals: 'All meals included (breakfast, lunch, dinner, snacks)',
+          activities: [
+            'Archery',
+            'Badminton',
+            'Swimming',
+            'Boating (extra charges apply)',
+            'Live music on Saturday evening'
+          ],
+          checkIn: '3:00 PM',
+          checkOut: '11:00 AM',
+          cancellation: 'Free cancellation up to 24 hours before check-in'
+        }
+      }
+    ],
     detailedInfo: {
       totalCottages: 10,
       meals: {
@@ -252,6 +285,39 @@ export const accommodations: Accommodation[] = [
     hasAC: false,
     hasAttachedBath: false,
     availableRooms: 8,
+    packages: [
+      {
+        id: 201,
+        name: 'Adventure Camping Package',
+        description: 'Thrilling outdoor adventure with tent accommodation and exciting activities.',
+        price: 5999,
+        duration: 2,
+        max_guests: 4,
+        image_url: 'https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2',
+        includes: [
+          'Dome tent accommodation',
+          'Outdoor cooking experience',
+          'Adventure activities',
+          'Campfire evening',
+          'Nature guided tours'
+        ],
+        active: true,
+        detailedInfo: {
+          accommodation: 'U-Shaped Dome Tent',
+          meals: 'Outdoor cooking experience and campfire meals',
+          activities: [
+            'Trekking',
+            'Rock climbing',
+            'Kayaking',
+            'Campfire cooking',
+            'Stargazing sessions'
+          ],
+          checkIn: '2:00 PM',
+          checkOut: '12:00 PM',
+          cancellation: 'Free cancellation up to 48 hours before check-in'
+        }
+      }
+    ],
     detailedInfo: {
       totalCottages: 8,
       meals: {
@@ -296,72 +362,6 @@ export const accommodations: Accommodation[] = [
         { name: 'Team building', price: 0 },
         { name: 'Adventure sports', price: 0 }
       ]
-    }
-  }
-];
-
-// Packages (for PackageBooking)
-export const packages: any[] = [
-  {
-    id: 1,
-    name: 'Weekend Getaway Package',
-    description: 'Perfect 2-day escape with accommodation, meals, and activities included.',
-    price: 8999,
-    duration: 2,
-    max_guests: 2,
-    image_url: 'https://images.pexels.com/photos/1051838/pexels-photo-1051838.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2',
-    includes: [
-      'AC Lake View Cottage for 2 nights',
-      'All meals included',
-      'Complimentary activities',
-      'Live music on Saturday',
-      'Swimming pool access'
-    ],
-    active: true,
-    detailedInfo: {
-      accommodation: 'AC Lake View Cottage',
-      meals: 'All meals included (breakfast, lunch, dinner, snacks)',
-      activities: [
-        'Archery',
-        'Badminton',
-        'Swimming',
-        'Boating (extra charges apply)',
-        'Live music on Saturday evening'
-      ],
-      checkIn: '3:00 PM',
-      checkOut: '11:00 AM',
-      cancellation: 'Free cancellation up to 24 hours before check-in'
-    }
-  },
-  {
-    id: 2,
-    name: 'Adventure Camping Package',
-    description: 'Thrilling outdoor adventure with tent accommodation and exciting activities.',
-    price: 5999,
-    duration: 2,
-    max_guests: 4,
-    image_url: 'https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2',
-    includes: [
-      'Dome tent accommodation',
-      'Outdoor cooking experience',
-      'Adventure activities',
-      'Campfire evening',
-      'Nature guided tours'
-    ],
-    active: true,
-    detailedInfo: {
-      accommodation: 'U-Shaped Dome Tent',
-      meals: 'Outdoor cooking experience and campfire meals',
-      activities: [
-        'Trekking',
-        'Rock climbing',
-        'Kayaking',
-        'Campfire cooking',
-        'Stargazing sessions'
-      ],
-      checkIn: '2:00 PM',
-      checkOut: '12:00 PM',
-      cancellation: 'Free cancellation up to 48 hours before check-in'
     }
   }
 ];
