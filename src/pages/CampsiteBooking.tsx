@@ -1,9 +1,13 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, KeyboardEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DayPicker, DateRange } from 'react-day-picker';
 import { format, addDays } from 'date-fns';
-import { 
+import { X } from 'lucide-react';
+import Slider from 'react-slick'; 
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+import {
   Calendar, 
   Users, 
   Wifi, 
@@ -34,6 +38,14 @@ import Button from '../components/ui/Button';
 import { Package } from '../types';
 import 'react-day-picker/dist/style.css';
 
+const imageLinks = [
+  "https://images.pexels.com/photos/9144680/pexels-photo-9144680.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  "https://images.pexels.com/photos/6640068/pexels-photo-6640068.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  "https://images.pexels.com/photos/2526025/pexels-photo-2526025.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  "https://images.pexels.com/photos/3045272/pexels-photo-3045272.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  "https://images.pexels.com/photos/2351287/pexels-photo-2351287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+];
+
 const CampsiteBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -58,6 +70,8 @@ const CampsiteBooking: React.FC = () => {
   const [foodCounts, setFoodCounts] = useState({ veg: 0, nonveg: 0, jain: 0 });
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarTempRange, setCalendarTempRange] = useState<DateRange | undefined>(undefined);
+  const [fullscreenImgIdx, setFullscreenImgIdx] = useState<number | null>(null);
+  const sliderRef = useRef<any>(null);
 
   useEffect(() => {
     if (id) {
@@ -182,6 +196,46 @@ const CampsiteBooking: React.FC = () => {
     }
   };
 
+  // Keyboard navigation for main slider and fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent | KeyboardEventInit) => {
+      if (fullscreenImgIdx !== null) {
+        if (e.key === 'ArrowRight') {
+          setFullscreenImgIdx((prev) => prev !== null ? (prev + 1) % imageLinks.length : 0);
+        }
+        if (e.key === 'ArrowLeft') {
+          setFullscreenImgIdx((prev) => prev !== null ? (prev - 1 + imageLinks.length) % imageLinks.length : 0);
+        }
+        if (e.key === 'Escape') {
+          setFullscreenImgIdx(null);
+        }
+      } else {
+        // Main slider navigation
+        if (e.key === 'ArrowRight') sliderRef.current?.slickNext();
+        if (e.key === 'ArrowLeft') sliderRef.current?.slickPrev();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown as any);
+    return () => window.removeEventListener('keydown', handleKeyDown as any);
+  }, [fullscreenImgIdx]);
+
+  // Slider settings
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 8000,
+    arrows: false,
+    ref: sliderRef,
+    beforeChange: (_: number, next: number) => {
+      // If fullscreen is open, sync with slider
+      if (fullscreenImgIdx !== null) setFullscreenImgIdx(next);
+    }
+  };
+
   if (!accommodation) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -195,29 +249,68 @@ const CampsiteBooking: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
+      {/* Image Slider */}
       <div className="relative h-[60vh] overflow-hidden">
-        <img 
-          src={accommodation.image} 
-          alt={accommodation.title}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/40"></div>
-        <div className="absolute inset-0 flex items-center">
+        <Slider {...sliderSettings} ref={sliderRef}>
+          {imageLinks.map((img, idx) => (
+            <div key={idx} className="h-[60vh] flex items-center justify-center bg-black/40">
+              <img
+                src={img}
+                alt={`Campsite ${idx + 1}`}
+                className="object-cover w-full h-[60vh] transition-transform duration-200 hover:scale-105 cursor-pointer"
+                onClick={() => setFullscreenImgIdx(idx)}
+                draggable={false}
+              />
+            </div>
+          ))}
+        </Slider>
+        {/* Fullscreen Modal with slider */}
+        {fullscreenImgIdx !== null && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
+            <button
+              className="absolute top-6 right-6 text-white text-3xl z-50"
+              onClick={() => setFullscreenImgIdx(null)}
+              aria-label="Close"
+            >
+              <X size={36} />
+            </button>
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-white text-4xl z-50"
+              onClick={() => setFullscreenImgIdx((fullscreenImgIdx - 1 + imageLinks.length) % imageLinks.length)}
+              aria-label="Previous"
+            >
+              &#8592;
+            </button>
+            <img
+              src={imageLinks[fullscreenImgIdx]}
+              alt="Full screen"
+              className="max-h-[90vh] max-w-[95vw] rounded-lg shadow-lg"
+              draggable={false}
+            />
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-4xl z-50"
+              onClick={() => setFullscreenImgIdx((fullscreenImgIdx + 1) % imageLinks.length)}
+              aria-label="Next"
+            >
+              &#8594;
+            </button>
+          </div>
+        )}
+        <div className="absolute inset-0 flex items-center pointer-events-none">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="text-white max-w-3xl"
             >
-              <h1 className="text-4xl md:text-6xl font-bold mb-4">{accommodation.title}</h1>
-              <p className="text-xl md:text-2xl opacity-90">{accommodation.description}</p>
+              <h1 className="text-4xl md:text-6xl font-bold mb-4">{accommodation?.title}</h1>
+              <p className="text-xl md:text-2xl opacity-90">{accommodation?.description}</p>
               <div className="flex items-center mt-4 space-x-4">
                 <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm">
-                  {accommodation.type}
+                  {accommodation?.type}
                 </span>
                 <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm">
-                  Up to {accommodation.capacity} guests
+                  Up to {accommodation?.capacity} guests
                 </span>
               </div>
             </motion.div>

@@ -29,7 +29,7 @@ export interface Accommodation {
   price: number;
   capacity: number;
   features: string[];
-  image: string;
+  image: string[];
   hasAC: boolean;
   hasAttachedBath: boolean;
   availableRooms: number;

@@ -206,7 +206,7 @@ export const accommodations: Accommodation[] = [
       '🏊‍♂️ Swimming pool access',
       '📶 Free WiFi'
     ],
-    image: 'https://lh3.googleusercontent.com/gps-cs-s/AC9h4nqJGEsNa3hzCieO_bfx7bA2T86n7Vpdi0XM_dQ4vd2jX5XUANrEjW_wimZre8MMiwcFVk92JU7ZpkWhljUfn7rjnqf5zxXWr_78NHHgnYHHUfN_3BB-fJleNKk99W8UyDknPv1b=s1360-w1360-h1020-rw',
+    image: ['https://lh3.googleusercontent.com/gps-cs-s/AC9h4nqJGEsNa3hzCieO_bfx7bA2T86n7Vpdi0XM_dQ4vd2jX5XUANrEjW_wimZre8MMiwcFVk92JU7ZpkWhljUfn7rjnqf5zxXWr_78NHHgnYHHUfN_3BB-fJleNKk99W8UyDknPv1b=s1360-w1360-h1020-rw'],
     hasAC: true,
     hasAttachedBath: true,
     availableRooms: 10,
@@ -281,7 +281,7 @@ export const accommodations: Accommodation[] = [
       'Campfire access',
       'Nature immersion'
     ],
-    image: 'https://images.pexels.com/photos/6640068/pexels-photo-6640068.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    image: ['https://images.pexels.com/photos/6640068/pexels-photo-6640068.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'],
     hasAC: false,
     hasAttachedBath: false,
     availableRooms: 8,
@@ -346,7 +346,7 @@ export const accommodations: Accommodation[] = [
       'Comfortable sleeping',
       'Group activities'
     ],
-    image: 'https://images.pexels.com/photos/2526025/pexels-photo-2526025.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+    image: ['https://images.pexels.com/photos/2526025/pexels-photo-2526025.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'],
     hasAC: false,
     hasAttachedBath: false,
     availableRooms: 6,
