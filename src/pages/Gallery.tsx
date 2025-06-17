@@ -1,15 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { galleryImages } from '../data';
+
+interface GalleryImage {
+  id: number;
+  url: string;
+  alt: string;
+  category: string;
+  source: string;
+}
 
 const Gallery: React.FC = () => {
-  const [filter, setFilter] = useState<'all' | 'nature' | 'accommodation'>('all');
-  
+  const [filter, setFilter] = useState<'all' | 'nature' | 'accommodation' | 'package' | 'activity' | 'testimonial' | 'nearby'>('all');
+  const [images, setImages] = useState<GalleryImage[]>([]);
+
   useEffect(() => {
     document.title = 'Gallery - Plumeria Retreat';
+    fetch('https://plumeriaretreat-back.vercel.app/api/all-images')
+      .then(res => res.json())
+      .then(setImages)
+      .catch(() => setImages([]));
   }, []);
 
-  const filteredImages = galleryImages.filter(image => 
+  const filteredImages = images.filter(image =>
     filter === 'all' ? true : image.category === filter
   );
 
@@ -32,51 +44,27 @@ const Gallery: React.FC = () => {
 
       <div className="container-custom py-16">
         <div className="flex justify-center mb-8 space-x-4">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-6 py-2 rounded-full transition-colors ${
-              filter === 'all'
-                ? 'bg-brunswick-green text-baby-powder'
-                : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilter('nature')}
-            className={`px-6 py-2 rounded-full transition-colors ${
-              filter === 'nature'
-                ? 'bg-brunswick-green text-baby-powder'
-                : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'
-            }`}
-          >
-            Nature
-          </button>
-          <button
-            onClick={() => setFilter('accommodation')}
-            className={`px-6 py-2 rounded-full transition-colors ${
-              filter === 'accommodation'
-                ? 'bg-brunswick-green text-baby-powder'
-                : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'
-            }`}
-          >
-            Accommodation
-          </button>
+          <button onClick={() => setFilter('all')} className={`px-6 py-2 rounded-full ${filter === 'all' ? 'bg-brunswick-green text-baby-powder' : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'}`}>All</button>
+          <button onClick={() => setFilter('nature')} className={`px-6 py-2 rounded-full ${filter === 'nature' ? 'bg-brunswick-green text-baby-powder' : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'}`}>Nature</button>
+          <button onClick={() => setFilter('accommodation')} className={`px-6 py-2 rounded-full ${filter === 'accommodation' ? 'bg-brunswick-green text-baby-powder' : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'}`}>Accommodation</button>
+          <button onClick={() => setFilter('package')} className={`px-6 py-2 rounded-full ${filter === 'package' ? 'bg-brunswick-green text-baby-powder' : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'}`}>Package</button>
+          <button onClick={() => setFilter('activity')} className={`px-6 py-2 rounded-full ${filter === 'activity' ? 'bg-brunswick-green text-baby-powder' : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'}`}>Activity</button>
+          <button onClick={() => setFilter('testimonial')} className={`px-6 py-2 rounded-full ${filter === 'testimonial' ? 'bg-brunswick-green text-baby-powder' : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'}`}>Testimonial</button>
+          <button onClick={() => setFilter('nearby')} className={`px-6 py-2 rounded-full ${filter === 'nearby' ? 'bg-brunswick-green text-baby-powder' : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'}`}>Nearby</button>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredImages.map((image, index) => (
             <motion.div
-              key={image.id}
+              key={image.source + '-' + image.id + '-' + index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
               className="relative group overflow-hidden rounded-lg aspect-square"
             >
-              <img 
-                src={image.src} 
-                alt={image.alt} 
+              <img
+                src={image.url}
+                alt={image.alt}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-brunswick-green/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">

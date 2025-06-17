@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DayPicker, DateRange } from 'react-day-picker';
 import { format, addDays } from 'date-fns';
@@ -20,10 +20,9 @@ import {
 import {
   accommodations,
   MAX_ROOMS,
-  MAX_ADULTS_PER_ROOM,
-  MAX_CHILDREN_PER_ROOM,
   PARTIAL_PAYMENT_MIN_PERCENT,
-  VALID_COUPONS
+  VALID_COUPONS,
+  MAX_PEOPLE_PER_ROOM
 } from '../data';
 import Card, { CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -36,11 +35,14 @@ const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
-const MAX_PEOPLE_PER_ROOM = 4;
 
 const PackageBooking: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const accommodationId = Number(params.get('accommodation'));
+  const pkgId = Number(params.get('package'));
+
   const [packageData, setPackageData] = useState<any>(null);
   const [accommodation, setAccommodation] = useState<any>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
@@ -64,26 +66,34 @@ const PackageBooking: React.FC = () => {
   const [advanceAmount, setAdvanceAmount] = useState<number | null>(null);
 
   useEffect(() => {
-    if (id) {
-      let foundPkg = null;
-      let foundAcc = null;
-      for (const acc of accommodations) {
-        const pkg = acc.packages?.find(pkg => pkg.id === parseInt(id));
-        if (pkg) {
-          foundPkg = pkg;
-          foundAcc = acc;
-          break;
+    const fetchPackage = async () => {
+      if (accommodationId && pkgId) {
+        try {
+          // Fetch package data from backend
+          const pkgRes = await fetch(
+            `https://plumeriaretreat-back.vercel.app/api/packages?accommodation=${accommodationId}&package=${pkgId}`
+          );
+          if (!pkgRes.ok) throw new Error('Failed to fetch package');
+          const pkgData = await pkgRes.json();
+          setPackageData(pkgData);
+
+          // Optionally, fetch accommodation data if you need it
+          const accRes = await fetch(
+            `https://plumeriaretreat-back.vercel.app/api/accommodations/${accommodationId}`
+          );
+          if (accRes.ok) {
+            const accData = await accRes.json();
+            setAccommodation(accData);
+          }
+          document.title = `${pkgData.name} - Plumeria Retreat`;
+        } catch (error) {
+          console.error('Error fetching package:', error);
+          navigate('/packages');
         }
       }
-      if (foundPkg) {
-        setPackageData(foundPkg);
-        setAccommodation(foundAcc); // optional: if you want to show tent/cottage info
-        document.title = `${foundPkg.name} - Plumeria Retreat`;
-      } else {
-        navigate('/packages');
-      }
-    }
-  }, [id, navigate]);
+    };
+    fetchPackage();
+  }, [accommodationId, pkgId, navigate]);
 
   // Calculate total price based on rooms, guests, and coupon
   const ADULT_RATE = packageData?.price || 0;
@@ -140,12 +150,67 @@ const PackageBooking: React.FC = () => {
     }
 
     setLoading(true);
-    // Simulate booking process
-    setTimeout(() => {
-      alert('Package booking request submitted! We will contact you shortly.');
+
+    // 1. Create booking
+    const bookingRes = await fetch('https://plumeriaretreat-back.vercel.app/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        package_id: packageData.id,
+        accommodation_id: accommodation?.id,
+        guest_name: guestInfo.name,
+        guest_email: guestInfo.email,
+        guest_phone: guestInfo.phone,
+        rooms,
+        adults: totalAdults,
+        children: totalChildren,
+        food_veg: foodCounts.veg,
+        food_nonveg: foodCounts.nonveg,
+        food_jain: foodCounts.jain,
+        check_in: format(dateRange.from, 'yyyy-MM-dd'),
+        check_out: format(addDays(dateRange.from, packageData.duration - 1), 'yyyy-MM-dd'),
+        total_amount: totalAmount,
+        advance_amount: advanceAmount
+      })
+    });
+    const bookingData = await bookingRes.json();
+
+    if (!bookingData.success) {
+      alert('Booking failed. Please try again.');
       setLoading(false);
-      navigate('/');
-    }, 2000);
+      return;
+    }
+
+    // 2. Initiate PayU payment
+    const payuRes = await fetch('https://plumeriaretreat-back.vercel.app/api/payments/payu', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: advanceAmount,
+        firstname: guestInfo.name,
+        email: guestInfo.email,
+        phone: guestInfo.phone,
+        productinfo: packageData.name,
+        booking_id: bookingData.booking_id,
+        surl: window.location.origin + '/success',
+        furl: window.location.origin + '/failure'
+      })
+    });
+    const { payu_url, payuData } = await payuRes.json();
+
+    // 3. Submit PayU form
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = payu_url;
+    Object.entries(payuData).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = String(value);
+      form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
   };
 
   // Update roomGuests array when rooms count changes
@@ -417,7 +482,7 @@ const PackageBooking: React.FC = () => {
                             {dateRange?.from && (
                               <>
                                 <p><strong>Start:</strong> {format(dateRange.from, 'PPP')}</p>
-                                <p><strong>End:</strong> {format(addDays(dateRange.from, packageData.duration - 1), 'PPP')}</p>
+                                <p><strong>End:</strong> {format(dateRange.to!, 'PPP')}</p>
                               </>
                             )}
                           </div>

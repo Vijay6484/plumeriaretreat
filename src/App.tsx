@@ -24,7 +24,7 @@ function App() {
             <Route path="/campsites" element={<Campsites />} />
             <Route path="/campsites/:id" element={<CampsiteBooking />} />
             {/* <Route path="/packages" element={<Packages />} /> */}
-            <Route path="/packages/:id" element={<PackageBooking />} />
+            <Route path="/packages" element={<PackageBooking />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />

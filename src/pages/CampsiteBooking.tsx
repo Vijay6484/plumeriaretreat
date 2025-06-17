@@ -4,17 +4,17 @@ import { motion } from 'framer-motion';
 import { DayPicker, DateRange } from 'react-day-picker';
 import { format, addDays } from 'date-fns';
 import { X } from 'lucide-react';
-import Slider from 'react-slick'; 
+import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import {
-  Calendar, 
-  Users, 
-  Wifi, 
-  Car, 
-  Coffee, 
-  Utensils, 
-  Music, 
+  Calendar,
+  Users,
+  Wifi,
+  Car,
+  Coffee,
+  Utensils,
+  Music,
   Waves,
   Target,
   Gamepad2,
@@ -25,31 +25,27 @@ import {
   CheckCircle,
   CreditCard
 } from 'lucide-react';
-import {
-  accommodations,
-  MAX_ROOMS,
-  MAX_PEOPLE_PER_ROOM,
-  PARTIAL_PAYMENT_MIN_PERCENT,
-  VALID_COUPONS
-} from '../data';
+import { MessageCircle } from 'lucide-react';
 import { formatCurrency } from '../utils/helpers';
 import Card, { CardContent, CardImage } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { Package } from '../types';
 import 'react-day-picker/dist/style.css';
 
-const imageLinks = [
-  "https://images.pexels.com/photos/9144680/pexels-photo-9144680.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-  "https://images.pexels.com/photos/6640068/pexels-photo-6640068.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-  "https://images.pexels.com/photos/2526025/pexels-photo-2526025.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-  "https://images.pexels.com/photos/3045272/pexels-photo-3045272.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-  "https://images.pexels.com/photos/2351287/pexels-photo-2351287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-];
+const MAX_ROOMS = 5;
+const MAX_PEOPLE_PER_ROOM = 4;
+const PARTIAL_PAYMENT_MIN_PERCENT = 0.3;
+const VALID_COUPONS: { [key: string]: number } = {
+  "WELCOME10": 0.1,
+  "DISCOUNT15": 0.15,
+  "SAVE20": 0.2
+};
 
 const CampsiteBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [accommodation, setAccommodation] = useState<any>(null);
+  const [imageLinks, setImageLinks] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [guests, setGuests] = useState({ adults: 1, children: 0 });
   const [rooms, setRooms] = useState(1);
@@ -74,14 +70,37 @@ const CampsiteBooking: React.FC = () => {
   const sliderRef = useRef<any>(null);
 
   useEffect(() => {
-    if (id) {
-      const found = accommodations.find(acc => acc.id === parseInt(id));
-      if (found) {
-        setAccommodation(found);
-        document.title = `${found.title} - Plumeria Retreat`;
-      } else {
+    const fetchAccommodation = async () => {
+      try {
+        const response = await fetch(`https://plumeriaretreat-back.vercel.app/api/accommodations/${id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch accommodation');
+        }
+        const data = await response.json();
+        setAccommodation(data);
+        document.title = `${data.title} - Plumeria Retreat`;
+      } catch (error) {
+        console.error('Error fetching accommodation:', error);
         navigate('/campsites');
       }
+    };
+
+    const fetchImages = async () => {
+      try {
+        const response = await fetch(`https://plumeriaretreat-back.vercel.app/api/gallery-images`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch images');
+        }
+        const data = await response.json();
+        setImageLinks(data.map((img: any) => img.src));
+      } catch (error) {
+        console.error('Error fetching images:', error);
+      }
+    };
+
+    if (id) {
+      fetchAccommodation();
+      fetchImages();
     }
   }, [id, navigate]);
 
@@ -217,7 +236,7 @@ const CampsiteBooking: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown as any);
     return () => window.removeEventListener('keydown', handleKeyDown as any);
-  }, [fullscreenImgIdx]);
+  }, [fullscreenImgIdx, imageLinks.length]);
 
   // Slider settings
   const sliderSettings = {
@@ -326,7 +345,6 @@ const CampsiteBooking: React.FC = () => {
             <Card>
               <CardContent>
                 <h2 className="text-3xl font-bold text-green-800 mb-6">Accommodation Details</h2>
-                
                 {accommodation.detailedInfo && (
                   <div className="space-y-6">
                     {/* Live Music Feature */}
@@ -354,14 +372,14 @@ const CampsiteBooking: React.FC = () => {
                     </div>
 
                     {/* Meals Information */}
-                    {accommodation.detailedInfo.meals.included && (
+                    {accommodation.detailedInfo.meals?.included && (
                       <div className="bg-green-50 p-6 rounded-lg">
                         <h3 className="text-xl font-semibold mb-4 text-green-800 flex items-center">
                           <Utensils className="mr-2" size={20} />
                           Meals Included
                         </h3>
                         <p className="text-green-700 mb-4">{accommodation.detailedInfo.meals.description}</p>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
                             <h4 className="font-semibold text-green-800 mb-2">☕ Evening Snacks</h4>
@@ -386,15 +404,15 @@ const CampsiteBooking: React.FC = () => {
                     <div>
                       <h3 className="text-xl font-semibold mb-4 text-green-800">Activities Available</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {accommodation.detailedInfo.activities.map((activity: any, index: number) => (
+                        {accommodation.detailedInfo.activities?.map((activity: any, index: number) => (
                           <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <div className="flex items-center">
                               {activity.name.toLowerCase().includes('archery') && <Target className="text-green-600 mr-2" size={16} />}
                               {activity.name.toLowerCase().includes('badminton') && <Gamepad2 className="text-green-600 mr-2" size={16} />}
                               {activity.name.toLowerCase().includes('boating') && <Waves className="text-green-600 mr-2" size={16} />}
-                              {!activity.name.toLowerCase().includes('archery') && 
-                               !activity.name.toLowerCase().includes('badminton') && 
-                               !activity.name.toLowerCase().includes('boating') && 
+                              {!activity.name.toLowerCase().includes('archery') &&
+                               !activity.name.toLowerCase().includes('badminton') &&
+                               !activity.name.toLowerCase().includes('boating') &&
                                <CheckCircle className="text-green-600 mr-2" size={16} />}
                               <span className="text-gray-700 capitalize">{activity.name}</span>
                             </div>
@@ -407,202 +425,6 @@ const CampsiteBooking: React.FC = () => {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* Booking Form */}
-            <Card>
-              <CardContent>
-                <h2 className="text-3xl font-bold text-green-800 mb-6">Book Your Stay</h2>
-                
-                <div className="space-y-6">
-                  {/* Guest Information */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Guest Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Full Name *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={guestInfo.name}
-                          onChange={(e) => setGuestInfo(prev => ({ ...prev, name: e.target.value }))}
-                          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                          placeholder="Enter your full name"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Email Address *
-                        </label>
-                        <input
-                          type="email"
-                          required
-                          value={guestInfo.email}
-                          onChange={(e) => setGuestInfo(prev => ({ ...prev, email: e.target.value }))}
-                          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                          placeholder="Enter your email"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Phone Number
-                        </label>
-                        <input
-                          type="tel"
-                          value={guestInfo.phone}
-                          onChange={(e) => setGuestInfo(prev => ({ ...prev, phone: e.target.value }))}
-                          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                          placeholder="Enter your phone number"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Date Selection */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Select Dates</h3>
-                    <div className="flex flex-col lg:flex-row gap-6">
-                      <div className="flex-1">
-                        {/* Date input that toggles calendar */}
-                        <button
-                          type="button"
-                          className="w-full px-4 py-2 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-600"
-                          onClick={() => {
-                            setShowCalendar(true);
-                            setCalendarTempRange(undefined); // Calendar opens empty
-                          }}
-                        >
-                          {dateRange?.from && dateRange?.to
-                            ? `${format(dateRange.from, 'dd MMM yyyy')} to ${format(dateRange.to, 'dd MMM yyyy')}`
-                            : 'Select your stay dates'}
-                        </button>
-                        {showCalendar && (
-                          <div className="relative z-10 mt-2">
-                            <DayPicker
-                              mode="range"
-                              selected={calendarTempRange}
-                              onSelect={setCalendarTempRange}
-                              numberOfMonths={1}
-                              fromDate={new Date()}
-                              toDate={addDays(new Date(), 365)}
-                              className="mx-auto bg-white p-2 rounded-lg shadow-lg"
-                            />
-                            <div className="flex justify-end mt-2">
-                              <button
-                                type="button"
-                                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                                onClick={() => {
-                                  if (calendarTempRange?.from && calendarTempRange?.to) {
-                                    setDateRange(calendarTempRange);
-                                    setShowCalendar(false);
-                                  }
-                                }}
-                                disabled={!calendarTempRange?.from || !calendarTempRange?.to}
-                              >
-                                Select
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="lg:w-64">
-                        <div className="bg-green-50 p-4 rounded-lg">
-                          <h4 className="font-semibold text-green-800 mb-3 flex items-center">
-                            <Clock className="mr-2" size={16} />
-                            Check-in/out Times
-                          </h4>
-                          <div className="space-y-2 text-sm">
-                            <p><strong>Check-in:</strong> 3:00 PM</p>
-                            <p><strong>Check-out:</strong> 11:00 AM</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Room Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Rooms</label>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Button
-                        type="button"
-                        onClick={() => setRooms(Math.max(1, rooms - 1))}
-                        disabled={rooms <= 1}
-                        className="px-3 py-1 bg-green-700 text-white rounded"
-                      >-</Button>
-                      <span className="font-bold text-lg">{rooms}</span>
-                      <Button
-                        type="button"
-                        onClick={() => setRooms(Math.min(MAX_ROOMS, rooms + 1))}
-                        disabled={rooms >= Math.min(MAX_ROOMS, accommodation.availableRooms)}
-                        className="px-3 py-1 bg-green-700 text-white rounded"
-                      >+</Button>
-                      <span className="text-xs text-gray-500">{Math.min(MAX_ROOMS, accommodation.availableRooms) - rooms} rooms remaining</span>
-                    </div>
-                    <div className="border rounded p-2 bg-gray-50">
-                      {Array.from({ length: rooms }).map((_, idx) => (
-                        <div key={idx} className="flex items-center gap-4 mb-2">
-                          <span className="w-16 font-medium">Room {idx + 1}</span>
-                          <select
-                            value={roomGuests[idx].adults}
-                            onChange={e => handleRoomGuestChange(idx, 'adults', Number(e.target.value))}
-                            className="border rounded px-2 py-1"
-                          >
-                            {[...Array(MAX_PEOPLE_PER_ROOM + 1).keys()].map(n => (
-                              n + roomGuests[idx].children <= MAX_PEOPLE_PER_ROOM &&
-                              <option key={n} value={n}>{n} Adults</option>
-                            ))}
-                          </select>
-                          <select
-                            value={roomGuests[idx].children}
-                            onChange={e => handleRoomGuestChange(idx, 'children', Number(e.target.value))}
-                            className="border rounded px-2 py-1"
-                          >
-                            {[...Array(MAX_PEOPLE_PER_ROOM + 1).keys()].map(n => (
-                              n + roomGuests[idx].adults <= MAX_PEOPLE_PER_ROOM &&
-                              <option key={n} value={n}>{n} Children</option>
-                            ))}
-                          </select>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-2 text-sm">
-                      <span className="font-medium">Total:</span> {totalAdults} Adults, {totalChildren} Children
-                    </div>
-                  </div>
-
-                  {/* Food Preferences */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Food Preferences</h3>
-                    <div className="space-y-3 bg-gray-50 p-4 rounded border">
-                      {(['veg', 'nonveg', 'jain'] as const).map(type => (
-                        <div key={type} className="flex items-center gap-4">
-                          <span className="w-32 capitalize">{type === 'nonveg' ? 'Non veg' : type} count</span>
-                          <Button
-                            type="button"
-                            onClick={() => handleFoodCount(type, -1)}
-                            className="rounded-full bg-gray-200 text-lg w-8 h-8 flex items-center justify-center"
-                          >-</Button>
-                          <span className="w-6 text-center">{foodCounts[type]}</span>
-                          <Button
-                            type="button"
-                            onClick={() => handleFoodCount(type, 1)}
-                            className="rounded-full bg-gray-200 text-lg w-8 h-8 flex items-center justify-center"
-                          >+</Button>
-                        </div>
-                      ))}
-                      <div className="text-xs text-gray-500 mt-2">
-                        Total food count: {foodCounts.veg + foodCounts.nonveg + foodCounts.jain} / {totalGuests}
-                        {foodCounts.veg + foodCounts.nonveg + foodCounts.jain > totalGuests && (
-                          <span className="text-red-600 ml-2">Cannot exceed total guests!</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </CardContent>
             </Card>
 
@@ -625,7 +447,7 @@ const CampsiteBooking: React.FC = () => {
                         </div>
                         <Button
                           className="bg-green-600 text-white px-4 py-2 rounded-lg"
-                          onClick={() => navigate(`/packages/${pkg.id}`)}
+                          onClick={() => navigate(`/packages?accommodation=${accommodation.id}&package=${pkg.id}`)}
                         >
                           Book Package
                         </Button>
@@ -652,144 +474,6 @@ const CampsiteBooking: React.FC = () => {
                 title="Plumeria Retreat Location"
               ></iframe>
             </div>
-            <Card>
-              <CardContent>
-                <h3 className="text-2xl font-bold text-green-800 mb-6">Booking Summary</h3>
-                
-                <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Accommodation</span>
-                    <span className="text-green-600">{accommodation.title}</span>
-                  </div>
-                  
-                  {dateRange?.from && dateRange?.to && (
-                    <>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Dates</span>
-                        <span className="text-gray-600">
-                          {format(dateRange.from, 'MMM dd')} - {format(dateRange.to, 'MMM dd')}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium">Nights</span>
-                        <span className="text-gray-600">
-                          {Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                  
-                  <div className="flex justify-between">
-                    <span className="font-medium">Rooms</span>
-                    <span className="text-gray-600">{rooms}</span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="font-medium">Guests</span>
-                    <span className="text-gray-600">
-                      {totalAdults} Adults{totalChildren > 0 && `, ${totalChildren} Children`}
-                    </span>
-                  </div>
-                  
-                  {/* Coupon Code Section */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={coupon}
-                        onChange={e => {
-                          setCoupon(e.target.value);
-                          setCouponApplied(false);
-                          setDiscount(0);
-                        }}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                        placeholder="Enter coupon code"
-                        disabled={couponApplied}
-                      />
-                      <Button
-                        type="button"
-                        onClick={handleApplyCoupon}
-                        disabled={couponApplied || !coupon}
-                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
-                      >
-                        {couponApplied ? 'Applied' : 'Apply'}
-                      </Button>
-                    </div>
-                    {couponApplied && discount > 0 && (
-                      <p className="text-green-700 text-sm mt-2">
-                        Coupon applied! You saved {formatCurrency(discount)}.
-                      </p>
-                    )}
-                  </div>
-                  
-                  {/* Advance Payment Input */}
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Advance to Pay Now
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <select
-                        value={advanceAmount ?? minAdvance}
-                        onChange={e => handleAdvanceChange(Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                      >
-                        <option value={minAdvance}>{formatCurrency(minAdvance)} (30%)</option>
-                        <option value={totalAmount}>{formatCurrency(totalAmount)} (100%)</option>
-                      </select>
-                      <span className="text-green-700 font-semibold whitespace-nowrap">
-                        / {formatCurrency(totalAmount)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="border-t pt-4">
-                    <div className="flex justify-between text-xl font-bold text-green-800">
-                      <span>Total</span>
-                      <span>{formatCurrency(totalAmount)}</span>
-                    </div>
-                    <div className="flex justify-between text-lg font-semibold text-blue-700 mt-2">
-                      <span>Advance</span>
-                      <span>{formatCurrency(advanceAmount ?? 0)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-gray-600 mt-1">
-                      <span>Pay at property</span>
-                      <span>{formatCurrency(totalAmount - (advanceAmount ?? 0))}</span>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={handleBooking}
-                    disabled={
-                      loading ||
-                      !dateRange?.from ||
-                      !dateRange?.to ||
-                      !guestInfo.name ||
-                      !guestInfo.email ||
-                      !advanceAmount ||
-                      (advanceAmount !== minAdvance && advanceAmount !== totalAmount) ||
-                      (foodCounts.veg + foodCounts.nonveg + foodCounts.jain > totalGuests)
-                    }
-                    className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors flex items-center justify-center"
-                  >
-                    {loading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard className="mr-2" size={20} />
-                        Book Now
-                      </>
-                    )}
-                  </Button>
-                  <p className="text-xs text-gray-500 text-center">
-                    Secure booking with instant confirmation.<br />
-                    Pay {formatCurrency(advanceAmount ?? 0)} now, and the rest at the property.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Contact Information */}
             <Card className="mt-6">
               <CardContent>
@@ -797,6 +481,10 @@ const CampsiteBooking: React.FC = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center">
                     <Phone className="text-green-600 mr-2" size={16} />
+                    <span>+91 98765 43210</span>
+                  </div>
+                  <div className="flex items-center">
+                    <MessageCircle className="text-green-600 mr-2" size={16} />
                     <span>+91 98765 43210</span>
                   </div>
                   <div className="flex items-center">

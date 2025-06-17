@@ -1,9 +1,14 @@
-import { NavItem, Testimonial, GalleryImage, Accommodation, MealPlan, Activity, FAQ, NearbyLocation } from '../types';
+import { Accommodation, Package, MealPlan, Activity, FAQ, GalleryImage, Testimonial, NearbyLocation } from '../types';
+
+type NavItem = {
+  label: string;
+  path: string;
+};
 
 // Navigation Items
 export const navItems: NavItem[] = [
   { label: 'Home', path: '/' },
-  { label: 'Tents', path: '/campsites' },
+  { label: 'Campsites', path: '/campsites' },
   // { label: 'Cottages', path: '/packages' },
   { label: 'Gallery', path: '/gallery' },
   { label: 'About', path: '/about' },
@@ -453,3 +458,4 @@ export const VALID_COUPONS: { [key: string]: number } = {
   PLUM10: 0.10,
   WELCOME5: 0.05,
 };
+
