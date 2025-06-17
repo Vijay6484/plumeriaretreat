@@ -35,6 +35,10 @@ const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
+const API_BASE_URL = 'https://plumeriaretreat-back.vercel.app';
+
+// Use this for local development:
+// const API_BASE_URL = 'http://localhost:5001';
 
 const PackageBooking: React.FC = () => {
   const navigate = useNavigate();
@@ -71,7 +75,7 @@ const PackageBooking: React.FC = () => {
         try {
           // Fetch package data from backend
           const pkgRes = await fetch(
-            `https://plumeriaretreat-back.vercel.app/api/packages?accommodation=${accommodationId}&package=${pkgId}`
+            `${API_BASE_URL}/api/packages?accommodation=${accommodationId}&package=${pkgId}`
           );
           if (!pkgRes.ok) throw new Error('Failed to fetch package');
           const pkgData = await pkgRes.json();
@@ -79,7 +83,7 @@ const PackageBooking: React.FC = () => {
 
           // Optionally, fetch accommodation data if you need it
           const accRes = await fetch(
-            `https://plumeriaretreat-back.vercel.app/api/accommodations/${accommodationId}`
+            `${API_BASE_URL}/api/accommodations/${accommodationId}`
           );
           if (accRes.ok) {
             const accData = await accRes.json();
@@ -152,7 +156,7 @@ const PackageBooking: React.FC = () => {
     setLoading(true);
 
     // 1. Create booking
-    const bookingRes = await fetch('https://plumeriaretreat-back.vercel.app/api/bookings', {
+    const bookingRes = await fetch(`${API_BASE_URL}/api/bookings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -182,7 +186,7 @@ const PackageBooking: React.FC = () => {
     }
 
     // 2. Initiate PayU payment
-    const payuRes = await fetch('https://plumeriaretreat-back.vercel.app/api/payments/payu', {
+    const payuRes = await fetch(`${API_BASE_URL}/api/payments/payu`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

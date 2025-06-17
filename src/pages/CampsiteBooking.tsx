@@ -41,6 +41,11 @@ const VALID_COUPONS: { [key: string]: number } = {
   "SAVE20": 0.2
 };
 
+const API_BASE_URL = 'https://plumeriaretreat-back.vercel.app';
+
+// Use this for local development:
+// const API_BASE_URL = 'http://localhost:5001';
+
 const CampsiteBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -72,7 +77,7 @@ const CampsiteBooking: React.FC = () => {
   useEffect(() => {
     const fetchAccommodation = async () => {
       try {
-        const response = await fetch(`https://plumeriaretreat-back.vercel.app/api/accommodations/${id}`);
+        const response = await fetch(`${API_BASE_URL}/api/accommodations/${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch accommodation');
         }
@@ -87,7 +92,7 @@ const CampsiteBooking: React.FC = () => {
 
     const fetchImages = async () => {
       try {
-        const response = await fetch(`https://plumeriaretreat-back.vercel.app/api/gallery-images`);
+        const response = await fetch(`${API_BASE_URL}/api/gallery-images`);
         if (!response.ok) {
           throw new Error('Failed to fetch images');
         }
@@ -362,7 +367,13 @@ const CampsiteBooking: React.FC = () => {
                     <div>
                       <h3 className="text-xl font-semibold mb-4 text-green-800">What's Included</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {accommodation.features.map((feature: string, index: number) => (
+                        {(
+  Array.isArray(accommodation.features)
+    ? accommodation.features
+    : typeof accommodation.features === 'string'
+      ? (() => { try { return JSON.parse(accommodation.features); } catch { return []; } })()
+      : []
+).map((feature: string, index: number) => (
                           <div key={index} className="flex items-center">
                             <CheckCircle className="text-green-600 mr-2" size={16} />
                             <span className="text-gray-700">{feature}</span>
