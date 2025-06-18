@@ -36,7 +36,7 @@ interface Accommodation {
 }
 
 
-const API_BASE_URL = 'https://plumeriaretreat-back.vercel.app';
+const API_BASE_URL = 'https://plumeriaretreatback-production.up.railway.app';
 
 // Use this for local development:
 // const API_BASE_URL = 'http://localhost:5001';
