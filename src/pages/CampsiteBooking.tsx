@@ -20,6 +20,7 @@ const VALID_COUPONS: { [key: string]: number } = {
 };
 const API_BASE_URL = 'https://plumeriaretreatback-production.up.railway.app';
 
+<<<<<<< HEAD
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -27,6 +28,8 @@ const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
+=======
+>>>>>>> 0a306274512ee4d5c95e9d8edd576d511402b96d
 const CampsiteBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -50,8 +53,15 @@ const CampsiteBooking: React.FC = () => {
   useEffect(() => {
     const fetchAccommodation = async () => {
       try {
+<<<<<<< HEAD
         const response = await fetch(`${API_BASE_URL}/api/accommodations/${id}`);
         if (!response.ok) throw new Error('Failed to fetch accommodation');
+=======
+        const response = await fetch(`https://plumeriaretreatback-production.up.railway.app/api/accommodations/${id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch accommodation');
+        }
+>>>>>>> 0a306274512ee4d5c95e9d8edd576d511402b96d
         const data = await response.json();
         setAccommodation(data);
         if (data.packages && data.packages.length > 0) {
@@ -63,7 +73,28 @@ const CampsiteBooking: React.FC = () => {
         navigate('/campsites');
       }
     };
+<<<<<<< HEAD
     if (id) fetchAccommodation();
+=======
+
+    const fetchImages = async () => {
+      try {
+        const response = await fetch(`https://plumeriaretreatback-production.up.railway.app/api/gallery-images`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch images');
+        }
+        const data = await response.json();
+        setImageLinks(data.map((img: any) => img.src));
+      } catch (error) {
+        console.error('Error fetching images:', error);
+      }
+    };
+
+    if (id) {
+      fetchAccommodation();
+      fetchImages();
+    }
+>>>>>>> 0a306274512ee4d5c95e9d8edd576d511402b96d
   }, [id, navigate]);
 
   // Set default date range: today and duration
@@ -254,11 +285,111 @@ const CampsiteBooking: React.FC = () => {
           </div>
         </div>
 
+<<<<<<< HEAD
         <div className="container mx-auto px-4 py-16">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
               {/* Package Details */}
+=======
+      <div className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Accommodation Details */}
+            <Card>
+              <CardContent>
+                <h2 className="text-3xl font-bold text-green-800 mb-6">Accommodation Details</h2>
+                {accommodation.detailedInfo && (
+                  <div className="space-y-6">
+                    {/* Live Music Feature */}
+                    {accommodation.id === 1 && (
+                      <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-6 rounded-lg border-l-4 border-purple-500">
+                        <div className="flex items-center mb-3">
+                          <Music className="text-purple-600 mr-3" size={24} />
+                          <h3 className="text-xl font-bold text-purple-800">🎸 EVERY SATURDAY LIVE MUSIC GUITARIST 🎸</h3>
+                        </div>
+                        <p className="text-purple-700">Enjoy live acoustic performances every Saturday evening by the lakeside!</p>
+                      </div>
+                    )}
+
+                    {/* Accommodation Features */}
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-green-800">What's Included</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Array.isArray(accommodation.features) ? (
+                          accommodation.features.map((feature: string, index: number) => (
+                            <div key={index} className="flex items-center">
+                              <CheckCircle className="text-green-600 mr-2" size={16} />
+                              <span className="text-gray-700">{feature}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-gray-400">No features listed.</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Meals Information */}
+                    {accommodation.detailedInfo.meals?.included && (
+                      <div className="bg-green-50 p-6 rounded-lg">
+                        <h3 className="text-xl font-semibold mb-4 text-green-800 flex items-center">
+                          <Utensils className="mr-2" size={20} />
+                          Meals Included
+                        </h3>
+                        <p className="text-green-700 mb-4">{accommodation.detailedInfo.meals.description}</p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <h4 className="font-semibold text-green-800 mb-2">☕ Evening Snacks</h4>
+                            <p className="text-sm text-green-700">{accommodation.detailedInfo.meals.snacks}</p>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-green-800 mb-2">🍽️ Dinner</h4>
+                            <div className="text-sm text-green-700">
+                              <p><strong>Veg:</strong> {accommodation.detailedInfo.meals.dinner?.veg}</p>
+                              <p className="mt-1"><strong>Non-veg:</strong> {accommodation.detailedInfo.meals.dinner?.nonVeg}</p>
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-green-800 mb-2">🍴 Breakfast</h4>
+                            <p className="text-sm text-green-700">{accommodation.detailedInfo.meals.breakfast}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Activities */}
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-green-800">Activities Available</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {accommodation.detailedInfo.activities?.map((activity: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center">
+                              {activity.name.toLowerCase().includes('archery') && <Target className="text-green-600 mr-2" size={16} />}
+                              {activity.name.toLowerCase().includes('badminton') && <Gamepad2 className="text-green-600 mr-2" size={16} />}
+                              {activity.name.toLowerCase().includes('boating') && <Waves className="text-green-600 mr-2" size={16} />}
+                              {!activity.name.toLowerCase().includes('archery') &&
+                               !activity.name.toLowerCase().includes('badminton') &&
+                               !activity.name.toLowerCase().includes('boating') &&
+                               <CheckCircle className="text-green-600 mr-2" size={16} />}
+                              <span className="text-gray-700 capitalize">{activity.name}</span>
+                            </div>
+                            <span className="text-green-600 font-semibold">
+                              {activity.price === 0 ? 'Free' : `₹${activity.price}/person`}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Special Packages Section */}
+            {accommodation.packages && accommodation.packages.length > 0 && (
+>>>>>>> 0a306274512ee4d5c95e9d8edd576d511402b96d
               <Card>
                 <CardContent>
                   <h2 className="text-3xl font-bold text-green-800 mb-6">Package Details</h2>

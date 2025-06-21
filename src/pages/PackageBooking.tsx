@@ -35,10 +35,13 @@ const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
+<<<<<<< HEAD
 const API_BASE_URL = 'https://plumeriaretreatback-production.up.railway.app';
 
 // Use this for local development:
 // const API_BASE_URL = 'http://localhost:5001';
+=======
+>>>>>>> 0a306274512ee4d5c95e9d8edd576d511402b96d
 
 const PackageBooking: React.FC = () => {
   const navigate = useNavigate();
@@ -75,7 +78,7 @@ const PackageBooking: React.FC = () => {
         try {
           // Fetch package data from backend
           const pkgRes = await fetch(
-            `${API_BASE_URL}/api/packages?accommodation=${accommodationId}&package=${pkgId}`
+            `https://plumeriaretreatback-production.up.railway.app/api/packages?accommodation=${accommodationId}&package=${pkgId}`
           );
           if (!pkgRes.ok) throw new Error('Failed to fetch package');
           const pkgData = await pkgRes.json();
@@ -83,7 +86,7 @@ const PackageBooking: React.FC = () => {
 
           // Optionally, fetch accommodation data if you need it
           const accRes = await fetch(
-            `${API_BASE_URL}/api/accommodations/${accommodationId}`
+            `https://plumeriaretreatback-production.up.railway.app/api/accommodations/${accommodationId}`
           );
           if (accRes.ok) {
             const accData = await accRes.json();
@@ -156,7 +159,7 @@ const PackageBooking: React.FC = () => {
     setLoading(true);
 
     // 1. Create booking
-    const bookingRes = await fetch(`${API_BASE_URL}/api/bookings`, {
+    const bookingRes = await fetch('https://plumeriaretreatback-production.up.railway.app/api/bookings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -186,7 +189,7 @@ const PackageBooking: React.FC = () => {
     }
 
     // 2. Initiate PayU payment
-    const payuRes = await fetch(`${API_BASE_URL}/api/payments/payu`, {
+    const payuRes = await fetch('https://plumeriaretreatback-production.up.railway.app/api/payments/payu', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
