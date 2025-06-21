@@ -35,11 +35,7 @@ interface Accommodation {
   packages?: Package[];
 }
 
-
-const API_BASE_URL = 'https://plumeriaretreat-back.vercel.app';
-
-// Use this for local development:
-// const API_BASE_URL = 'http://localhost:5001';
+const API_BASE_URL = 'https://plumeriaretreatback-production.up.railway.app';
 
 const Campsites: React.FC = () => {
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);

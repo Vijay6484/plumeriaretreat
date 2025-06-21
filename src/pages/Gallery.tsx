@@ -9,18 +9,13 @@ interface GalleryImage {
   source: string;
 }
 
-const API_BASE_URL = 'https://plumeriaretreat-back.vercel.app';
-
-// Use this for local development:
-// const API_BASE_URL = 'http://localhost:5001';
-
 const Gallery: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'nature' | 'accommodation' | 'package' | 'activity' | 'testimonial' | 'nearby'>('all');
   const [images, setImages] = useState<GalleryImage[]>([]);
 
   useEffect(() => {
     document.title = 'Gallery - Plumeria Retreat';
-    fetch(`${API_BASE_URL}/api/all-images`)
+    fetch('https://plumeriaretreatback-production.up.railway.app/api/all-images')
       .then(res => res.json())
       .then(setImages)
       .catch(() => setImages([]));
