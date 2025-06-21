@@ -1,120 +1,117 @@
-import React, { useEffect, useState, useRef, KeyboardEvent } from 'react';
+import React, { useEffect, useState, useRef, KeyboardEvent} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DayPicker, DateRange } from 'react-day-picker';
 import { format, addDays } from 'date-fns';
+import { X } from 'lucide-react';
+import Slider from 'react-slick'; 
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 import {
-  Calendar, Users, Clock, MapPin, Phone, Mail, CheckCircle, CreditCard, Star, Bed, Utensils, Activity
+  Calendar, 
+  Users, 
+  Wifi, 
+  Car, 
+  Coffee, 
+  Utensils, 
+  Music, 
+  Waves,
+  Target,
+  Gamepad2,
+  Clock,
+  MapPin,
+  Phone,
+  Mail,
+  CheckCircle,
+  CreditCard
 } from 'lucide-react';
-import Card, { CardContent } from '../components/ui/Card';
+import {
+  accommodations,
+  MAX_ROOMS,
+  MAX_PEOPLE_PER_ROOM,
+  PARTIAL_PAYMENT_MIN_PERCENT,
+  VALID_COUPONS
+} from '../data';
+import { formatCurrency } from '../utils/helpers';
+import Card, { CardContent, CardImage } from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import { Package } from '../types';
 import 'react-day-picker/dist/style.css';
 
-const MAX_ROOMS = 5;
-const MAX_PEOPLE_PER_ROOM = 4;
-const PARTIAL_PAYMENT_MIN_PERCENT = 0.3;
-const VALID_COUPONS: { [key: string]: number } = {
-  "WELCOME10": 0.1,
-  "DISCOUNT15": 0.15,
-  "SAVE20": 0.2
-};
-const API_BASE_URL = 'https://plumeriaretreatback-production.up.railway.app';
+const imageLinks = [
+  "https://images.pexels.com/photos/9144680/pexels-photo-9144680.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  "https://images.pexels.com/photos/6640068/pexels-photo-6640068.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  "https://images.pexels.com/photos/2526025/pexels-photo-2526025.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  "https://images.pexels.com/photos/3045272/pexels-photo-3045272.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+  "https://images.pexels.com/photos/2351287/pexels-photo-2351287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+];
 
-<<<<<<< HEAD
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-  }).format(amount);
-};
-
-=======
->>>>>>> 0a306274512ee4d5c95e9d8edd576d511402b96d
 const CampsiteBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
   const [accommodation, setAccommodation] = useState<any>(null);
-  const [packageData, setPackageData] = useState<any>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [guests, setGuests] = useState({ adults: 1, children: 0 });
   const [rooms, setRooms] = useState(1);
   const [roomGuests, setRoomGuests] = useState(
-    Array.from({ length: MAX_ROOMS }, () => ({ adults: 2, children: 0 }))
+    Array.from({ length: MAX_ROOMS }, () => ({ adults: 2, children: 2 }))
   );
-  const [guestInfo, setGuestInfo] = useState({ name: '', email: '', phone: '' });
-  const [foodCounts, setFoodCounts] = useState({ veg: 0, nonveg: 0, jain: 0 });
-  const [advanceAmount, setAdvanceAmount] = useState<number | null>(null);
+  const [guestInfo, setGuestInfo] = useState({
+    name: '',
+    email: '',
+    phone: ''
+  });
   const [loading, setLoading] = useState(false);
   const [coupon, setCoupon] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
+  const [foodChoice, setFoodChoice] = useState<'veg' | 'nonveg' | 'jain'>('veg');
+  const [advanceAmount, setAdvanceAmount] = useState<number | null>(null);
+  const [foodCounts, setFoodCounts] = useState({ veg: 0, nonveg: 0, jain: 0 });
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarTempRange, setCalendarTempRange] = useState<DateRange | undefined>(undefined);
+  const [fullscreenImgIdx, setFullscreenImgIdx] = useState<number | null>(null);
+  const sliderRef = useRef<any>(null);
 
-  // Fetch accommodation and set first package
   useEffect(() => {
-    const fetchAccommodation = async () => {
-      try {
-<<<<<<< HEAD
-        const response = await fetch(`${API_BASE_URL}/api/accommodations/${id}`);
-        if (!response.ok) throw new Error('Failed to fetch accommodation');
-=======
-        const response = await fetch(`https://plumeriaretreatback-production.up.railway.app/api/accommodations/${id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch accommodation');
-        }
->>>>>>> 0a306274512ee4d5c95e9d8edd576d511402b96d
-        const data = await response.json();
-        setAccommodation(data);
-        if (data.packages && data.packages.length > 0) {
-          setPackageData(data.packages[0]);
-        }
-        document.title = `${data.title} - Plumeria Retreat`;
-      } catch (error) {
-        console.error('Error fetching accommodation:', error);
+    if (id) {
+      const found = accommodations.find(acc => acc.id === parseInt(id));
+      if (found) {
+        setAccommodation(found);
+        document.title = `${found.title} - Plumeria Retreat`;
+      } else {
         navigate('/campsites');
       }
-    };
-<<<<<<< HEAD
-    if (id) fetchAccommodation();
-=======
-
-    const fetchImages = async () => {
-      try {
-        const response = await fetch(`https://plumeriaretreatback-production.up.railway.app/api/gallery-images`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch images');
-        }
-        const data = await response.json();
-        setImageLinks(data.map((img: any) => img.src));
-      } catch (error) {
-        console.error('Error fetching images:', error);
-      }
-    };
-
-    if (id) {
-      fetchAccommodation();
-      fetchImages();
     }
->>>>>>> 0a306274512ee4d5c95e9d8edd576d511402b96d
   }, [id, navigate]);
 
-  // Set default date range: today and duration
+  // Set default date range: today and tomorrow
   useEffect(() => {
-    if (!dateRange && packageData?.duration) {
+    if (!dateRange) {
       const today = new Date();
-      setDateRange({ from: today, to: addDays(today, packageData.duration - 1) });
+      setDateRange({ from: today, to: addDays(today, 1) });
     }
-  }, [dateRange, packageData]);
+  }, [dateRange]);
 
-  // Calculate guests
+  // Calculate total guests
   const totalAdults = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.adults, 0);
   const totalChildren = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.children, 0);
   const totalGuests = totalAdults + totalChildren;
 
   // Pricing logic
-  const ADULT_RATE = packageData?.price || 0;
-  const CHILD_RATE = Math.round(ADULT_RATE * 0.5);
-  const nights = packageData?.duration || 1;
-  const totalAmount = totalAdults * ADULT_RATE * nights + totalChildren * CHILD_RATE * nights - discount;
+  const ADULT_RATE = accommodation?.price || 0;
+  const CHILD_RATE = Math.round(ADULT_RATE * 0.6);
+
+  const calculateTotal = () => {
+    if (!accommodation || !dateRange?.from || !dateRange?.to) return 0;
+    const nights = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
+    const adultsTotal = totalAdults * ADULT_RATE * nights;
+    const childrenTotal = totalChildren * CHILD_RATE * nights;
+    const subtotal = adultsTotal + childrenTotal;
+    return subtotal - discount;
+  };
+
+  const totalAmount = calculateTotal();
   const minAdvance = Math.round(totalAmount * PARTIAL_PAYMENT_MIN_PERCENT);
 
   // Update advanceAmount if totalAmount changes
@@ -125,7 +122,13 @@ const CampsiteBooking: React.FC = () => {
   const handleApplyCoupon = () => {
     const code = coupon.trim().toUpperCase();
     if (VALID_COUPONS[code]) {
-      const subtotal = totalAdults * ADULT_RATE * nights + totalChildren * CHILD_RATE * nights;
+      const subtotal = (() => {
+        if (!accommodation || !dateRange?.from || !dateRange?.to) return 0;
+        const nights = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
+        const adultsTotal = guests.adults * ADULT_RATE * nights;
+        const childrenTotal = guests.children * CHILD_RATE * nights;
+        return adultsTotal + childrenTotal;
+      })();
       setDiscount(subtotal * VALID_COUPONS[code]);
       setCouponApplied(true);
     } else {
@@ -136,71 +139,21 @@ const CampsiteBooking: React.FC = () => {
   };
 
   const handleBooking = async () => {
-    if (!guestInfo.name || !guestInfo.email || !dateRange?.from) {
+    if (!guestInfo.name || !guestInfo.email || !dateRange?.from || !dateRange?.to) {
       alert('Please fill in all required fields');
       return;
     }
+
     setLoading(true);
-    // 1. Create booking
-    const bookingRes = await fetch(`${API_BASE_URL}/api/bookings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        package_id: packageData.id,
-        accommodation_id: accommodation?.id,
-        guest_name: guestInfo.name,
-        guest_email: guestInfo.email,
-        guest_phone: guestInfo.phone,
-        rooms,
-        adults: totalAdults,
-        children: totalChildren,
-        food_veg: foodCounts.veg,
-        food_nonveg: foodCounts.nonveg,
-        food_jain: foodCounts.jain,
-        check_in: format(dateRange.from, 'yyyy-MM-dd'),
-        check_out: format(addDays(dateRange.from, nights - 1), 'yyyy-MM-dd'),
-        total_amount: totalAmount,
-        advance_amount: advanceAmount
-      })
-    });
-    const bookingData = await bookingRes.json();
-    if (!bookingData.success) {
-      alert('Booking failed. Please try again.');
+    // Simulate booking process
+    setTimeout(() => {
+      alert('Booking request submitted! We will contact you shortly.');
       setLoading(false);
-      return;
-    }
-    // 2. Initiate PayU payment
-    const payuRes = await fetch(`${API_BASE_URL}/api/payments/payu`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        amount: advanceAmount,
-        firstname: guestInfo.name,
-        email: guestInfo.email,
-        phone: guestInfo.phone,
-        productinfo: packageData.name,
-        booking_id: bookingData.booking_id,
-        surl: window.location.origin + '/success',
-        furl: window.location.origin + '/failure'
-      })
-    });
-    const { payu_url, payuData } = await payuRes.json();
-    // 3. Submit PayU form
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = payu_url;
-    Object.entries(payuData).forEach(([key, value]) => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = String(value);
-      form.appendChild(input);
-    });
-    document.body.appendChild(form);
-    form.submit();
+      navigate('/');
+    }, 2000);
   };
 
-  // Room/guest/food handlers
+  // Room count change
   const handleRoomsChange = (newRooms: number) => {
     setRooms(newRooms);
     setRoomGuests(prev => {
@@ -209,11 +162,14 @@ const CampsiteBooking: React.FC = () => {
       return updated;
     });
   };
+
+  // Room guest change with max 4 per room
   const handleRoomGuestChange = (roomIdx: number, type: 'adults' | 'children', value: number) => {
     setRoomGuests(prev => {
       const updated = [...prev];
       const otherType = type === 'adults' ? 'children' : 'adults';
       const otherValue = updated[roomIdx][otherType];
+      // Ensure sum does not exceed 4
       if (value + otherValue > MAX_PEOPLE_PER_ROOM) {
         updated[roomIdx][type] = MAX_PEOPLE_PER_ROOM - otherValue;
       } else {
@@ -222,6 +178,8 @@ const CampsiteBooking: React.FC = () => {
       return updated;
     });
   };
+
+  // Food count change, cannot exceed total guests
   const handleFoodCount = (type: 'veg' | 'nonveg' | 'jain', delta: number) => {
     setFoodCounts(prev => {
       const newValue = Math.max(0, prev[type] + delta);
@@ -230,8 +188,52 @@ const CampsiteBooking: React.FC = () => {
       return { ...prev, [type]: newValue };
     });
   };
+
+  // Only allow advance to be exactly 30% or 100%
   const handleAdvanceChange = (val: number) => {
-    if (val === minAdvance || val === totalAmount) setAdvanceAmount(val);
+    if (val === minAdvance || val === totalAmount) {
+      setAdvanceAmount(val);
+    }
+  };
+
+  // Keyboard navigation for main slider and fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent | KeyboardEventInit) => {
+      if (fullscreenImgIdx !== null) {
+        if (e.key === 'ArrowRight') {
+          setFullscreenImgIdx((prev) => prev !== null ? (prev + 1) % imageLinks.length : 0);
+        }
+        if (e.key === 'ArrowLeft') {
+          setFullscreenImgIdx((prev) => prev !== null ? (prev - 1 + imageLinks.length) % imageLinks.length : 0);
+        }
+        if (e.key === 'Escape') {
+          setFullscreenImgIdx(null);
+        }
+      } else {
+        // Main slider navigation
+        if (e.key === 'ArrowRight') sliderRef.current?.slickNext();
+        if (e.key === 'ArrowLeft') sliderRef.current?.slickPrev();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown as any);
+    return () => window.removeEventListener('keydown', handleKeyDown as any);
+  }, [fullscreenImgIdx]);
+
+  // Slider settings
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 8000,
+    arrows: false,
+    ref: sliderRef,
+    beforeChange: (_: number, next: number) => {
+      // If fullscreen is open, sync with slider
+      if (fullscreenImgIdx !== null) setFullscreenImgIdx(next);
+    }
   };
 
   if (!accommodation) {
@@ -245,53 +247,77 @@ const CampsiteBooking: React.FC = () => {
     );
   }
 
-  if (packageData) {
-    // --- Render the package booking UI directly ---
-    return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Hero Section */}
-        <div className="relative h-[60vh] overflow-hidden">
-          <img 
-            src={packageData.image_url} 
-            alt={packageData.name}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/40"></div>
-          <div className="absolute inset-0 flex items-center">
-            <div className="container mx-auto px-4">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-white max-w-3xl"
-              >
-                <h1 className="text-4xl md:text-6xl font-bold mb-4">{packageData.name}</h1>
-                <p className="text-xl md:text-2xl opacity-90 mb-6">{packageData.description}</p>
-                <div className="flex items-center space-x-4">
-                  <span className="bg-green-600 text-white px-4 py-2 rounded-full flex items-center">
-                    <Clock className="mr-2" size={16} />
-                    {packageData.duration} Days
-                  </span>
-                  <span className="bg-white/20 text-white px-4 py-2 rounded-full flex items-center">
-                    <Users className="mr-2" size={16} />
-                    Up to {packageData.max_guests} guests
-                  </span>
-                  <span className="bg-yellow-500 text-white px-4 py-2 rounded-full flex items-center">
-                    <Star className="mr-2" size={16} />
-                    Premium Package
-                  </span>
-                </div>
-              </motion.div>
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Image Slider */}
+      <div className="relative h-[60vh] overflow-hidden">
+        <Slider {...sliderSettings} ref={sliderRef}>
+          {imageLinks.map((img, idx) => (
+            <div key={idx} className="h-[60vh] flex items-center justify-center bg-black/40">
+              <img
+                src={img}
+                alt={`Campsite ${idx + 1}`}
+                className="object-cover w-full h-[60vh] transition-transform duration-200 hover:scale-105 cursor-pointer"
+                onClick={() => setFullscreenImgIdx(idx)}
+                draggable={false}
+              />
             </div>
+          ))}
+        </Slider>
+        {/* Fullscreen Modal with slider */}
+        {fullscreenImgIdx !== null && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
+            <button
+              className="absolute top-6 right-6 text-white text-3xl z-50"
+              onClick={() => setFullscreenImgIdx(null)}
+              aria-label="Close"
+            >
+              <X size={36} />
+            </button>
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-white text-4xl z-50"
+              onClick={() => setFullscreenImgIdx((fullscreenImgIdx - 1 + imageLinks.length) % imageLinks.length)}
+              aria-label="Previous"
+            >
+              &#8592;
+            </button>
+            <img
+              src={imageLinks[fullscreenImgIdx]}
+              alt="Full screen"
+              className="max-h-[90vh] max-w-[95vw] rounded-lg shadow-lg"
+              draggable={false}
+            />
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-4xl z-50"
+              onClick={() => setFullscreenImgIdx((fullscreenImgIdx + 1) % imageLinks.length)}
+              aria-label="Next"
+            >
+              &#8594;
+            </button>
+          </div>
+        )}
+        <div className="absolute inset-0 flex items-center pointer-events-none">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-white max-w-3xl"
+            >
+              <h1 className="text-4xl md:text-6xl font-bold mb-4">{accommodation?.title}</h1>
+              <p className="text-xl md:text-2xl opacity-90">{accommodation?.description}</p>
+              <div className="flex items-center mt-4 space-x-4">
+                <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm">
+                  {accommodation?.type}
+                </span>
+                <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm">
+                  Up to {accommodation?.capacity} guests
+                </span>
+              </div>
+            </motion.div>
           </div>
         </div>
+      </div>
 
-<<<<<<< HEAD
-        <div className="container mx-auto px-4 py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Package Details */}
-=======
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -300,6 +326,7 @@ const CampsiteBooking: React.FC = () => {
             <Card>
               <CardContent>
                 <h2 className="text-3xl font-bold text-green-800 mb-6">Accommodation Details</h2>
+                
                 {accommodation.detailedInfo && (
                   <div className="space-y-6">
                     {/* Live Music Feature */}
@@ -317,28 +344,24 @@ const CampsiteBooking: React.FC = () => {
                     <div>
                       <h3 className="text-xl font-semibold mb-4 text-green-800">What's Included</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Array.isArray(accommodation.features) ? (
-                          accommodation.features.map((feature: string, index: number) => (
-                            <div key={index} className="flex items-center">
-                              <CheckCircle className="text-green-600 mr-2" size={16} />
-                              <span className="text-gray-700">{feature}</span>
-                            </div>
-                          ))
-                        ) : (
-                          <span className="text-gray-400">No features listed.</span>
-                        )}
+                        {accommodation.features.map((feature: string, index: number) => (
+                          <div key={index} className="flex items-center">
+                            <CheckCircle className="text-green-600 mr-2" size={16} />
+                            <span className="text-gray-700">{feature}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
 
                     {/* Meals Information */}
-                    {accommodation.detailedInfo.meals?.included && (
+                    {accommodation.detailedInfo.meals.included && (
                       <div className="bg-green-50 p-6 rounded-lg">
                         <h3 className="text-xl font-semibold mb-4 text-green-800 flex items-center">
                           <Utensils className="mr-2" size={20} />
                           Meals Included
                         </h3>
                         <p className="text-green-700 mb-4">{accommodation.detailedInfo.meals.description}</p>
-
+                        
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
                             <h4 className="font-semibold text-green-800 mb-2">☕ Evening Snacks</h4>
@@ -363,15 +386,15 @@ const CampsiteBooking: React.FC = () => {
                     <div>
                       <h3 className="text-xl font-semibold mb-4 text-green-800">Activities Available</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {accommodation.detailedInfo.activities?.map((activity: any, index: number) => (
+                        {accommodation.detailedInfo.activities.map((activity: any, index: number) => (
                           <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <div className="flex items-center">
                               {activity.name.toLowerCase().includes('archery') && <Target className="text-green-600 mr-2" size={16} />}
                               {activity.name.toLowerCase().includes('badminton') && <Gamepad2 className="text-green-600 mr-2" size={16} />}
                               {activity.name.toLowerCase().includes('boating') && <Waves className="text-green-600 mr-2" size={16} />}
-                              {!activity.name.toLowerCase().includes('archery') &&
-                               !activity.name.toLowerCase().includes('badminton') &&
-                               !activity.name.toLowerCase().includes('boating') &&
+                              {!activity.name.toLowerCase().includes('archery') && 
+                               !activity.name.toLowerCase().includes('badminton') && 
+                               !activity.name.toLowerCase().includes('boating') && 
                                <CheckCircle className="text-green-600 mr-2" size={16} />}
                               <span className="text-gray-700 capitalize">{activity.name}</span>
                             </div>
@@ -387,433 +410,408 @@ const CampsiteBooking: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Special Packages Section */}
-            {accommodation.packages && accommodation.packages.length > 0 && (
->>>>>>> 0a306274512ee4d5c95e9d8edd576d511402b96d
-              <Card>
-                <CardContent>
-                  <h2 className="text-3xl font-bold text-green-800 mb-6">Package Details</h2>
-                  
-                  <div className="space-y-6">
-                    {/* Package Overview */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-green-50 p-4 rounded-lg text-center">
-                        <Clock className="text-green-600 mx-auto mb-2" size={24} />
-                        <h3 className="font-semibold text-green-800">Duration</h3>
-                        <p className="text-green-700">{packageData.duration} Days</p>
+            {/* Booking Form */}
+            <Card>
+              <CardContent>
+                <h2 className="text-3xl font-bold text-green-800 mb-6">Book Your Stay</h2>
+                
+                <div className="space-y-6">
+                  {/* Guest Information */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Guest Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={guestInfo.name}
+                          onChange={(e) => setGuestInfo(prev => ({ ...prev, name: e.target.value }))}
+                          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                          placeholder="Enter your full name"
+                        />
                       </div>
-                      <div className="bg-blue-50 p-4 rounded-lg text-center">
-                        <Users className="text-blue-600 mx-auto mb-2" size={24} />
-                        <h3 className="font-semibold text-blue-800">Max Guests</h3>
-                        <p className="text-blue-700">{packageData.max_guests} People</p>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Email Address *
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          value={guestInfo.email}
+                          onChange={(e) => setGuestInfo(prev => ({ ...prev, email: e.target.value }))}
+                          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                          placeholder="Enter your email"
+                        />
                       </div>
-                      <div className="bg-purple-50 p-4 rounded-lg text-center">
-                        <Star className="text-purple-600 mx-auto mb-2" size={24} />
-                        <h3 className="font-semibold text-purple-800">Package Type</h3>
-                        <p className="text-purple-700">Premium</p>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          value={guestInfo.phone}
+                          onChange={(e) => setGuestInfo(prev => ({ ...prev, phone: e.target.value }))}
+                          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                          placeholder="Enter your phone number"
+                        />
                       </div>
                     </div>
-
-                    {/* What's Included */}
-                    <div>
-                      <h3 className="text-xl font-semibold mb-4 text-green-800 flex items-center">
-                        <CheckCircle className="mr-2" size={20} />
-                        What's Included
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {Array.isArray(packageData.includes) && packageData.includes.map((item: string, index: number) => (
-                          <div key={index} className="flex items-start">
-                            <CheckCircle className="text-green-600 mr-2 mt-1 flex-shrink-0" size={16} />
-                            <span className="text-gray-700">{item}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Detailed Information */}
-                    {packageData.detailedInfo && (
-                      <div className="space-y-6">
-                        {/* Accommodation */}
-                        <div className="bg-gray-50 p-6 rounded-lg">
-                          <h3 className="text-xl font-semibold mb-4 text-green-800 flex items-center">
-                            <Bed className="mr-2" size={20} />
-                            Accommodation
-                          </h3>
-                          <p className="text-gray-700">{packageData.detailedInfo.accommodation}</p>
-                        </div>
-
-                        {/* Meals */}
-                        <div className="bg-orange-50 p-6 rounded-lg">
-                          <h3 className="text-xl font-semibold mb-4 text-orange-800 flex items-center">
-                            <Utensils className="mr-2" size={20} />
-                            Meals & Dining
-                          </h3>
-                          <p className="text-orange-700">{packageData.detailedInfo.meals}</p>
-                        </div>
-
-                        {/* Activities */}
-                        <div className="bg-blue-50 p-6 rounded-lg">
-                          <h3 className="text-xl font-semibold mb-4 text-blue-800 flex items-center">
-                            <Activity className="mr-2" size={20} />
-                            Activities Included
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            {Array.isArray(packageData.detailedInfo?.activities) &&
-                              packageData.detailedInfo.activities.map((activity: string, index: number) => (
-                                <div key={index} className="flex items-center">
-                                  <CheckCircle className="text-blue-600 mr-2" size={16} />
-                                  <span className="text-blue-700">{activity}</span>
-                                </div>
-                              ))
-                            }
-                          </div>
-                        </div>
-
-                        {/* Important Information */}
-                        <div className="bg-yellow-50 p-6 rounded-lg border-l-4 border-yellow-400">
-                          <h3 className="text-xl font-semibold mb-4 text-yellow-800">Important Information</h3>
-                          <div className="space-y-2 text-yellow-700">
-                            <p><strong>Check-in:</strong> {packageData.detailedInfo.checkIn}</p>
-                            <p><strong>Check-out:</strong> {packageData.detailedInfo.checkOut}</p>
-                            <p><strong>Cancellation:</strong> {packageData.detailedInfo.cancellation}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
-                </CardContent>
-              </Card>
 
-              {/* Booking Form */}
-              <Card>
-                <CardContent>
-                  <h2 className="text-3xl font-bold text-green-800 mb-6">Book This Package</h2>
-                  
-                  <div className="space-y-6">
-                    {/* Guest Information */}
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Guest Information</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Full Name *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={guestInfo.name}
-                            onChange={(e) => setGuestInfo(prev => ({ ...prev, name: e.target.value }))}
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                            placeholder="Enter your full name"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Email Address *
-                          </label>
-                          <input
-                            type="email"
-                            required
-                            value={guestInfo.email}
-                            onChange={(e) => setGuestInfo(prev => ({ ...prev, email: e.target.value }))}
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                            placeholder="Enter your email"
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Phone Number
-                          </label>
-                          <input
-                            type="tel"
-                            value={guestInfo.phone}
-                            onChange={(e) => setGuestInfo(prev => ({ ...prev, phone: e.target.value }))}
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                            placeholder="Enter your phone number"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Date Selection */}
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Select Start Date</h3>
-                      <div className="flex flex-col lg:flex-row gap-6">
-                        <div className="flex-1">
-                          <DayPicker
-                            mode="single"
-                            selected={dateRange?.from}
-                            onSelect={(date) => setDateRange(date ? { from: date, to: addDays(date, packageData.duration - 1) } : undefined)}
-                            fromDate={new Date()}
-                            toDate={addDays(new Date(), 365)}
-                            className="mx-auto"
-                          />
-                        </div>
-                        <div className="lg:w-64">
-                          <div className="bg-green-50 p-4 rounded-lg">
-                            <h4 className="font-semibold text-green-800 mb-3 flex items-center">
-                              <Calendar className="mr-2" size={16} />
-                              Package Duration
-                            </h4>
-                            <div className="space-y-2 text-sm">
-                              <p><strong>Duration:</strong> {packageData.duration} days</p>
-                              {dateRange?.from && (
-                                <>
-                                  <p><strong>Start:</strong> {format(dateRange.from, 'PPP')}</p>
-                                  <p><strong>End:</strong> {format(dateRange.to!, 'PPP')}</p>
-                                </>
-                              )}
+                  {/* Date Selection */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Select Dates</h3>
+                    <div className="flex flex-col lg:flex-row gap-6">
+                      <div className="flex-1">
+                        {/* Date input that toggles calendar */}
+                        <button
+                          type="button"
+                          className="w-full px-4 py-2 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-600"
+                          onClick={() => {
+                            setShowCalendar(true);
+                            setCalendarTempRange(undefined); // Calendar opens empty
+                          }}
+                        >
+                          {dateRange?.from && dateRange?.to
+                            ? `${format(dateRange.from, 'dd MMM yyyy')} to ${format(dateRange.to, 'dd MMM yyyy')}`
+                            : 'Select your stay dates'}
+                        </button>
+                        {showCalendar && (
+                          <div className="relative z-10 mt-2">
+                            <DayPicker
+                              mode="range"
+                              selected={calendarTempRange}
+                              onSelect={setCalendarTempRange}
+                              numberOfMonths={1}
+                              fromDate={new Date()}
+                              toDate={addDays(new Date(), 365)}
+                              className="mx-auto bg-white p-2 rounded-lg shadow-lg"
+                            />
+                            <div className="flex justify-end mt-2">
+                              <button
+                                type="button"
+                                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                onClick={() => {
+                                  if (calendarTempRange?.from && calendarTempRange?.to) {
+                                    setDateRange(calendarTempRange);
+                                    setShowCalendar(false);
+                                  }
+                                }}
+                                disabled={!calendarTempRange?.from || !calendarTempRange?.to}
+                              >
+                                Select
+                              </button>
                             </div>
                           </div>
-                        </div>
+                        )}
                       </div>
-                    </div>
-
-                    {/* Number of Rooms */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Rooms</label>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Button
-                          type="button"
-                          onClick={() => handleRoomsChange(Math.max(1, rooms - 1))}
-                          disabled={rooms <= 1}
-                          className="px-3 py-1 bg-green-700 text-white rounded"
-                        >-</Button>
-                        <span className="font-bold text-lg">{rooms}</span>
-                        <Button
-                          type="button"
-                          onClick={() => handleRoomsChange(Math.min(MAX_ROOMS, rooms + 1))}
-                          disabled={rooms >= MAX_ROOMS}
-                          className="px-3 py-1 bg-green-700 text-white rounded"
-                        >+</Button>
-                        <span className="text-xs text-gray-500">{MAX_ROOMS - rooms} rooms remaining</span>
-                      </div>
-                      <div className="border rounded p-2 bg-gray-50">
-                        {Array.from({ length: rooms }).map((_, idx) => (
-                          <div key={idx} className="flex items-center gap-4 mb-2">
-                            <span className="w-16 font-medium">Room {idx + 1}</span>
-                            <select
-                              value={roomGuests[idx].adults}
-                              onChange={e => handleRoomGuestChange(idx, 'adults', Number(e.target.value))}
-                              className="border rounded px-2 py-1"
-                            >
-                              {[...Array(MAX_PEOPLE_PER_ROOM + 1).keys()].map(n => (
-                                n + roomGuests[idx].children <= MAX_PEOPLE_PER_ROOM &&
-                                <option key={n} value={n}>{n} Adults</option>
-                              ))}
-                            </select>
-                            <select
-                              value={roomGuests[idx].children}
-                              onChange={e => handleRoomGuestChange(idx, 'children', Number(e.target.value))}
-                              className="border rounded px-2 py-1"
-                            >
-                              {[...Array(MAX_PEOPLE_PER_ROOM + 1).keys()].map(n => (
-                                n + roomGuests[idx].adults <= MAX_PEOPLE_PER_ROOM &&
-                                <option key={n} value={n}>{n} Children</option>
-                              ))}
-                            </select>
+                      <div className="lg:w-64">
+                        <div className="bg-green-50 p-4 rounded-lg">
+                          <h4 className="font-semibold text-green-800 mb-3 flex items-center">
+                            <Clock className="mr-2" size={16} />
+                            Check-in/out Times
+                          </h4>
+                          <div className="space-y-2 text-sm">
+                            <p><strong>Check-in:</strong> 3:00 PM</p>
+                            <p><strong>Check-out:</strong> 11:00 AM</p>
                           </div>
-                        ))}
-                      </div>
-                      <div className="mt-2 text-sm">
-                        <span className="font-medium">Total:</span> {totalAdults} Adults, {totalChildren} Children
-                      </div>
-                    </div>
-
-                    {/* Food Preferences */}
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4">Food Preferences</h3>
-                      <div className="space-y-3 bg-gray-50 p-4 rounded border">
-                        {(['veg', 'nonveg', 'jain'] as const).map(type => (
-                          <div key={type} className="flex items-center gap-4">
-                            <span className="w-32 capitalize">{type === 'nonveg' ? 'Non veg' : type} count</span>
-                            <Button
-                              type="button"
-                              onClick={() => handleFoodCount(type, -1)}
-                              className="rounded-full bg-gray-200 text-lg w-8 h-8 flex items-center justify-center"
-                            >-</Button>
-                            <span className="w-6 text-center">{foodCounts[type]}</span>
-                            <Button
-                              type="button"
-                              onClick={() => handleFoodCount(type, 1)}
-                              className="rounded-full bg-gray-200 text-lg w-8 h-8 flex items-center justify-center"
-                            >+</Button>
-                          </div>
-                        ))}
-                        <div className="text-xs text-gray-500 mt-2">
-                          Total food count: {foodCounts.veg + foodCounts.nonveg + foodCounts.jain} / {totalGuests}
-                          {foodCounts.veg + foodCounts.nonveg + foodCounts.jain > totalGuests && (
-                            <span className="text-red-600 ml-2">Cannot exceed total guests!</span>
-                          )}
                         </div>
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
 
-            {/* Booking Summary Sidebar */}
-            <div className="lg:sticky lg:top-24 h-fit">
-              {/* Embedded Google Map */}
-              <div className="mb-8 rounded-lg overflow-hidden shadow">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6103.946344270747!2d73.49323289387719!3d18.66382967533796!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2a9180b52a2fd%3A0xa5d86c10d8d9846d!2sPlumeria%20Retreat%20%7C%20Pawna%20Lakeside%20Cottages!5e1!3m2!1sen!2sin!4v1749631888045!5m2!1sen!2sin"
-                  width="100%"
-                  height="250"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Plumeria Retreat Location"
-                ></iframe>
-              </div>
+                  {/* Room Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Rooms</label>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Button
+                        type="button"
+                        onClick={() => setRooms(Math.max(1, rooms - 1))}
+                        disabled={rooms <= 1}
+                        className="px-3 py-1 bg-green-700 text-white rounded"
+                      >-</Button>
+                      <span className="font-bold text-lg">{rooms}</span>
+                      <Button
+                        type="button"
+                        onClick={() => setRooms(Math.min(MAX_ROOMS, rooms + 1))}
+                        disabled={rooms >= Math.min(MAX_ROOMS, accommodation.availableRooms)}
+                        className="px-3 py-1 bg-green-700 text-white rounded"
+                      >+</Button>
+                      <span className="text-xs text-gray-500">{Math.min(MAX_ROOMS, accommodation.availableRooms) - rooms} rooms remaining</span>
+                    </div>
+                    <div className="border rounded p-2 bg-gray-50">
+                      {Array.from({ length: rooms }).map((_, idx) => (
+                        <div key={idx} className="flex items-center gap-4 mb-2">
+                          <span className="w-16 font-medium">Room {idx + 1}</span>
+                          <select
+                            value={roomGuests[idx].adults}
+                            onChange={e => handleRoomGuestChange(idx, 'adults', Number(e.target.value))}
+                            className="border rounded px-2 py-1"
+                          >
+                            {[...Array(MAX_PEOPLE_PER_ROOM + 1).keys()].map(n => (
+                              n + roomGuests[idx].children <= MAX_PEOPLE_PER_ROOM &&
+                              <option key={n} value={n}>{n} Adults</option>
+                            ))}
+                          </select>
+                          <select
+                            value={roomGuests[idx].children}
+                            onChange={e => handleRoomGuestChange(idx, 'children', Number(e.target.value))}
+                            className="border rounded px-2 py-1"
+                          >
+                            {[...Array(MAX_PEOPLE_PER_ROOM + 1).keys()].map(n => (
+                              n + roomGuests[idx].adults <= MAX_PEOPLE_PER_ROOM &&
+                              <option key={n} value={n}>{n} Children</option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 text-sm">
+                      <span className="font-medium">Total:</span> {totalAdults} Adults, {totalChildren} Children
+                    </div>
+                  </div>
+
+                  {/* Food Preferences */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Food Preferences</h3>
+                    <div className="space-y-3 bg-gray-50 p-4 rounded border">
+                      {(['veg', 'nonveg', 'jain'] as const).map(type => (
+                        <div key={type} className="flex items-center gap-4">
+                          <span className="w-32 capitalize">{type === 'nonveg' ? 'Non veg' : type} count</span>
+                          <Button
+                            type="button"
+                            onClick={() => handleFoodCount(type, -1)}
+                            className="rounded-full bg-gray-200 text-lg w-8 h-8 flex items-center justify-center"
+                          >-</Button>
+                          <span className="w-6 text-center">{foodCounts[type]}</span>
+                          <Button
+                            type="button"
+                            onClick={() => handleFoodCount(type, 1)}
+                            className="rounded-full bg-gray-200 text-lg w-8 h-8 flex items-center justify-center"
+                          >+</Button>
+                        </div>
+                      ))}
+                      <div className="text-xs text-gray-500 mt-2">
+                        Total food count: {foodCounts.veg + foodCounts.nonveg + foodCounts.jain} / {totalGuests}
+                        {foodCounts.veg + foodCounts.nonveg + foodCounts.jain > totalGuests && (
+                          <span className="text-red-600 ml-2">Cannot exceed total guests!</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Special Packages Section */}
+            {accommodation.packages && accommodation.packages.length > 0 && (
               <Card>
                 <CardContent>
-                  <h3 className="text-2xl font-bold text-green-800 mb-6">Package Summary</h3>
+                  <h2 className="text-2xl font-bold text-green-800 mb-4">Special Packages</h2>
+                  <div className="space-y-6">
+                    {accommodation.packages.map((pkg: Package) => (
+                      <div key={pkg.id} className="border rounded-lg p-4 flex flex-col md:flex-row items-center gap-4">
+                        <img src={pkg.image_url} alt={pkg.name} className="w-32 h-24 object-cover rounded" />
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold">{pkg.name}</h3>
+                          <p className="text-gray-600">{pkg.description}</p>
+                          <div className="flex items-center gap-4 mt-2">
+                            <span className="text-green-700 font-bold">{formatCurrency(pkg.price)}</span>
+                            <span className="text-sm text-gray-500">{pkg.duration} Days</span>
+                          </div>
+                        </div>
+                        <Button
+                          className="bg-green-600 text-white px-4 py-2 rounded-lg"
+                          onClick={() => navigate(`/packages/${pkg.id}`)}
+                        >
+                          Book Package
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Booking Summary Sidebar */}
+          <div className="lg:sticky lg:top-24 h-fit">
+            {/* Embedded Google Map */}
+            <div className="mb-8 rounded-lg overflow-hidden shadow">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6103.946344270747!2d73.49323289387719!3d18.66382967533796!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2a9180b52a2fd%3A0xa5d86c10d8d9846d!2sPlumeria%20Retreat%20%7C%20Pawna%20Lakeside%20Cottages!5e1!3m2!1sen!2sin!4v1749631888045!5m2!1sen!2sin"
+                width="100%"
+                height="250"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Plumeria Retreat Location"
+              ></iframe>
+            </div>
+            <Card>
+              <CardContent>
+                <h3 className="text-2xl font-bold text-green-800 mb-6">Booking Summary</h3>
+                
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <span className="font-medium">Accommodation</span>
+                    <span className="text-green-600">{accommodation.title}</span>
+                  </div>
                   
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="font-medium">Package</span>
-                      <span className="text-green-600">{packageData.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">Rooms</span>
-                      <span className="text-gray-600">{rooms}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">Duration</span>
-                      <span className="text-gray-600">{packageData.duration} days</span>
-                    </div>
-                    {dateRange?.from && (
+                  {dateRange?.from && dateRange?.to && (
+                    <>
                       <div className="flex justify-between">
                         <span className="font-medium">Dates</span>
                         <span className="text-gray-600">
-                          {format(dateRange.from, 'MMM dd')} - {format(addDays(dateRange.from, packageData.duration - 1), 'MMM dd')}
+                          {format(dateRange.from, 'MMM dd')} - {format(dateRange.to, 'MMM dd')}
                         </span>
                       </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="font-medium">Guests</span>
-                      <span className="text-gray-600">
-                        {totalAdults} Adults{totalChildren > 0 && `, ${totalChildren} Children`}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">Food</span>
-                      <span className="text-gray-600 capitalize">
-                        {(() => {
-                          const choices = [];
-                          if (foodCounts.veg > 0) choices.push(`${foodCounts.veg} Veg`);
-                          if (foodCounts.nonveg > 0) choices.push(`${foodCounts.nonveg} Non veg`);
-                          if (foodCounts.jain > 0) choices.push(`${foodCounts.jain} Jain`);
-                          return choices.length > 0 ? choices.join(', ') : 'None';
-                        })()}
-                      </span>
+                      <div className="flex justify-between">
+                        <span className="font-medium">Nights</span>
+                        <span className="text-gray-600">
+                          {Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                  
+                  <div className="flex justify-between">
+                    <span className="font-medium">Rooms</span>
+                    <span className="text-gray-600">{rooms}</span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="font-medium">Guests</span>
+                    <span className="text-gray-600">
+                      {totalAdults} Adults{totalChildren > 0 && `, ${totalChildren} Children`}
+                    </span>
+                  </div>
+                  
+                  {/* Coupon Code Section */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={coupon}
+                        onChange={e => {
+                          setCoupon(e.target.value);
+                          setCouponApplied(false);
+                          setDiscount(0);
+                        }}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                        placeholder="Enter coupon code"
+                        disabled={couponApplied}
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={couponApplied || !coupon}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                      >
+                        {couponApplied ? 'Applied' : 'Apply'}
+                      </Button>
                     </div>
                     {couponApplied && discount > 0 && (
-                      <div className="flex justify-between text-green-700">
-                        <span className="font-medium">Discount</span>
-                        <span>-{formatCurrency(discount)}</span>
-                      </div>
+                      <p className="text-green-700 text-sm mt-2">
+                        Coupon applied! You saved {formatCurrency(discount)}.
+                      </p>
                     )}
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Advance to Pay Now
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <select
-                          value={advanceAmount ?? minAdvance}
-                          onChange={e => handleAdvanceChange(Number(e.target.value))}
-                          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                        >
-                          <option value={minAdvance}>{formatCurrency(minAdvance)} (30%)</option>
-                          <option value={totalAmount}>{formatCurrency(totalAmount)} (100%)</option>
-                        </select>
-                        <span className="text-green-700 font-semibold whitespace-nowrap">
-                          / {formatCurrency(totalAmount)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="border-t pt-4">
-                      <div className="flex justify-between text-xl font-bold text-green-800">
-                        <span>Total Package Price</span>
-                        <span>{formatCurrency(totalAmount)}</span>
-                      </div>
-                      <div className="flex justify-between text-lg font-semibold text-blue-700 mt-2">
-                        <span>Advance</span>
-                        <span>{formatCurrency(advanceAmount ?? 0)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm text-gray-600 mt-1">
-                        <span>Pay at property</span>
-                        <span>{formatCurrency(totalAmount - (advanceAmount ?? 0))}</span>
-                      </div>
-                      <p className="text-sm text-gray-500 mt-1">All inclusive package price</p>
-                    </div>
-                    <Button
-                      onClick={handleBooking}
-                      disabled={
-                        loading ||
-                        !dateRange?.from ||
-                        !guestInfo.name ||
-                        !guestInfo.email ||
-                        !advanceAmount ||
-                        (advanceAmount !== minAdvance && advanceAmount !== totalAmount) ||
-                        (foodCounts.veg + foodCounts.nonveg + foodCounts.jain > totalGuests)
-                      }
-                      className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors flex items-center justify-center"
-                    >
-                      {loading ? (
-                        <>
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                          <CreditCard className="mr-2" size={20} />
-                          Book Package
-                        </>
-                      )}
-                    </Button>
-                    <p className="text-xs text-gray-500 text-center">
-                      Secure booking with instant confirmation.<br />
-                      Pay {formatCurrency(advanceAmount ?? 0)} now, and the rest at the property.
-                    </p>
                   </div>
-                </CardContent>
-              </Card>
-              {/* Contact Information */}
-              <Card className="mt-6">
-                <CardContent>
-                  <h3 className="text-lg font-semibold text-green-800 mb-4">Need Help?</h3>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-center">
-                      <Phone className="text-green-600 mr-2" size={16} />
-                      <span>+91 98765 43210</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Mail className="text-green-600 mr-2" size={16} />
-                      <span>info@plumeriaretreat.com</span>
-                    </div>
-                    <div className="flex items-start">
-                      <MapPin className="text-green-600 mr-2 mt-1" size={16} />
-                      <span>Plumeria Retreat, Lakeside Drive, Nature Valley</span>
+                  
+                  {/* Advance Payment Input */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Advance to Pay Now
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={advanceAmount ?? minAdvance}
+                        onChange={e => handleAdvanceChange(Number(e.target.value))}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                      >
+                        <option value={minAdvance}>{formatCurrency(minAdvance)} (30%)</option>
+                        <option value={totalAmount}>{formatCurrency(totalAmount)} (100%)</option>
+                      </select>
+                      <span className="text-green-700 font-semibold whitespace-nowrap">
+                        / {formatCurrency(totalAmount)}
+                      </span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <div className="border-t pt-4">
+                    <div className="flex justify-between text-xl font-bold text-green-800">
+                      <span>Total</span>
+                      <span>{formatCurrency(totalAmount)}</span>
+                    </div>
+                    <div className="flex justify-between text-lg font-semibold text-blue-700 mt-2">
+                      <span>Advance</span>
+                      <span>{formatCurrency(advanceAmount ?? 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-gray-600 mt-1">
+                      <span>Pay at property</span>
+                      <span>{formatCurrency(totalAmount - (advanceAmount ?? 0))}</span>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleBooking}
+                    disabled={
+                      loading ||
+                      !dateRange?.from ||
+                      !dateRange?.to ||
+                      !guestInfo.name ||
+                      !guestInfo.email ||
+                      !advanceAmount ||
+                      (advanceAmount !== minAdvance && advanceAmount !== totalAmount) ||
+                      (foodCounts.veg + foodCounts.nonveg + foodCounts.jain > totalGuests)
+                    }
+                    className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors flex items-center justify-center"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="mr-2" size={20} />
+                        Book Now
+                      </>
+                    )}
+                  </Button>
+                  <p className="text-xs text-gray-500 text-center">
+                    Secure booking with instant confirmation.<br />
+                    Pay {formatCurrency(advanceAmount ?? 0)} now, and the rest at the property.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Contact Information */}
+            <Card className="mt-6">
+              <CardContent>
+                <h3 className="text-lg font-semibold text-green-800 mb-4">Need Help?</h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center">
+                    <Phone className="text-green-600 mr-2" size={16} />
+                    <span>+91 98765 43210</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Mail className="text-green-600 mr-2" size={16} />
+                    <span>info@plumeriaretreat.com</span>
+                  </div>
+                  <div className="flex items-start">
+                    <MapPin className="text-green-600 mr-2 mt-1" size={16} />
+                    <span>Plumeria Retreat, Lakeside Drive, Nature Valley</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </div>
-    );
-  }
-
-  // Fallback if no package exists
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-green-700">No package available for this accommodation.</p>
       </div>
     </div>
   );
