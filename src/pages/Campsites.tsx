@@ -204,12 +204,12 @@ const Campsites: React.FC = () => {
                           {accommodation.availableRooms} rooms available
                         </p>
 
-                        {/* Show packages count if available */}
+                        {/* Show packages count if available
                         {accommodation.packages && accommodation.packages.length > 0 && (
                           <p className="text-sm text-rose-taupe mb-2">
                             {accommodation.packages.length} package{accommodation.packages.length !== 1 ? 's' : ''} available
                           </p>
-                        )}
+                        )} */}
                       </div>
                       
                       <div className="flex justify-between items-center mt-4">
