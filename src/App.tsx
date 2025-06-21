@@ -9,7 +9,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
 // import Packages from './pages/Packages';
-import PackageBooking from './pages/PackageBooking';
+// import PackageBooking from './pages/PackageBooking';
 import CampsiteBooking from './pages/CampsiteBooking';
 import { Success, Failure, Cancel } from './pages/Payments';
 
@@ -24,7 +24,7 @@ function App() {
             <Route path="/campsites" element={<Campsites />} />
             <Route path="/campsites/:id" element={<CampsiteBooking />} />
             {/* <Route path="/packages" element={<Packages />} /> */}
-            <Route path="/packages" element={<PackageBooking />} />
+            {/* <Route path="/packages" element={<PackageBooking />} /> */}
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />

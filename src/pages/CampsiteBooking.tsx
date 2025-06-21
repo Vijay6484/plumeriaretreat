@@ -606,8 +606,7 @@ const CampsiteBooking: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Special Packages Section */}
-            {accommodation.packages && accommodation.packages.length > 0 && (
+            {/* {accommodation.packages && accommodation.packages.length > 0 && (
               <Card>
                 <CardContent>
                   <h2 className="text-2xl font-bold text-green-800 mb-4">Special Packages</h2>
@@ -634,7 +633,7 @@ const CampsiteBooking: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
-            )}
+            )} */}
           </div>
 
           {/* Booking Summary Sidebar */}

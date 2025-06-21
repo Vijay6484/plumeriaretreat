@@ -215,10 +215,10 @@ const Campsites: React.FC = () => {
                       <div className="flex justify-between items-center mt-4">
                         <p className="font-bold text-brunswick-green">
                           {formatCurrency(accommodation.price)}
-                          <span className="text-black/60 font-normal text-sm"> / night</span>
+                          <span className="text-black/60 font-normal text-sm"> / person / night</span>
                         </p>
                         <Button variant="primary" size="sm">
-                          <Link to={`/campsites/${accommodation.id}`}>More Details</Link>
+                          <Link to={`/campsites/${accommodation.id}`}>Book Now</Link>
                         </Button>
                       </div>
                     </CardContent>
