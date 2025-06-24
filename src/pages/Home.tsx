@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import Hero from '../components/home/Hero';
 import Highlights from '../components/home/Highlights';
-// import FeaturedCampsites from '../components/home/FeaturedCampsites';
+import Campsites from '../components/home/Campsites';
 import GalleryPreview from '../components/home/GalleryPreview';
 import WeatherWidget from '../components/home/WeatherWidget';
 import CallToAction from '../components/home/CallToAction';
@@ -16,7 +16,7 @@ const Home: React.FC = () => {
     <div>
       <Hero />
       <Highlights />
-      {/* <FeaturedCampsites /> */}
+      <Campsites />
       <WeatherWidget />
       <GalleryPreview />
       <NearbyLocations />

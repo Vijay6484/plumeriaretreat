@@ -199,7 +199,6 @@ const Campsites: React.FC = () => {
                             )}
                           </div>
                         )}
-                        
                         <p className="text-sm text-brunswick-green mb-2">
                           {accommodation.availableRooms} rooms available
                         </p>

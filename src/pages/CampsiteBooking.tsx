@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, KeyboardEvent} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DayPicker, DateRange } from 'react-day-picker';
-import { format, addDays } from 'date-fns';
+import { format, addDays, isBefore, startOfDay } from 'date-fns';
 import { X } from 'lucide-react';
 import Slider from 'react-slick'; 
 import 'slick-carousel/slick/slick.css';
@@ -23,7 +23,9 @@ import {
   Phone,
   Mail,
   CheckCircle,
-  CreditCard
+  CreditCard,
+  MessageCircle,
+  Activity
 } from 'lucide-react';
 import {
   accommodations,
@@ -47,6 +49,57 @@ const imageLinks = [
   "https://images.pexels.com/photos/3045272/pexels-photo-3045272.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
   "https://images.pexels.com/photos/2351287/pexels-photo-2351287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
 ];
+
+// Party effect component
+const PartyEffect: React.FC<{ show: boolean; onComplete: () => void }> = ({ show, onComplete }) => {
+  useEffect(() => {
+    if (show) {
+      const timer = setTimeout(() => {
+        onComplete();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [show, onComplete]);
+
+  if (!show) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 pointer-events-none">
+      {/* Confetti animation */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(50)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute animate-bounce"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 2}s`,
+              animationDuration: `${2 + Math.random() * 2}s`,
+            }}
+          >
+            <div
+              className="w-2 h-2 rounded-full"
+              style={{
+                backgroundColor: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'][Math.floor(Math.random() * 5)],
+              }}
+            />
+          </div>
+        ))}
+      </div>
+      
+      {/* Success message */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="bg-green-500 text-white px-8 py-4 rounded-lg shadow-lg animate-pulse">
+          <div className="flex items-center">
+            <CheckCircle className="mr-2" size={24} />
+            <span className="text-lg font-bold">Coupon Applied Successfully! 🎉</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const CampsiteBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -73,6 +126,9 @@ const CampsiteBooking: React.FC = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarTempRange, setCalendarTempRange] = useState<DateRange | undefined>(undefined);
   const [fullscreenImgIdx, setFullscreenImgIdx] = useState<number | null>(null);
+  const [showPartyEffect, setShowPartyEffect] = useState(false);
+  const [selectedActivities, setSelectedActivities] = useState<{[key: string]: boolean}>({});
+  const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
   const sliderRef = useRef<any>(null);
 
   useEffect(() => {
@@ -86,6 +142,25 @@ const CampsiteBooking: React.FC = () => {
       }
     }
   }, [id, navigate]);
+
+  // Fetch available coupons
+  useEffect(() => {
+    const fetchCoupons = async () => {
+      try {
+        const response = await fetch('https://plumeriaadminback-production.up.railway.app/admin/coupons');
+        const result = await response.json();
+        if (result.success && result.data) {
+          const activeCoupons = result.data.filter((coupon: any) => 
+            coupon.active && new Date(coupon.expiryDate) > new Date()
+          );
+          setAvailableCoupons(activeCoupons.slice(0, 3)); // Show only 3 coupons
+        }
+      } catch (error) {
+        console.error('Error fetching coupons:', error);
+      }
+    };
+    fetchCoupons();
+  }, []);
 
   // Set default date range: today and tomorrow
   useEffect(() => {
@@ -109,7 +184,18 @@ const CampsiteBooking: React.FC = () => {
     const nights = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
     const adultsTotal = totalAdults * ADULT_RATE * nights;
     const childrenTotal = totalChildren * CHILD_RATE * nights;
-    const subtotal = adultsTotal + childrenTotal;
+    
+    // Add activity costs
+    let activityCost = 0;
+    if (accommodation.detailedInfo?.activities) {
+      accommodation.detailedInfo.activities.forEach((activity: any) => {
+        if (selectedActivities[activity.name] && activity.price > 0) {
+          activityCost += activity.price * totalGuests;
+        }
+      });
+    }
+    
+    const subtotal = adultsTotal + childrenTotal + activityCost;
     return subtotal - discount;
   };
 
@@ -122,76 +208,86 @@ const CampsiteBooking: React.FC = () => {
   }, [totalAmount]);
 
   const handleApplyCoupon = async () => {
-  const code = coupon.trim().toUpperCase();
+    const code = coupon.trim().toUpperCase();
 
-  try {
-    const res = await fetch(`https://plumeriaadminback-production.up.railway.app/admin/coupons?search=${code}`);
-    const result = await res.json();
+    try {
+      const res = await fetch(`https://plumeriaadminback-production.up.railway.app/admin/coupons?search=${code}`);
+      const result = await res.json();
 
-    if (!res.ok || !result.success || !result.data || result.data.length === 0) {
-      throw new Error('Invalid coupon code');
-    }
+      if (!res.ok || !result.success || !result.data || result.data.length === 0) {
+        throw new Error('Invalid coupon code');
+      }
 
-    const couponData = result.data[0];
+      const couponData = result.data[0];
 
-    // ✅ Enforce exact match on code
-    if (couponData.code.toUpperCase() !== code) {
-      throw new Error('Invalid coupon code');
-    }
+      // Enforce exact match on code
+      if (couponData.code.toUpperCase() !== code) {
+        throw new Error('Invalid coupon code');
+      }
 
-    // ✅ Check expiry
-    const now = new Date();
-    const expiryDate = new Date(couponData.expiryDate);
-    if (expiryDate < now) {
-      alert('Coupon has expired');
-      return;
-    }
-
-    // ✅ Calculate subtotal using all rooms
-    const subtotal = (() => {
-      if (!accommodation || !dateRange?.from || !dateRange?.to) return 0;
-      const nights = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
-      const adultsTotal = totalAdults * ADULT_RATE * nights;
-      const childrenTotal = totalChildren * CHILD_RATE * nights;
-      return adultsTotal + childrenTotal;
-    })();
-    if (subtotal < parseFloat(couponData.minAmount)) {
-      alert(`Minimum amount for this coupon is ₹${couponData.minAmount}`);
-      return;
-    }
-
-    // ✅ Apply discount
-    let appliedDiscount = 0;
-
-    if (couponData.discountType === 'fixed') {
-      appliedDiscount = parseFloat(couponData.discount);
-      if (appliedDiscount > subtotal) {
-        alert('Coupon discount cannot exceed total amount');
+      // Check expiry
+      const now = new Date();
+      const expiryDate = new Date(couponData.expiryDate);
+      if (expiryDate < now) {
+        alert('Coupon has expired');
         return;
       }
-    } else if (couponData.discountType === 'percentage') {
-      const percent = parseFloat(couponData.discount);
-      const maxAllowed = parseFloat(couponData.maxDiscount);
-      appliedDiscount = (subtotal * percent) / 100;
-      if (appliedDiscount > maxAllowed) {
-        appliedDiscount = maxAllowed;
+
+      // Calculate subtotal using all rooms
+      const subtotal = (() => {
+        if (!accommodation || !dateRange?.from || !dateRange?.to) return 0;
+        const nights = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
+        const adultsTotal = totalAdults * ADULT_RATE * nights;
+        const childrenTotal = totalChildren * CHILD_RATE * nights;
+        return adultsTotal + childrenTotal;
+      })();
+      
+      if (subtotal < parseFloat(couponData.minAmount)) {
+        alert(`Minimum amount for this coupon is ₹${couponData.minAmount}`);
+        return;
       }
+
+      // Apply discount
+      let appliedDiscount = 0;
+
+      if (couponData.discountType === 'fixed') {
+        appliedDiscount = parseFloat(couponData.discount);
+        if (appliedDiscount > subtotal) {
+          alert('Coupon discount cannot exceed total amount');
+          return;
+        }
+      } else if (couponData.discountType === 'percentage') {
+        const percent = parseFloat(couponData.discount);
+        const maxAllowed = parseFloat(couponData.maxDiscount);
+        appliedDiscount = (subtotal * percent) / 100;
+        if (appliedDiscount > maxAllowed) {
+          appliedDiscount = maxAllowed;
+        }
+      }
+
+      setDiscount(appliedDiscount);
+      setCoupon(code);
+      setCouponApplied(true);
+      setShowPartyEffect(true);
+
+    } catch (error: any) {
+      console.error(error);
+      setDiscount(0);
+      setCouponApplied(false);
+      alert(error.message || 'Failed to apply coupon');
     }
-
-    setDiscount(appliedDiscount);
-    setCoupon(code);
-    setCouponApplied(true);
-    alert(`Coupon applied successfully! Discount: ₹${appliedDiscount.toFixed(2)}`);
-
-  } catch (error: any) {
-    console.error(error);
-    setDiscount(0);
-    setCouponApplied(false);
-    alert(error.message || 'Failed to apply coupon');
-  }
   };
 
+  const handleCouponSelect = (selectedCoupon: any) => {
+    setCoupon(selectedCoupon.code);
+  };
 
+  const handleActivityToggle = (activityName: string) => {
+    setSelectedActivities(prev => ({
+      ...prev,
+      [activityName]: !prev[activityName]
+    }));
+  };
 
   const handleBooking = async () => {
     if (!guestInfo.name || !guestInfo.email || !dateRange?.from || !dateRange?.to) {
@@ -251,6 +347,11 @@ const CampsiteBooking: React.FC = () => {
     }
   };
 
+  // Check if date is in the past
+  const isDateDisabled = (date: Date) => {
+    return isBefore(date, startOfDay(new Date()));
+  };
+
   // Keyboard navigation for main slider and fullscreen
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent | KeyboardEventInit) => {
@@ -304,6 +405,12 @@ const CampsiteBooking: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Party Effect */}
+      <PartyEffect 
+        show={showPartyEffect} 
+        onComplete={() => setShowPartyEffect(false)} 
+      />
+
       {/* Image Slider */}
       <div className="relative h-[60vh] overflow-hidden">
         <Slider {...sliderSettings} ref={sliderRef}>
@@ -543,6 +650,7 @@ const CampsiteBooking: React.FC = () => {
                               numberOfMonths={1}
                               fromDate={new Date()}
                               toDate={addDays(new Date(), 365)}
+                              disabled={isDateDisabled}
                               className="mx-auto bg-white p-2 rounded-lg shadow-lg"
                             />
                             <div className="flex justify-end mt-2">
@@ -657,38 +765,59 @@ const CampsiteBooking: React.FC = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Extra Activities */}
+                  {accommodation.detailedInfo?.activities && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Extra Activities (Optional)</h3>
+                      <div className="space-y-3 bg-gray-50 p-4 rounded border">
+                        {accommodation.detailedInfo.activities
+                          .filter((activity: any) => ['speed boating', 'motor boating', 'kayaking'].includes(activity.name.toLowerCase()))
+                          .map((activity: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                            <div className="flex items-center">
+                              <input
+                                type="checkbox"
+                                id={`activity-${index}`}
+                                checked={selectedActivities[activity.name] || false}
+                                onChange={() => handleActivityToggle(activity.name)}
+                                className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                              />
+                              <label htmlFor={`activity-${index}`} className="flex items-center cursor-pointer">
+                                <Activity className="text-green-600 mr-2" size={16} />
+                                <span className="text-gray-700 capitalize">{activity.name}</span>
+                              </label>
+                            </div>
+                            <span className="text-green-600 font-semibold">
+                              ₹{activity.price}/person
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
-            {/* {accommodation.packages && accommodation.packages.length > 0 && (
-              <Card>
-                <CardContent>
-                  <h2 className="text-2xl font-bold text-green-800 mb-4">Special Packages</h2>
-                  <div className="space-y-6">
-                    {accommodation.packages.map((pkg: Package) => (
-                      <div key={pkg.id} className="border rounded-lg p-4 flex flex-col md:flex-row items-center gap-4">
-                        <img src={pkg.image_url} alt={pkg.name} className="w-32 h-24 object-cover rounded" />
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold">{pkg.name}</h3>
-                          <p className="text-gray-600">{pkg.description}</p>
-                          <div className="flex items-center gap-4 mt-2">
-                            <span className="text-green-700 font-bold">{formatCurrency(pkg.price)}</span>
-                            <span className="text-sm text-gray-500">{pkg.duration} Days</span>
-                          </div>
-                        </div>
-                        <Button
-                          className="bg-green-600 text-white px-4 py-2 rounded-lg"
-                          onClick={() => navigate(`/packages/${pkg.id}`)}
-                        >
-                          Book Package
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )} */}
+            {/* Important Note */}
+            <Card>
+              <CardContent>
+                <h3 className="text-lg font-semibold mb-4 text-orange-800 flex items-center">
+                  <CheckCircle className="mr-2" size={20} />
+                  Things to Carry
+                </h3>
+                <div className="bg-orange-50 p-4 rounded-lg">
+                  <ol className="list-decimal list-inside space-y-2 text-orange-700">
+                    <li>Always good to carry extra pair of clothes</li>
+                    <li>Winter and warm clothes as it will be cold night</li>
+                    <li>Toothbrush and paste (toiletries)</li>
+                    <li>Any other things you feel necessary</li>
+                    <li>Personal medicine if any</li>
+                  </ol>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Booking Summary Sidebar */}
@@ -744,6 +873,24 @@ const CampsiteBooking: React.FC = () => {
                       {totalAdults} Adults{totalChildren > 0 && `, ${totalChildren} Children`}
                     </span>
                   </div>
+
+                  {/* Available Coupons */}
+                  {availableCoupons.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Available Offers</label>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {availableCoupons.map((availableCoupon) => (
+                          <button
+                            key={availableCoupon.id}
+                            onClick={() => handleCouponSelect(availableCoupon)}
+                            className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium hover:bg-green-200 transition-colors"
+                          >
+                            {availableCoupon.code} - {availableCoupon.discountType === 'percentage' ? `${availableCoupon.discount}%` : `₹${availableCoupon.discount}`} OFF
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Coupon Code Section */}
                   <div>
@@ -796,6 +943,15 @@ const CampsiteBooking: React.FC = () => {
                       </span>
                     </div>
                   </div>
+
+                  {/* Reserve Message */}
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200">
+                    <p className="text-center text-blue-700 font-medium flex items-center justify-center">
+                      <CheckCircle className="mr-2" size={16} />
+                      Reserve to get exciting offer for this property!
+                    </p>
+                  </div>
+
                   <div className="border-t pt-4">
                     <div className="flex justify-between text-xl font-bold text-green-800">
                       <span>Total</span>
@@ -851,15 +1007,40 @@ const CampsiteBooking: React.FC = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center">
                     <Phone className="text-green-600 mr-2" size={16} />
-                    <span>+91 98765 43210</span>
+                    <a href="tel:+919226869678" className="text-gray-700 hover:text-green-600">
+                      +91 9226869678
+                    </a>
+                  </div>
+                  <div className="flex items-center">
+                    <MessageCircle className="text-green-600 mr-2" size={16} />
+                    <a 
+                      href="https://wa.me/919226869678" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-gray-700 hover:text-green-600"
+                    >
+                      WhatsApp
+                    </a>
                   </div>
                   <div className="flex items-center">
                     <Mail className="text-green-600 mr-2" size={16} />
-                    <span>info@plumeriaretreat.com</span>
+                    <a 
+                      href="mailto:campatpawna@gmail.com" 
+                      className="text-gray-700 hover:text-green-600"
+                    >
+                      campatpawna@gmail.com
+                    </a>
                   </div>
                   <div className="flex items-start">
                     <MapPin className="text-green-600 mr-2 mt-1" size={16} />
-                    <span>Plumeria Retreat, Lakeside Drive, Nature Valley</span>
+                    <a 
+                      href="https://maps.google.com/?q=Plumeria+Retreat+Pawna+Lakeside+Cottages" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-gray-700 hover:text-green-600"
+                    >
+                      Plumeria Retreat, Lakeside Drive, Nature Valley
+                    </a>
                   </div>
                 </div>
               </CardContent>
