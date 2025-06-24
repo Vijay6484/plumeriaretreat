@@ -878,20 +878,21 @@ const CampsiteBooking: React.FC = () => {
                   {availableCoupons.length > 0 && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Available Offers</label>
-                      <div className="flex flex-wrap gap-2 mb-3">
+                      <div className="flex overflow-x-auto space-x-2 mb-3 px-1 sm:flex-wrap sm:space-x-0 sm:gap-2 scrollbar-hide">
                         {availableCoupons.map((availableCoupon) => (
                           <button
                             key={availableCoupon.id}
                             onClick={() => handleCouponSelect(availableCoupon)}
-                            className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium hover:bg-green-200 transition-colors"
+                            className="flex-shrink-0 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium hover:bg-green-200 transition-colors whitespace-nowrap"
                           >
-                            {availableCoupon.code} - {availableCoupon.discountType === 'percentage' ? `${availableCoupon.discount}%` : `₹${availableCoupon.discount}`} OFF
+                            {availableCoupon.code} - {availableCoupon.discountType === 'percentage'
+                              ? `${availableCoupon.discount}%`
+                              : `₹${availableCoupon.discount}`} OFF
                           </button>
                         ))}
                       </div>
                     </div>
                   )}
-                  
                   {/* Coupon Code Section */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
