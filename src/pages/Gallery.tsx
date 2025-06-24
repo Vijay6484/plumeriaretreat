@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-
+import './Gallery.css'; // Assuming you have a CSS file for custom styles
 interface GalleryImage {
   id: number;
   url: string;
@@ -48,14 +48,11 @@ const Gallery: React.FC = () => {
       </div>
 
       <div className="container-custom py-16">
-        <div className="flex overflow-x-auto space-x-4 mb-8 px-4 sm:justify-center scrollbar-hide">
+        <div className="flex overflow-x-auto space-x-4 mb-8 px-4 sm:justify-center no-scrollbar">
           <button onClick={() => setFilter('all')} className={`px-6 py-2 rounded-full ${filter === 'all' ? 'bg-brunswick-green text-baby-powder' : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'}`}>All</button>
           <button onClick={() => setFilter('nature')} className={`px-6 py-2 rounded-full ${filter === 'nature' ? 'bg-brunswick-green text-baby-powder' : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'}`}>Nature</button>
           <button onClick={() => setFilter('accommodation')} className={`px-6 py-2 rounded-full ${filter === 'accommodation' ? 'bg-brunswick-green text-baby-powder' : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'}`}>Accommodation</button>
-          <button onClick={() => setFilter('package')} className={`px-6 py-2 rounded-full ${filter === 'package' ? 'bg-brunswick-green text-baby-powder' : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'}`}>Package</button>
           <button onClick={() => setFilter('activity')} className={`px-6 py-2 rounded-full ${filter === 'activity' ? 'bg-brunswick-green text-baby-powder' : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'}`}>Activity</button>
-          <button onClick={() => setFilter('testimonial')} className={`px-6 py-2 rounded-full ${filter === 'testimonial' ? 'bg-brunswick-green text-baby-powder' : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'}`}>Testimonial</button>
-          <button onClick={() => setFilter('nearby')} className={`px-6 py-2 rounded-full ${filter === 'nearby' ? 'bg-brunswick-green text-baby-powder' : 'bg-brunswick-green/10 text-brunswick-green hover:bg-brunswick-green/20'}`}>Nearby</button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredImages.map((image, index) => (

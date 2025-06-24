@@ -7,6 +7,7 @@ import { X } from 'lucide-react';
 import Slider from 'react-slick'; 
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+import './Gallery.css'
 import {
   Calendar, 
   Users, 
@@ -878,7 +879,7 @@ const CampsiteBooking: React.FC = () => {
                   {availableCoupons.length > 0 && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Available Offers</label>
-                      <div className="flex overflow-x-auto space-x-2 mb-3 px-1 sm:flex-wrap sm:space-x-0 sm:gap-2 scrollbar-hide">
+                      <div className="flex overflow-x-auto space-x-2 mb-3 px-1 sm:flex-wrap sm:space-x-0 sm:gap-2 no-scrollbar">
                         {availableCoupons.map((availableCoupon) => (
                           <button
                             key={availableCoupon.id}
