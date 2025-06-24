@@ -38,6 +38,8 @@ import Button from '../components/ui/Button';
 import { Package } from '../types';
 import 'react-day-picker/dist/style.css';
 
+const API_BASE_URL = 'http://localhost:5000'; // Use for local dev
+
 const imageLinks = [
   "https://images.pexels.com/photos/9144680/pexels-photo-9144680.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
   "https://images.pexels.com/photos/6640068/pexels-photo-6640068.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
@@ -119,24 +121,77 @@ const CampsiteBooking: React.FC = () => {
     setAdvanceAmount(minAdvance);
   }, [totalAmount]);
 
-  const handleApplyCoupon = () => {
-    const code = coupon.trim().toUpperCase();
-    if (VALID_COUPONS[code]) {
-      const subtotal = (() => {
-        if (!accommodation || !dateRange?.from || !dateRange?.to) return 0;
-        const nights = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
-        const adultsTotal = guests.adults * ADULT_RATE * nights;
-        const childrenTotal = guests.children * CHILD_RATE * nights;
-        return adultsTotal + childrenTotal;
-      })();
-      setDiscount(subtotal * VALID_COUPONS[code]);
-      setCouponApplied(true);
-    } else {
-      setDiscount(0);
-      setCouponApplied(false);
-      alert('Invalid coupon code');
+  const handleApplyCoupon = async () => {
+  const code = coupon.trim().toUpperCase();
+
+  try {
+    const res = await fetch(`https://plumeriaadminback-production.up.railway.app/admin/coupons?search=${code}`);
+    const result = await res.json();
+
+    if (!res.ok || !result.success || !result.data || result.data.length === 0) {
+      throw new Error('Invalid coupon code');
     }
+
+    const couponData = result.data[0];
+
+    // ✅ Enforce exact match on code
+    if (couponData.code.toUpperCase() !== code) {
+      throw new Error('Invalid coupon code');
+    }
+
+    // ✅ Check expiry
+    const now = new Date();
+    const expiryDate = new Date(couponData.expiryDate);
+    if (expiryDate < now) {
+      alert('Coupon has expired');
+      return;
+    }
+
+    // ✅ Calculate subtotal using all rooms
+    const subtotal = (() => {
+      if (!accommodation || !dateRange?.from || !dateRange?.to) return 0;
+      const nights = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
+      const adultsTotal = totalAdults * ADULT_RATE * nights;
+      const childrenTotal = totalChildren * CHILD_RATE * nights;
+      return adultsTotal + childrenTotal;
+    })();
+    if (subtotal < parseFloat(couponData.minAmount)) {
+      alert(`Minimum amount for this coupon is ₹${couponData.minAmount}`);
+      return;
+    }
+
+    // ✅ Apply discount
+    let appliedDiscount = 0;
+
+    if (couponData.discountType === 'fixed') {
+      appliedDiscount = parseFloat(couponData.discount);
+      if (appliedDiscount > subtotal) {
+        alert('Coupon discount cannot exceed total amount');
+        return;
+      }
+    } else if (couponData.discountType === 'percentage') {
+      const percent = parseFloat(couponData.discount);
+      const maxAllowed = parseFloat(couponData.maxDiscount);
+      appliedDiscount = (subtotal * percent) / 100;
+      if (appliedDiscount > maxAllowed) {
+        appliedDiscount = maxAllowed;
+      }
+    }
+
+    setDiscount(appliedDiscount);
+    setCoupon(code);
+    setCouponApplied(true);
+    alert(`Coupon applied successfully! Discount: ₹${appliedDiscount.toFixed(2)}`);
+
+  } catch (error: any) {
+    console.error(error);
+    setDiscount(0);
+    setCouponApplied(false);
+    alert(error.message || 'Failed to apply coupon');
+  }
   };
+
+
 
   const handleBooking = async () => {
     if (!guestInfo.name || !guestInfo.email || !dateRange?.from || !dateRange?.to) {
