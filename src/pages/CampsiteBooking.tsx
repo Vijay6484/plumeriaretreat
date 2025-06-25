@@ -173,7 +173,7 @@ const CampsiteBooking: React.FC = () => {
   useEffect(() => {
     const fetchCoupons = async () => {
       try {
-        const response = await fetch('https://plumeriaadminback-production.up.railway.app/admin/coupons');
+        const response = await fetch('https://adminplumeria-back.onrender.com/admin/coupons');
         const result = await response.json();
         if (result.success && result.data) {
           const activeCoupons = result.data.filter((coupon: any) => 
