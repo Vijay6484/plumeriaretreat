@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, KeyboardEvent} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DayPicker, DateRange } from 'react-day-picker';
-import { format, addDays, isBefore, startOfDay } from 'date-fns';
+import { format, addDays, isBefore, startOfDay ,isSameDay} from 'date-fns';
 import { X } from 'lucide-react';
 import Slider from 'react-slick'; 
 import 'slick-carousel/slick/slick.css';
@@ -130,6 +130,10 @@ const CampsiteBooking: React.FC = () => {
   const [showPartyEffect, setShowPartyEffect] = useState(false);
   const [selectedActivities, setSelectedActivities] = useState<{[key: string]: boolean}>({});
   const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
+  const [blockedDates, setBlockedDates] = useState<Date[]>([]);
+  const [accommodationId, setAccommodationId] = useState<number | null>(
+  id ? parseInt(id) : null
+  );
   const sliderRef = useRef<any>(null);
 
   useEffect(() => {
@@ -143,6 +147,27 @@ const CampsiteBooking: React.FC = () => {
       }
     }
   }, [id, navigate]);
+
+  useEffect(() => {
+  if (!accommodationId) return;
+
+  const fetchBlockedDates = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/calendar/blocked-dates/id?accommodation_id=${accommodationId}`);
+      const json = await res.json();
+
+      if (json.success) {
+        const dates = json.data.map((d: any) => new Date(d.blocked_date));
+        setBlockedDates(dates);
+      }
+    } catch (error) {
+      console.error('Failed to fetch blocked dates', error);
+    }
+  };
+
+  fetchBlockedDates();
+}, [accommodationId]);
+
 
   // Fetch available coupons
   useEffect(() => {
@@ -348,10 +373,16 @@ const CampsiteBooking: React.FC = () => {
     }
   };
 
-  // Check if date is in the past
   const isDateDisabled = (date: Date) => {
-    return isBefore(date, startOfDay(new Date()));
+    const isPast = isBefore(date, startOfDay(new Date()));
+
+    const isBlocked = blockedDates.some(
+      (blockedDate) => isSameDay(date, new Date(blockedDate))
+    );
+
+    return isPast || isBlocked;
   };
+
 
   // Keyboard navigation for main slider and fullscreen
   useEffect(() => {
@@ -645,15 +676,22 @@ const CampsiteBooking: React.FC = () => {
                         {showCalendar && (
                           <div className="relative z-10 mt-2">
                             <DayPicker
-                              mode="range"
-                              selected={calendarTempRange}
-                              onSelect={setCalendarTempRange}
-                              numberOfMonths={1}
-                              fromDate={new Date()}
-                              toDate={addDays(new Date(), 365)}
-                              disabled={isDateDisabled}
-                              className="mx-auto bg-white p-2 rounded-lg shadow-lg"
-                            />
+                                mode="range"
+                                selected={calendarTempRange}
+                                onSelect={setCalendarTempRange}
+                                numberOfMonths={1}
+                                fromDate={new Date()}
+                                toDate={addDays(new Date(), 365)}
+                                disabled={isDateDisabled}
+                                modifiers={{
+                                  blocked: blockedDates.map((date) => new Date(date)),
+                                }}
+                                modifiersClassNames={{
+                                  blocked: 'bg-red-100 text-gray-400 line-through cursor-not-allowed',
+                                }}
+                                className="mx-auto bg-white p-2 rounded-lg shadow-lg"
+                              />
+
                             <div className="flex justify-end mt-2">
                               <button
                                 type="button"
