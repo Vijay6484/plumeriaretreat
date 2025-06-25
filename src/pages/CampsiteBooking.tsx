@@ -41,7 +41,7 @@ import Button from '../components/ui/Button';
 import { Package } from '../types';
 import 'react-day-picker/dist/style.css';
 
-const API_BASE_URL = 'https://adminplumeria-back.onrender.com/'; // Use for local dev
+const API_BASE_URL = 'https://adminplumeria-back.onrender.com'; // Use for local dev
 
 const imageLinks = [
   "https://images.pexels.com/photos/9144680/pexels-photo-9144680.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
@@ -155,7 +155,7 @@ const CampsiteBooking: React.FC = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/calendar/blocked-dates/id?accommodation_id=${accommodationId}`);
       const json = await res.json();
-
+      console.log('Blocked dates response:', json);
       if (json.success) {
         const dates = json.data.map((d: any) => new Date(d.blocked_date));
         setBlockedDates(dates);
