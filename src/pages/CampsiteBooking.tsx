@@ -237,7 +237,7 @@ const CampsiteBooking: React.FC = () => {
     const code = coupon.trim().toUpperCase();
 
     try {
-      const res = await fetch(`https://plumeriaadminback-production.up.railway.app/admin/coupons?search=${code}`);
+      const res = await fetch(`https://adminplumeria-back.onrender.com/admin/coupons?search=${code}`);
       const result = await res.json();
 
       if (!res.ok || !result.success || !result.data || result.data.length === 0) {
