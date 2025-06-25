@@ -21,7 +21,7 @@ const Logo: React.FC<LogoProps> = ({ color = 'currentColor', size = 32, bgColor,
       }}
     >
       <img 
-        src="https://plumeriaretreat.com/wp-content/uploads/2024/09/WhatsApp-Image-2024-09-03-at-1.58.21-PM.jpeg"
+        src="./../public/plumeria-removebg-preview.png" // Adjust the path as necessary
         // src="/home/shubham/Project_Paid/Plumeria_2/plumeriaretreat/public/plumeria-removebg-preview.png"
         alt="Plumeria Retreat"
         style={{

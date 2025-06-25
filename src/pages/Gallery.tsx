@@ -20,7 +20,7 @@ const Gallery: React.FC = () => {
 
   useEffect(() => {
     document.title = 'Gallery - Plumeria Retreat';
-    fetch('https://plumeriaretreatback-production.up.railway.app/api/all-images')
+    fetch('https://plumeriaretreat-back.onrender.com/api/all-images')
       .then(res => res.json())
       .then(setImages)
       .catch(() => setImages([]));
