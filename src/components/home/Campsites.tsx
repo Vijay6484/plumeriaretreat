@@ -23,7 +23,7 @@ interface Accommodation {
   detailedInfo: string;
 }
 
-const API_BASE_URL = 'https://plumeriaretreatback-production.up.railway.app';
+const API_BASE_URL = 'https://plumeriaretreat-back.onrender.com';
 
 const Campsites: React.FC = () => {
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
