@@ -5,7 +5,6 @@ import { formatCurrency } from '../utils/helpers';
 import Card, { CardImage, CardContent, CardTitle } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 
-// Define TypeScript interfaces for the data structure
 interface Package {
   id: number;
   name: string;
@@ -17,6 +16,22 @@ interface Package {
   includes: string;
   active: boolean;
   detailedInfo: string;
+}
+
+interface RawAccommodation {
+  id: number;
+  type: string;
+  title: string;
+  description: string;
+  price: string;
+  capacity: number;
+  features: string;
+  image: string;
+  has_ac: number;
+  has_attached_bath: number;
+  available_rooms: number;
+  detailed_info: string;
+  packages?: Package[];
 }
 
 interface Accommodation {
@@ -35,11 +50,7 @@ interface Accommodation {
   packages?: Package[];
 }
 
-
 const API_BASE_URL = 'https://plumeriaretreat-back.onrender.com';
-
-// Use this for local development:
-// const API_BASE_URL = 'http://localhost:5001';
 
 const Campsites: React.FC = () => {
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
@@ -55,13 +66,42 @@ const Campsites: React.FC = () => {
     try {
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/api/accommodations`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setAccommodations(data);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+      const data: RawAccommodation[] = await response.json();
+      console.log('Fetched accommodations:', data);
+
+      const mapped: Accommodation[] = data.map((item) => {
+        let imageUrl = '';
+        try {
+          const parsed = JSON.parse(item.image);
+          if (Array.isArray(parsed)) imageUrl = parsed[0];
+        } catch {
+          imageUrl = item.image;
+        }
+
+        return {
+          id: item.id,
+          type: item.type,
+          title: item.title,
+          description: item.description,
+          price: parseFloat(item.price),
+          capacity: item.capacity,
+          features: item.features,
+          image: imageUrl,
+          hasAC: item.has_ac === 1,
+          hasAttachedBath: item.has_attached_bath === 1,
+          availableRooms: item.available_rooms,
+          detailedInfo: item.detailed_info,
+          packages: item.packages || [],
+        };
+      });
+
+      const unique = mapped.filter(
+        (item, index, self) => index === self.findIndex((t) => t.id === item.id)
+      );
+
+      setAccommodations(unique);
       setError(null);
     } catch (err) {
       console.error('Error fetching accommodations:', err);
@@ -71,17 +111,14 @@ const Campsites: React.FC = () => {
     }
   };
 
-  // Parse features string into array
   const parseFeatures = (featuresValue: any): string[] => {
     if (!featuresValue) return [];
     if (Array.isArray(featuresValue)) return featuresValue;
     if (typeof featuresValue === 'string') {
       try {
-        // Try to parse as JSON array
         if (featuresValue.startsWith('[')) {
           return JSON.parse(featuresValue);
         }
-        // Otherwise, treat as comma-separated string
         return featuresValue.split(',').map(f => f.trim());
       } catch {
         return featuresValue.split(',').map(f => f.trim());
@@ -121,9 +158,7 @@ const Campsites: React.FC = () => {
       <div className="h-[40vh] bg-brunswick-green relative overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-30"
-          style={{ 
-            backgroundImage: "url('https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')"
-          }}
+          style={{ backgroundImage: "url('https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')" }}
         ></div>
         <div className="container-custom h-full flex items-center relative z-10">
           <div className="text-baby-powder">
@@ -142,7 +177,7 @@ const Campsites: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {accommodations.map((accommodation, index) => {
               const features = parseFeatures(accommodation.features);
-              
+
               return (
                 <motion.div
                   key={accommodation.id}
@@ -153,7 +188,7 @@ const Campsites: React.FC = () => {
                 >
                   <Card className="h-full flex flex-col">
                     <CardImage 
-                      src={accommodation.image || 'https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=1'} 
+                      src={accommodation.image} 
                       alt={accommodation.title}
                       className="h-48 sm:h-64"
                     />
@@ -167,24 +202,19 @@ const Campsites: React.FC = () => {
                             Up to {accommodation.capacity} people
                           </span>
                         </div>
-                        
-                        {/* Additional badges for amenities */}
+
                         <div className="flex flex-wrap gap-1 mb-2">
                           {accommodation.hasAC && (
-                            <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
-                              AC
-                            </span>
+                            <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">AC</span>
                           )}
                           {accommodation.hasAttachedBath && (
-                            <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
-                              Attached Bath
-                            </span>
+                            <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Attached Bath</span>
                           )}
                         </div>
 
                         <CardTitle>{accommodation.title}</CardTitle>
                         <p className="text-black/70 mb-3">{accommodation.description}</p>
-                        
+
                         {features.length > 0 && (
                           <div className="flex flex-wrap gap-1 mb-4">
                             {features.slice(0, 3).map((feature, i) => (
@@ -202,23 +232,17 @@ const Campsites: React.FC = () => {
                         <p className="text-sm text-brunswick-green mb-2">
                           {accommodation.availableRooms} rooms available
                         </p>
-
-                        {/* Show packages count if available
-                        {accommodation.packages && accommodation.packages.length > 0 && (
-                          <p className="text-sm text-rose-taupe mb-2">
-                            {accommodation.packages.length} package{accommodation.packages.length !== 1 ? 's' : ''} available
-                          </p>
-                        )} */}
                       </div>
-                      
+
                       <div className="flex justify-between items-center mt-4">
                         <p className="font-bold text-brunswick-green">
                           {formatCurrency(accommodation.price)}
                           <span className="text-black/60 font-normal text-sm"> / person / night</span>
                         </p>
-                        <Button variant="primary" size="sm">
-                          <Link to={`/campsites/${accommodation.id}`}>Book Now</Link>
-                        </Button>
+                        <Link to={`/campsites/${accommodation.id}`}>
+                          <Button variant="primary" size="sm">Book Now</Button>
+                        </Link>
+
                       </div>
                     </CardContent>
                   </Card>

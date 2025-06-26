@@ -135,18 +135,47 @@ const CampsiteBooking: React.FC = () => {
   id ? parseInt(id) : null
   );
   const sliderRef = useRef<any>(null);
-
+  console.log('Accommodation ID:', accommodationId);
   useEffect(() => {
-    if (id) {
-      const found = accommodations.find(acc => acc.id === parseInt(id));
-      if (found) {
-        setAccommodation(found);
-        document.title = `${found.title} - Plumeria Retreat`;
+  const fetchAccommodation = async () => {
+    try {
+      const res = await fetch(`https://plumeriaretreat-back.onrender.com/api/accommodations/${id}`);
+      const data = await res.json();
+      if (data) {
+        const parsed = {
+          ...data,
+          image: (() => {
+            try {
+              const imgArr = JSON.parse(data.image);
+              return Array.isArray(imgArr) ? imgArr[0] : data.image;
+            } catch {
+              return data.image;
+            }
+          })(),
+          features: (() => {
+            try {
+              const featArr = JSON.parse(data.features);
+              return Array.isArray(featArr) ? featArr : [];
+            } catch {
+              return [];
+            }
+          })(),
+          detailedInfo: data.detailed_info ? JSON.parse(data.detailed_info) : {},
+          hasAC: data.has_ac === 1,
+          hasAttachedBath: data.has_attached_bath === 1,
+        };
+        setAccommodation(parsed);
       } else {
         navigate('/campsites');
       }
+    } catch (err) {
+      console.error('Accommodation fetch failed', err);
+      navigate('/campsites');
     }
-  }, [id, navigate]);
+  };
+  if (id) fetchAccommodation();
+}, [id, navigate]);
+
 
   useEffect(() => {
   if (!accommodationId) return;
@@ -548,7 +577,7 @@ const CampsiteBooking: React.FC = () => {
                     </div>
 
                     {/* Meals Information */}
-                    {accommodation.detailedInfo.meals.included && (
+                    {/* {accommodation.detailedInfo.meals.included && (
                       <div className="bg-green-50 p-6 rounded-lg">
                         <h3 className="text-xl font-semibold mb-4 text-green-800 flex items-center">
                           <Utensils className="mr-2" size={20} />
@@ -574,10 +603,10 @@ const CampsiteBooking: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                    )}
+                    )} */}
 
                     {/* Activities */}
-                    <div>
+                    {/* <div>
                       <h3 className="text-xl font-semibold mb-4 text-green-800">Activities Available</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {accommodation.detailedInfo.activities.map((activity: any, index: number) => (
@@ -598,7 +627,7 @@ const CampsiteBooking: React.FC = () => {
                           </div>
                         ))}
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 )}
               </CardContent>
@@ -657,73 +686,82 @@ const CampsiteBooking: React.FC = () => {
 
                   {/* Date Selection */}
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">Select Dates</h3>
-                    <div className="flex flex-col lg:flex-row gap-6">
-                      <div className="flex-1">
-                        {/* Date input that toggles calendar */}
-                        <button
-                          type="button"
-                          className="w-full px-4 py-2 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-600"
-                          onClick={() => {
-                            setShowCalendar(true);
-                            setCalendarTempRange(undefined); // Calendar opens empty
-                          }}
-                        >
-                          {dateRange?.from && dateRange?.to
-                            ? `${format(dateRange.from, 'dd MMM yyyy')} to ${format(dateRange.to, 'dd MMM yyyy')}`
-                            : 'Select your stay dates'}
-                        </button>
-                        {showCalendar && (
-                          <div className="relative z-10 mt-2">
-                            <DayPicker
-                                mode="range"
-                                selected={calendarTempRange}
-                                onSelect={setCalendarTempRange}
-                                numberOfMonths={1}
-                                fromDate={new Date()}
-                                toDate={addDays(new Date(), 365)}
-                                disabled={isDateDisabled}
-                                modifiers={{
-                                  blocked: blockedDates.map((date) => new Date(date)),
-                                }}
-                                modifiersClassNames={{
-                                  blocked: 'bg-red-100 text-gray-400 line-through cursor-not-allowed',
-                                }}
-                                className="mx-auto bg-white p-2 rounded-lg shadow-lg"
-                              />
+          <h3 className="text-lg font-semibold mb-4">Select Dates</h3>
+          <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex-1">
+              {/* Date input that toggles calendar */}
+              <button
+                type="button"
+                className="w-full px-4 py-2 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-600"
+                onClick={() => {
+                  setShowCalendar(true);
+                  setCalendarTempRange(undefined); // Calendar opens empty
+                }}
+              >
+                {dateRange?.from && dateRange?.to
+                  ? `${format(dateRange.from, 'dd MMM yyyy')} to ${format(dateRange.to, 'dd MMM yyyy')}`
+                  : 'Select your stay dates'}
+              </button>
 
-                            <div className="flex justify-end mt-2">
-                              <button
-                                type="button"
-                                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                                onClick={() => {
-                                  if (calendarTempRange?.from && calendarTempRange?.to) {
-                                    setDateRange(calendarTempRange);
-                                    setShowCalendar(false);
-                                  }
-                                }}
-                                disabled={!calendarTempRange?.from || !calendarTempRange?.to}
-                              >
-                                Select
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="lg:w-64">
-                        <div className="bg-green-50 p-4 rounded-lg">
-                          <h4 className="font-semibold text-green-800 mb-3 flex items-center">
-                            <Clock className="mr-2" size={16} />
-                            Check-in/out Times
-                          </h4>
-                          <div className="space-y-2 text-sm">
-                            <p><strong>Check-in:</strong> 3:00 PM</p>
-                            <p><strong>Check-out:</strong> 11:00 AM</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+              {/* Show message when no blocked dates */}
+              {blockedDates.length === 0 && (
+                <p className="text-sm text-green-600 mt-2">
+                  All dates are currently available!
+                </p>
+              )}
+
+              {showCalendar && (
+                <div className="relative z-10 mt-2">
+                  <DayPicker
+                    mode="range"
+                    selected={calendarTempRange}
+                    onSelect={setCalendarTempRange}
+                    numberOfMonths={1}
+                    fromDate={new Date()}
+                    toDate={addDays(new Date(), 365)}
+                    disabled={isDateDisabled}
+                    modifiers={{
+                      blocked: blockedDates.map((date) => new Date(date)),
+                    }}
+                    modifiersClassNames={{
+                      blocked: 'bg-red-100 text-gray-400 line-through cursor-not-allowed',
+                    }}
+                    className="mx-auto bg-white p-2 rounded-lg shadow-lg"
+                  />
+
+                  <div className="flex justify-end mt-2">
+                    <button
+                      type="button"
+                      className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                      onClick={() => {
+                        if (calendarTempRange?.from && calendarTempRange?.to) {
+                          setDateRange(calendarTempRange);
+                          setShowCalendar(false);
+                        }
+                      }}
+                      disabled={!calendarTempRange?.from || !calendarTempRange?.to}
+                    >
+                      Select
+                    </button>
                   </div>
+                </div>
+              )}
+            </div>
+          <div className="lg:w-64">
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-green-800 mb-3 flex items-center">
+                <Clock className="mr-2" size={16} />
+                Check-in/out Times
+              </h4>
+              <div className="space-y-2 text-sm">
+                <p><strong>Check-in:</strong> 3:00 PM</p>
+                <p><strong>Check-out:</strong> 11:00 AM</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
 
                   {/* Room Selection */}
                   <div>
