@@ -527,7 +527,6 @@ const CampsiteBooking: React.FC = () => {
               className="text-white max-w-3xl"
             >
               <h1 className="text-4xl md:text-6xl font-bold mb-4">{accommodation?.title}</h1>
-              <p className="text-xl md:text-2xl opacity-90">{accommodation?.description}</p>
               <div className="flex items-center mt-4 space-x-4">
                 <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm">
                   {accommodation?.type}
