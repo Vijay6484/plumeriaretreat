@@ -763,55 +763,80 @@ const CampsiteBooking: React.FC = () => {
 
 
                   {/* Room Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Rooms</label>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Button
-                        type="button"
-                        onClick={() => setRooms(Math.max(1, rooms - 1))}
-                        disabled={rooms <= 1}
-                        className="px-3 py-1 bg-green-700 text-white rounded"
-                      >-</Button>
-                      <span className="font-bold text-lg">{rooms}</span>
-                      <Button
-                        type="button"
-                        onClick={() => setRooms(Math.min(MAX_ROOMS, rooms + 1))}
-                        disabled={rooms >= Math.min(MAX_ROOMS, accommodation.availableRooms)}
-                        className="px-3 py-1 bg-green-700 text-white rounded"
-                      >+</Button>
-                      <span className="text-xs text-gray-500">{Math.min(MAX_ROOMS, accommodation.availableRooms) - rooms} rooms remaining</span>
-                    </div>
-                    <div className="border rounded p-2 bg-gray-50">
-                      {Array.from({ length: rooms }).map((_, idx) => (
-                        <div key={idx} className="flex items-center gap-4 mb-2">
-                          <span className="w-16 font-medium">Room {idx + 1}</span>
-                          <select
-                            value={roomGuests[idx].adults}
-                            onChange={e => handleRoomGuestChange(idx, 'adults', Number(e.target.value))}
-                            className="border rounded px-2 py-1"
-                          >
-                            {[...Array(MAX_PEOPLE_PER_ROOM + 1).keys()].map(n => (
-                              n + roomGuests[idx].children <= MAX_PEOPLE_PER_ROOM &&
-                              <option key={n} value={n}>{n} Adults</option>
-                            ))}
-                          </select>
-                          <select
-                            value={roomGuests[idx].children}
-                            onChange={e => handleRoomGuestChange(idx, 'children', Number(e.target.value))}
-                            className="border rounded px-2 py-1"
-                          >
-                            {[...Array(MAX_PEOPLE_PER_ROOM + 1).keys()].map(n => (
-                              n + roomGuests[idx].adults <= MAX_PEOPLE_PER_ROOM &&
-                              <option key={n} value={n}>{n} Children</option>
-                            ))}
-                          </select>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-2 text-sm">
-                      <span className="font-medium">Total:</span> {totalAdults} Adults, {totalChildren} Children
-                    </div>
+                 <div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">Rooms</label>
+  <div className="flex items-center gap-2 mb-2">
+    <Button
+      type="button"
+      onClick={() => setRooms(Math.max(1, rooms - 1))}
+      disabled={rooms <= 1}
+      className="px-3 py-1 bg-green-700 text-white rounded"
+    >-</Button>
+    <span className="font-bold text-lg">{rooms}</span>
+    <Button
+      type="button"
+      onClick={() => setRooms(Math.min(MAX_ROOMS, rooms + 1))}
+      disabled={rooms >= Math.min(MAX_ROOMS, accommodation?.availableRooms || MAX_ROOMS)}
+      className="px-3 py-1 bg-green-700 text-white rounded"
+    >+</Button>
+    <span className="text-xs text-gray-500">
+      {Math.max(0, Math.min(MAX_ROOMS, accommodation?.availableRooms || MAX_ROOMS) - rooms)} rooms remaining
+    </span>
+  </div>
+
+  <div className="border rounded p-2 bg-gray-50">
+    {Array.from({ length: rooms }).map((_, idx) => {
+      const adults = roomGuests[idx].adults;
+      const children = roomGuests[idx].children;
+      const adultRate = Number(accommodation?.price || 0);
+      const childRate = Math.round(adultRate * 0.6);
+      const roomSubtotal = adults * adultRate + children * childRate;
+
+      return (
+        <div key={idx} className="flex flex-col gap-1 mb-2 border-b pb-2 last:border-0">
+          <div className="flex items-center gap-4">
+            <span className="w-16 font-medium">Room {idx + 1}</span>
+            <select
+              value={adults}
+              onChange={e => handleRoomGuestChange(idx, 'adults', Number(e.target.value))}
+              className="border rounded px-2 py-1"
+            >
+              {[...Array(MAX_PEOPLE_PER_ROOM + 1).keys()].map(n =>
+                n + children <= MAX_PEOPLE_PER_ROOM && (
+                  <option key={n} value={n}>{n} Adults</option>
+                )
+              )}
+            </select>
+            <select
+              value={children}
+              onChange={e => handleRoomGuestChange(idx, 'children', Number(e.target.value))}
+              className="border rounded px-2 py-1"
+            >
+              {[...Array(MAX_PEOPLE_PER_ROOM + 1).keys()].map(n =>
+                n + adults <= MAX_PEOPLE_PER_ROOM && (
+                  <option key={n} value={n}>{n} Children</option>
+                )
+              )}
+            </select>
+          </div>
+
+          <div className="text-sm text-gray-700 ml-16">
+            {adults} Adults x ₹{adultRate} + {children} Children x ₹{childRate} = <span className="font-semibold">₹{roomSubtotal}</span>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+
+  <div className="mt-2 text-sm">
+    <span className="font-medium">Total:</span> {totalAdults} Adults, {totalChildren} Children
+  </div>
+
+  <div className="mt-1 text-sm text-gray-600">
+    Adult rate: ₹{accommodation?.price || 0} / night, Child rate: ₹{Math.round((accommodation?.price || 0) * 0.6)} / night
+  </div>
                   </div>
+
 
                   {/* Food Preferences */}
                   <div>

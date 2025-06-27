@@ -20,7 +20,7 @@ const Home: React.FC = () => {
       <WeatherWidget />
       <GalleryPreview />
       <NearbyLocations />
-      <CallToAction />
+      {/* <CallToAction /> */}
     </div>
   );
 };
