@@ -10,17 +10,31 @@ import NearbyLocations from '../components/home/NearbyLocations';
 const Home: React.FC = () => {
   useEffect(() => {
     document.title = 'Plumeria Retreat - Lakeside Camping & Cottages';
+    
+    // Handle scroll to section if hash is present in URL
+    if (window.location.hash) {
+      const sectionId = window.location.hash.substring(1);
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   }, []);
   
   return (
     <div>
-      <Hero />
+      <section id="home">
+        <Hero />
+      </section>
       <Highlights />
-      <Campsites />
+      <section id="campsites">
+        <Campsites />
+      </section>
       <WeatherWidget />
-      <GalleryPreview />
+      <section id="gallery">
+        <GalleryPreview />
+      </section>
       <NearbyLocations />
-      {/* <CallToAction /> */}
     </div>
   );
 };

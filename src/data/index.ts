@@ -3,18 +3,17 @@ import { Accommodation, Package, MealPlan, Activity, FAQ, GalleryImage, Testimon
 type NavItem = {
   label: string;
   path: string;
+  sectionId?: string; 
 };
 
 // Navigation Items
 export const navItems: NavItem[] = [
-  { label: 'Home', path: '/' },
-  { label: 'Campsites', path: '/campsites' },
-  // { label: 'Cottages', path: '/packages' },
-  { label: 'Gallery', path: '/gallery' },
+  { label: 'Home', path: '/', sectionId: 'home' },
+  { label: 'Campsites', path: '/', sectionId: 'campsites' },
+  { label: 'Gallery', path: '/', sectionId: 'gallery' },
   { label: 'About', path: '/about' },
   { label: 'Contact', path: '/contact' },
 ];
-
 // Nearby Locations
 export const nearbyLocations: NearbyLocation[] = [
   {
