@@ -315,7 +315,7 @@ interface Accommodation {
   max_guests: number;
 }
 
-const API_BASE_URL = 'http://31.97.62.213:5001';
+const API_BASE_URL = 'https://api.plumeriaretreat.com/user';
 
 const Campsites: React.FC = () => {
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);

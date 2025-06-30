@@ -1194,8 +1194,8 @@ import Card, { CardContent, CardImage } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import 'react-day-picker/dist/style.css';
 
-const API_BASE_URL = 'http://31.97.62.213:5000';
-const BACKEND_URL = 'http://31.97.62.213:5001';
+const API_BASE_URL = 'https://api.plumeriaretreat.com/admin';
+const BACKEND_URL = 'https://api.plumeriaretreat.com/user';
 
 interface GuestInfo {
   name: string;

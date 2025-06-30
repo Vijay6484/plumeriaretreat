@@ -24,7 +24,7 @@ const PaymentSuccess = () => {
       try {
         // 1. Verify payment status with backend
         const verifyRes = await fetch(
-          `http://31.97.62.213:5000/bookings/${bookingId}/verify`
+          `https://api.plumeriaretreat.com/admin/bookings/${bookingId}/verify`
         );
         
         if (!verifyRes.ok) {
@@ -40,7 +40,7 @@ const PaymentSuccess = () => {
 
         // 2. Get booking details
         const bookingRes = await fetch(
-          `http://31.97.62.213:5000/bookings/${bookingId}`
+          `https://api.plumeriaretreat.com/admin/bookings/${bookingId}`
         );
         
         if (!bookingRes.ok) {
@@ -52,7 +52,7 @@ const PaymentSuccess = () => {
 
         // 3. Send confirmation email
         try {
-          await fetch('http://31.97.62.213:5000/bookings/send-confirmation', {
+          await fetch('https://api.plumeriaretreat.com/admin/bookings/send-confirmation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ booking_id: bookingId })

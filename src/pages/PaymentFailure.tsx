@@ -27,7 +27,7 @@ const PaymentFailure = () => {
     
     try {
       const response = await fetch(
-        `http://31.97.62.213:5000/bookings/${bookingId}/retry-payment`
+        `https://api.plumeriaretreat.com/admin/bookings/${bookingId}/retry-payment`
       );
       
       const data = await response.json();
