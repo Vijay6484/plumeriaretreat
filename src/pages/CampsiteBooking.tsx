@@ -1339,12 +1339,10 @@ const CampsiteBooking: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const sliderRef = useRef<any>(null);
 
-  // Calculate total guests
   const totalAdults = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.adults, 0);
   const totalChildren = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.children, 0);
   const totalGuests = totalAdults + totalChildren;
 
-  // Automatically adjust food counts when total guests changes
   useEffect(() => {
     setFoodCounts(prev => {
       const totalFood = prev.veg + prev.nonveg + prev.jain;
@@ -1435,7 +1433,6 @@ const CampsiteBooking: React.FC = () => {
     return isPast || isBlocked;
   };
 
-  // Fetch accommodation details
   useEffect(() => {
     const fetchAccommodation = async () => {
       try {
@@ -1477,7 +1474,6 @@ const CampsiteBooking: React.FC = () => {
     if (id) fetchAccommodation();
   }, [id, navigate]);
 
-  // Fetch blocked dates
   useEffect(() => {
     if (!id) return;
 
@@ -1497,7 +1493,6 @@ const CampsiteBooking: React.FC = () => {
     fetchBlockedDates();
   }, [id]);
 
-  // Fetch coupons
   useEffect(() => {
     const fetchCoupons = async () => {
       try {
@@ -1516,7 +1511,6 @@ const CampsiteBooking: React.FC = () => {
     fetchCoupons();
   }, []);
 
-  // Fetch packages
   useEffect(() => {
     const fetchPackages = async () => {
       try {
@@ -1670,132 +1664,120 @@ const CampsiteBooking: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-const handleBooking = async () => {
-  if (!validateForm()) return;
-  
-  setLoading(true);
-  //print id 
-  
-  try {
-    // Format dates to YYYY-MM-DD (without time) to match database date type
-    const formatDate = (date: Date | undefined) => date ? format(date, 'yyyy-MM-dd') : undefined;
-
-    // Create booking payload with proper field names and types
-    const bookingPayload = {
-      guest_name: guestInfo.name,
-      guest_email: guestInfo.email,
-      guest_phone: guestInfo.phone || null, // Can be null
-      accommodation_id: id,
-      check_in: formatDate(dateRange?.from),
-      check_out: formatDate(dateRange?.to),
-      adults: totalAdults,
-      children: totalChildren,
-      rooms: rooms,
-      food_veg: foodCounts.veg,
-      food_nonveg: foodCounts.nonveg,
-      food_jain: foodCounts.jain,
-      total_amount: totalAmount, // decimal(10,2)
-      advance_amount: advanceAmount, // decimal(10,2)
-      package_id: selectedPackage?.id,
-      coupon_code: couponApplied ? coupon : null,
-    };
-
-    console.log('Booking payload:', bookingPayload);
-
-    // Create booking
-    const bookingResponse = await fetch(`http://localhost:5000/admin/bookings`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(bookingPayload),
-    });
-
-    const bookingData = await bookingResponse.json();
-    console.log('Booking response:', bookingData);
-
-    if (!bookingResponse.ok) {
-      // Handle backend validation errors
-      const errorMsg = bookingData.error || bookingData.message || 'Failed to create booking';
-      throw new Error(errorMsg);
-    }
-
-    // Extract booking ID from the response
-    const bookingId = bookingData.data?.booking_id || bookingData.booking_id;
-    if (!bookingId) {
-      throw new Error('Booking ID not found in response');
-    }
-
-    // Prepare payment data
-    const paymentPayload = {
-      amount: advanceAmount,
-      firstname: guestInfo.name,
-      email: guestInfo.email,
-      phone: guestInfo.phone || '',
-      productinfo: `Booking for ${accommodation?.title}`,
-      booking_id: bookingId,
-      surl: `${window.location.origin}/payment/success`,
-      furl: `${window.location.origin}/payment/failure`,
-    };
-
-    console.log('Payment payload:', paymentPayload);
+  const handleBooking = async () => {
+    if (!validateForm()) return;
     
-    // Initiate payment
-    const paymentResponse = await fetch(`http://localhost:5000/admin/bookings/payments/payu`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(paymentPayload),
-    });
-
-    const paymentData = await paymentResponse.json();
-    console.log('Payment response:', paymentData);
-
-    if (!paymentResponse.ok) {
-      throw new Error(paymentData.error || paymentData.message || 'Failed to initiate payment');
-    }
-
-    // Validate payment data
-    if (!paymentData.payment_data || typeof paymentData.payment_data !== 'object') {
-      console.error('Invalid payment data structure:', paymentData);
-      throw new Error('Invalid payment data received from server');
-    }
-
-    // Redirect to PayU payment page
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = paymentData.payu_url;
-
-    Object.entries(paymentData.payment_data).forEach(([key, value]) => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = value as string;
-      form.appendChild(input);
-    });
-
-    document.body.appendChild(form);
-    form.submit();
-
-  } catch (error: any) {
-    console.error('Full booking error:', error);
+    setLoading(true);
     
-    // Show backend error message if available
-    let errorMessage = error.message || 'Something went wrong. Please try again.';
-    
-    // More specific message for common issues
-    if (error.message.includes('Cannot convert undefined or null to object')) {
-      errorMessage = 'Payment system configuration error. Please contact support.';
+    try {
+      const formatDate = (date: Date | undefined) => date ? format(date, 'yyyy-MM-dd') : undefined;
+
+      const bookingPayload = {
+        guest_name: guestInfo.name,
+        guest_email: guestInfo.email,
+        guest_phone: guestInfo.phone || null,
+        accommodation_id: id,
+        check_in: formatDate(dateRange?.from),
+        check_out: formatDate(dateRange?.to),
+        adults: totalAdults,
+        children: totalChildren,
+        rooms: rooms,
+        food_veg: foodCounts.veg,
+        food_nonveg: foodCounts.nonveg,
+        food_jain: foodCounts.jain,
+        total_amount: totalAmount,
+        advance_amount: advanceAmount,
+        package_id: selectedPackage?.id,
+        coupon_code: couponApplied ? coupon : null,
+      };
+
+      console.log('Booking payload:', bookingPayload);
+
+      const bookingResponse = await fetch(`${API_BASE_URL}/admin/bookings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingPayload),
+      });
+
+      const bookingData = await bookingResponse.json();
+      console.log('Booking response:', bookingData);
+
+      if (!bookingResponse.ok) {
+        const errorMsg = bookingData.error || bookingData.message || 'Failed to create booking';
+        throw new Error(errorMsg);
+      }
+
+      const bookingId = bookingData.data?.booking_id || bookingData.booking_id;
+      if (!bookingId) {
+        throw new Error('Booking ID not found in response');
+      }
+
+      const paymentPayload = {
+        amount: advanceAmount,
+        firstname: guestInfo.name,
+        email: guestInfo.email,
+        phone: guestInfo.phone || '',
+        productinfo: `Booking for ${accommodation?.title}`,
+        booking_id: bookingId,
+        surl: `${window.location.origin}/payment/success`,
+        furl: `${window.location.origin}/payment/failure`,
+      };
+
+      console.log('Payment payload:', paymentPayload);
+      
+      const paymentResponse = await fetch(`${API_BASE_URL}/admin/bookings/payments/payu`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paymentPayload),
+      });
+
+      const paymentData = await paymentResponse.json();
+      console.log('Payment response:', paymentData);
+
+      if (!paymentResponse.ok) {
+        throw new Error(paymentData.error || paymentData.message || 'Failed to initiate payment');
+      }
+
+      if (!paymentData.payment_data || typeof paymentData.payment_data !== 'object') {
+        console.error('Invalid payment data structure:', paymentData);
+        throw new Error('Invalid payment data received from server');
+      }
+
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = paymentData.payu_url;
+
+      Object.entries(paymentData.payment_data).forEach(([key, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value as string;
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
+
+    } catch (error: any) {
+      console.error('Full booking error:', error);
+      
+      let errorMessage = error.message || 'Something went wrong. Please try again.';
+      
+      if (error.message.includes('Cannot convert undefined or null to object')) {
+        errorMessage = 'Payment system configuration error. Please contact support.';
+      }
+      else if (error.message.includes('Booking ID not found')) {
+        errorMessage = 'Booking created but failed to get booking ID. Please contact support.';
+      }
+      
+      alert(errorMessage);
+      setLoading(false);
     }
-    else if (error.message.includes('Booking ID not found')) {
-      errorMessage = 'Booking created but failed to get booking ID. Please contact support.';
-    }
-    
-    alert(errorMessage);
-    setLoading(false);
-  }
-};
+  };
 
   const sliderSettings = {
     dots: true,
@@ -1952,6 +1934,27 @@ const handleBooking = async () => {
               </CardContent>
             </Card>
 
+            {/* Things to Carry - Mobile Only */}
+            <div className="block lg:hidden">
+              <Card>
+                <CardContent>
+                  <h3 className="text-lg font-semibold mb-4 text-orange-800 flex items-center">
+                    <CheckCircle className="mr-2" size={20} />
+                    Things to Carry
+                  </h3>
+                  <div className="bg-orange-50 p-4 rounded-lg">
+                    <ol className="list-decimal list-inside space-y-2 text-orange-700">
+                      <li>Always good to carry extra pair of clothes</li>
+                      <li>Winter and warm clothes as it will be cold night</li>
+                      <li>Toothbrush and paste (toiletries)</li>
+                      <li>Any other things you feel necessary</li>
+                      <li>Personal medicine if any</li>
+                    </ol>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             <Card>
               <CardContent>
                 <h2 className="text-3xl font-bold text-green-800 mb-6">Book Your Stay</h2>
@@ -2008,30 +2011,6 @@ const handleBooking = async () => {
                         {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                       </div>
                     </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Select Package</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {packages.map((pkg) => (
-                        <div 
-                          key={pkg.id}
-                          className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                            selectedPackage?.id === pkg.id 
-                              ? 'border-green-500 bg-green-50' 
-                              : 'border-gray-200 hover:border-green-300'
-                          }`}
-                          onClick={() => setSelectedPackage(pkg)}
-                        >
-                          <h4 className="font-bold text-lg mb-2">{pkg.name}</h4>
-                          <p className="text-gray-600 text-sm">{pkg.description}</p>
-                          <div className="mt-3 text-green-700 font-semibold">
-                            ₹{pkg.price}/night
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    {errors.package && <p className="text-red-500 text-sm mt-2">{errors.package}</p>}
                   </div>
 
                   <div>
@@ -2243,39 +2222,29 @@ const handleBooking = async () => {
                 </div>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardContent>
-                <h3 className="text-lg font-semibold mb-4 text-orange-800 flex items-center">
-                  <CheckCircle className="mr-2" size={20} />
-                  Things to Carry
-                </h3>
-                <div className="bg-orange-50 p-4 rounded-lg">
-                  <ol className="list-decimal list-inside space-y-2 text-orange-700">
-                    <li>Always good to carry extra pair of clothes</li>
-                    <li>Winter and warm clothes as it will be cold night</li>
-                    <li>Toothbrush and paste (toiletries)</li>
-                    <li>Any other things you feel necessary</li>
-                    <li>Personal medicine if any</li>
-                  </ol>
-                </div>
-              </CardContent>
-            </Card>
           </div>
-
-          <div className="lg:sticky lg:top-24 h-fit">
-            <div className="mb-8 rounded-lg overflow-hidden shadow">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6103.946344270747!2d73.49323289387719!3d18.66382967533796!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2a9180b52a2fd%3A0xa5d86c10d8d9846d!2sPlumeria%20Retreat%20%7C%20Pawna%20Lakeside%20Cottages!5e1!3m2!1sen!2sin!4v1749631888045!5m2!1sen!2sin"
-                width="100%"
-                height="250"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Plumeria Retreat Location"
-              ></iframe>
+          <div className="lg:sticky lg:top-24 h-fit space-y-6">
+            {/* Things to Carry - Desktop Only */}
+            <div className="hidden lg:block">
+              <Card>
+                <CardContent>
+                  <h3 className="text-lg font-semibold mb-4 text-orange-800 flex items-center">
+                    <CheckCircle className="mr-2" size={20} />
+                    Things to Carry
+                  </h3>
+                  <div className="bg-orange-50 p-4 rounded-lg">
+                    <ol className="list-decimal list-inside space-y-2 text-orange-700">
+                      <li>Always good to carry extra pair of clothes</li>
+                      <li>Winter and warm clothes as it will be cold night</li>
+                      <li>Toothbrush and paste (toiletries)</li>
+                      <li>Any other things you feel necessary</li>
+                      <li>Personal medicine if any</li>
+                    </ol>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+
             <Card>
               <CardContent>
                 <h3 className="text-2xl font-bold text-green-800 mb-6">Booking Summary</h3>
@@ -2422,7 +2391,7 @@ const handleBooking = async () => {
               </CardContent>
             </Card>
 
-            <Card className="mt-6">
+            <Card>
               <CardContent>
                 <h3 className="text-lg font-semibold text-green-800 mb-4">Need Help?</h3>
                 <div className="space-y-3 text-sm">
@@ -2466,6 +2435,20 @@ const handleBooking = async () => {
                 </div>
               </CardContent>
             </Card>
+
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6103.946344270747!2d73.49323289387719!3d18.66382967533796!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2a9180b52a2fd%3A0xa5d86c10d8d9846d!2sPlumeria%20Retreat%20%7C%20Pawna%20Lakeside%20Cottages!5e1!3m2!1sen!2sin!4v1749631888045!5m2!1sen!2sin"
+                width="100%"
+                height="250"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Plumeria Retreat Location"
+                className="rounded-lg"
+              ></iframe>
+            </div>
           </div>
         </div>
       </div>
