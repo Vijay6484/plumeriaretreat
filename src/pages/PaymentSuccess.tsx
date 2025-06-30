@@ -24,7 +24,7 @@ const PaymentSuccess = () => {
       try {
         // 1. Verify payment status with backend
         const verifyRes = await fetch(
-          `https://adminplumeria-back.onrender.com/bookings/${bookingId}/verify`
+          `http://31.97.62.213:5000/bookings/${bookingId}/verify`
         );
         
         if (!verifyRes.ok) {
@@ -40,7 +40,7 @@ const PaymentSuccess = () => {
 
         // 2. Get booking details
         const bookingRes = await fetch(
-          `https://adminplumeria-back.onrender.com/bookings/${bookingId}`
+          `http://31.97.62.213:5000/bookings/${bookingId}`
         );
         
         if (!bookingRes.ok) {
@@ -52,7 +52,7 @@ const PaymentSuccess = () => {
 
         // 3. Send confirmation email
         try {
-          await fetch('https://adminplumeria-back.onrender.com/bookings/send-confirmation', {
+          await fetch('http://31.97.62.213:5000/bookings/send-confirmation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ booking_id: bookingId })
