@@ -8,14 +8,14 @@ import Gallery from './pages/Gallery';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
-// import Packages from './pages/Packages';
-// import PackageBooking from './pages/PackageBooking';
 import CampsiteBooking from './pages/CampsiteBooking';
-import { Success, Failure, Cancel } from './pages/Payments';
+import { Success, Failure, Cancel } from './pages/PaymentSuccesss';
+import ScrollToTop from '../src/utils/ScrollToTop';  // ✅ import it
 
 function App() {
   return (
     <Router>
+      <ScrollToTop /> {/* ✅ add this right after Router opens */}
       <div className="flex flex-col min-h-screen">
         <Header />
         <main className="flex-grow">
@@ -23,8 +23,6 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/campsites" element={<Campsites />} />
             <Route path="/campsites/:id" element={<CampsiteBooking />} />
-            {/* <Route path="/packages" element={<Packages />} /> */}
-            {/* <Route path="/packages" element={<PackageBooking />} /> */}
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
@@ -40,4 +38,4 @@ function App() {
   );
 }
 
-export default App
+export default App;

@@ -1154,7 +1154,7 @@
 
 
 
-import React, { useEffect, useState, useRef, KeyboardEvent } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DayPicker, DateRange } from 'react-day-picker';
@@ -1185,19 +1185,71 @@ import {
   Activity
 } from 'lucide-react';
 import {
-  accommodations,
   MAX_ROOMS,
   MAX_PEOPLE_PER_ROOM,
   PARTIAL_PAYMENT_MIN_PERCENT,
-  VALID_COUPONS
 } from '../data';
 import { formatCurrency } from '../utils/helpers';
 import Card, { CardContent, CardImage } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Package } from '../types';
 import 'react-day-picker/dist/style.css';
 
 const API_BASE_URL = 'https://adminplumeria-back.onrender.com';
+const BACKEND_URL = 'https://plumeriaretreat-back.onrender.com';
+
+interface GuestInfo {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+interface RoomGuest {
+  adults: number;
+  children: number;
+}
+
+interface FoodCounts {
+  veg: number;
+  nonveg: number;
+  jain: number;
+}
+
+interface Activity {
+  name: string;
+  price: number;
+}
+
+interface Accommodation {
+  id: number;
+  title: string;
+  price: number;
+  type: string;
+  capacity: number;
+  availableRooms?: number;
+  features: string[];
+  detailedInfo?: {
+    activities?: Activity[];
+  };
+  image: string | string[];
+}
+
+interface Coupon {
+  id: number;
+  code: string;
+  discountType: 'fixed' | 'percentage';
+  discount: string;
+  minAmount: string;
+  maxDiscount?: string;
+  expiryDate: string;
+  active: boolean;
+}
+
+interface Package {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+}
 
 const imageLinks = [
   "https://images.pexels.com/photos/9144680/pexels-photo-9144680.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
@@ -1257,14 +1309,13 @@ const PartyEffect: React.FC<{ show: boolean; onComplete: () => void }> = ({ show
 const CampsiteBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [accommodation, setAccommodation] = useState<any>(null);
+  const [accommodation, setAccommodation] = useState<Accommodation | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [guests, setGuests] = useState({ adults: 1, children: 0 });
   const [rooms, setRooms] = useState(1);
-  const [roomGuests, setRoomGuests] = useState(
+  const [roomGuests, setRoomGuests] = useState<RoomGuest[]>(
     Array.from({ length: MAX_ROOMS }, () => ({ adults: 2, children: 0 }))
   );
-  const [guestInfo, setGuestInfo] = useState({
+  const [guestInfo, setGuestInfo] = useState<GuestInfo>({
     name: '',
     email: '',
     phone: ''
@@ -1274,18 +1325,18 @@ const CampsiteBooking: React.FC = () => {
   const [couponApplied, setCouponApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [foodChoice, setFoodChoice] = useState<'veg' | 'nonveg' | 'jain'>('veg');
-  const [advanceAmount, setAdvanceAmount] = useState<number | null>(null);
-  const [foodCounts, setFoodCounts] = useState({ veg: 0, nonveg: 0, jain: 0 });
+  const [foodCounts, setFoodCounts] = useState<FoodCounts>({ veg: 0, nonveg: 0, jain: 0 });
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarTempRange, setCalendarTempRange] = useState<DateRange | undefined>(undefined);
   const [fullscreenImgIdx, setFullscreenImgIdx] = useState<number | null>(null);
   const [showPartyEffect, setShowPartyEffect] = useState(false);
   const [selectedActivities, setSelectedActivities] = useState<{ [key: string]: boolean }>({});
-  const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
+  const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
-  const [accommodationId, setAccommodationId] = useState<number | null>(
-    id ? parseInt(id) : null
-  );
+  const [maxiRoom, setMaxiRoom] = useState<number>(MAX_ROOMS);
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const sliderRef = useRef<any>(null);
 
   // Calculate total guests
@@ -1376,12 +1427,6 @@ const CampsiteBooking: React.FC = () => {
     });
   };
 
-  const handleAdvanceChange = (val: number) => {
-    if (val === minAdvance || val === totalAmount) {
-      setAdvanceAmount(val);
-    }
-  };
-
   const isDateDisabled = (date: Date) => {
     const isPast = isBefore(date, startOfDay(new Date()));
     const isBlocked = blockedDates.some(
@@ -1390,13 +1435,16 @@ const CampsiteBooking: React.FC = () => {
     return isPast || isBlocked;
   };
 
+  // Fetch accommodation details
   useEffect(() => {
     const fetchAccommodation = async () => {
       try {
-        const res = await fetch(`https://plumeriaretreat-back.onrender.com/api/accommodations/${id}`);
+        const res = await fetch(`${BACKEND_URL}/api/accommodations/${id}`);
         const data = await res.json();
+        
+        setMaxiRoom(data.rooms);
         if (data) {
-          const parsed = {
+          const parsed: Accommodation = {
             ...data,
             image: (() => {
               try {
@@ -1415,8 +1463,6 @@ const CampsiteBooking: React.FC = () => {
               }
             })(),
             detailedInfo: data.detailed_info ? JSON.parse(data.detailed_info) : {},
-            hasAC: data.has_ac === 1,
-            hasAttachedBath: data.has_attached_bath === 1,
           };
           setAccommodation(parsed);
         } else {
@@ -1427,15 +1473,17 @@ const CampsiteBooking: React.FC = () => {
         navigate('/campsites');
       }
     };
+    
     if (id) fetchAccommodation();
   }, [id, navigate]);
 
+  // Fetch blocked dates
   useEffect(() => {
-    if (!accommodationId) return;
+    if (!id) return;
 
     const fetchBlockedDates = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/admin/calendar/blocked-dates/id?accommodation_id=${accommodationId}`);
+        const res = await fetch(`${API_BASE_URL}/admin/calendar/blocked-dates/id?accommodation_id=${id}`);
         const json = await res.json();
         if (json.success) {
           const dates = json.data.map((d: any) => new Date(d.blocked_date));
@@ -1447,15 +1495,16 @@ const CampsiteBooking: React.FC = () => {
     };
 
     fetchBlockedDates();
-  }, [accommodationId]);
+  }, [id]);
 
+  // Fetch coupons
   useEffect(() => {
     const fetchCoupons = async () => {
       try {
-        const response = await fetch('https://adminplumeria-back.onrender.com/admin/coupons');
+        const response = await fetch(`${API_BASE_URL}/admin/coupons`);
         const result = await response.json();
         if (result.success && result.data) {
-          const activeCoupons = result.data.filter((coupon: any) =>
+          const activeCoupons = result.data.filter((coupon: Coupon) =>
             coupon.active && new Date(coupon.expiryDate) > new Date()
           );
           setAvailableCoupons(activeCoupons.slice(0, 3));
@@ -1465,6 +1514,23 @@ const CampsiteBooking: React.FC = () => {
       }
     };
     fetchCoupons();
+  }, []);
+
+  // Fetch packages
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/packages`);
+        const result = await response.json();
+        if (result && result.length > 0) {
+          setPackages(result);
+          setSelectedPackage(result[0]);
+        }
+      } catch (error) {
+        console.error('Error fetching packages:', error);
+      }
+    };
+    fetchPackages();
   }, []);
 
   useEffect(() => {
@@ -1485,7 +1551,7 @@ const CampsiteBooking: React.FC = () => {
 
     let activityCost = 0;
     if (accommodation.detailedInfo?.activities) {
-      accommodation.detailedInfo.activities.forEach((activity: any) => {
+      accommodation.detailedInfo.activities.forEach((activity: Activity) => {
         if (selectedActivities[activity.name] && activity.price > 0) {
           activityCost += activity.price * totalGuests;
         }
@@ -1498,6 +1564,7 @@ const CampsiteBooking: React.FC = () => {
 
   const totalAmount = calculateTotal();
   const minAdvance = Math.round(totalAmount * PARTIAL_PAYMENT_MIN_PERCENT);
+  const [advanceAmount, setAdvanceAmount] = useState<number>(minAdvance);
 
   useEffect(() => {
     setAdvanceAmount(minAdvance);
@@ -1507,7 +1574,7 @@ const CampsiteBooking: React.FC = () => {
     const code = coupon.trim().toUpperCase();
 
     try {
-      const res = await fetch(`https://adminplumeria-back.onrender.com/admin/coupons?search=${code}`);
+      const res = await fetch(`${API_BASE_URL}/admin/coupons?search=${code}`);
       const result = await res.json();
 
       if (!res.ok || !result.success || !result.data || result.data.length === 0) {
@@ -1550,7 +1617,7 @@ const CampsiteBooking: React.FC = () => {
         }
       } else if (couponData.discountType === 'percentage') {
         const percent = parseFloat(couponData.discount);
-        const maxAllowed = parseFloat(couponData.maxDiscount);
+        const maxAllowed = parseFloat(couponData.maxDiscount || '0');
         appliedDiscount = (subtotal * percent) / 100;
         if (appliedDiscount > maxAllowed) {
           appliedDiscount = maxAllowed;
@@ -1570,7 +1637,7 @@ const CampsiteBooking: React.FC = () => {
     }
   };
 
-  const handleCouponSelect = (selectedCoupon: any) => {
+  const handleCouponSelect = (selectedCoupon: Coupon) => {
     setCoupon(selectedCoupon.code);
   };
 
@@ -1581,28 +1648,154 @@ const CampsiteBooking: React.FC = () => {
     }));
   };
 
-  const handleBooking = async () => {
-    // Show warnings for missing required fields but don't prevent submission
-    if (!guestInfo.name) {
-      alert('Please enter your name');
-      return;
-    }
-    if (!dateRange?.from || !dateRange?.to) {
-      alert('Please select your stay dates');
-      return;
-    }
+  const handleAdvanceChange = (val: number) => {
+    setAdvanceAmount(val);
+  };
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+    
+    if (!guestInfo.name) newErrors.name = 'Name is required';
+    if (!guestInfo.email) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(guestInfo.email)) newErrors.email = 'Email is invalid';
+    if (!guestInfo.phone) newErrors.phone = 'Phone is required';
+    else if (!/^\d{10}$/.test(guestInfo.phone)) newErrors.phone = 'Phone must be 10 digits';
+    if (!dateRange?.from || !dateRange?.to) newErrors.dates = 'Please select dates';
+    if (!selectedPackage) newErrors.package = 'Please select a package';
     if ((foodCounts.veg + foodCounts.nonveg + foodCounts.jain) !== totalGuests) {
-      alert('Food preferences must match total number of guests');
-      return;
+      newErrors.food = 'Food preferences must match total guests';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+const handleBooking = async () => {
+  if (!validateForm()) return;
+  
+  setLoading(true);
+  //print id 
+  
+  try {
+    // Format dates to YYYY-MM-DD (without time) to match database date type
+    const formatDate = (date: Date | undefined) => date ? format(date, 'yyyy-MM-dd') : undefined;
+
+    // Create booking payload with proper field names and types
+    const bookingPayload = {
+      guest_name: guestInfo.name,
+      guest_email: guestInfo.email,
+      guest_phone: guestInfo.phone || null, // Can be null
+      accommodation_id: id,
+      check_in: formatDate(dateRange?.from),
+      check_out: formatDate(dateRange?.to),
+      adults: totalAdults,
+      children: totalChildren,
+      rooms: rooms,
+      food_veg: foodCounts.veg,
+      food_nonveg: foodCounts.nonveg,
+      food_jain: foodCounts.jain,
+      total_amount: totalAmount, // decimal(10,2)
+      advance_amount: advanceAmount, // decimal(10,2)
+      package_id: selectedPackage?.id,
+      coupon_code: couponApplied ? coupon : null,
+    };
+
+    console.log('Booking payload:', bookingPayload);
+
+    // Create booking
+    const bookingResponse = await fetch(`http://localhost:5000/admin/bookings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bookingPayload),
+    });
+
+    const bookingData = await bookingResponse.json();
+    console.log('Booking response:', bookingData);
+
+    if (!bookingResponse.ok) {
+      // Handle backend validation errors
+      const errorMsg = bookingData.error || bookingData.message || 'Failed to create booking';
+      throw new Error(errorMsg);
     }
 
-    setLoading(true);
-    setTimeout(() => {
-      alert('Booking request submitted! We will contact you shortly.');
-      setLoading(false);
-      navigate('/');
-    }, 2000);
-  };
+    // Extract booking ID from the response
+    const bookingId = bookingData.data?.booking_id || bookingData.booking_id;
+    if (!bookingId) {
+      throw new Error('Booking ID not found in response');
+    }
+
+    // Prepare payment data
+    const paymentPayload = {
+      amount: advanceAmount,
+      firstname: guestInfo.name,
+      email: guestInfo.email,
+      phone: guestInfo.phone || '',
+      productinfo: `Booking for ${accommodation?.title}`,
+      booking_id: bookingId,
+      surl: `${window.location.origin}/payment/success`,
+      furl: `${window.location.origin}/payment/failure`,
+    };
+
+    console.log('Payment payload:', paymentPayload);
+    
+    // Initiate payment
+    const paymentResponse = await fetch(`http://localhost:5000/admin/bookings/payments/payu`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(paymentPayload),
+    });
+
+    const paymentData = await paymentResponse.json();
+    console.log('Payment response:', paymentData);
+
+    if (!paymentResponse.ok) {
+      throw new Error(paymentData.error || paymentData.message || 'Failed to initiate payment');
+    }
+
+    // Validate payment data
+    if (!paymentData.payment_data || typeof paymentData.payment_data !== 'object') {
+      console.error('Invalid payment data structure:', paymentData);
+      throw new Error('Invalid payment data received from server');
+    }
+
+    // Redirect to PayU payment page
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = paymentData.payu_url;
+
+    Object.entries(paymentData.payment_data).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value as string;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+
+  } catch (error: any) {
+    console.error('Full booking error:', error);
+    
+    // Show backend error message if available
+    let errorMessage = error.message || 'Something went wrong. Please try again.';
+    
+    // More specific message for common issues
+    if (error.message.includes('Cannot convert undefined or null to object')) {
+      errorMessage = 'Payment system configuration error. Please contact support.';
+    }
+    else if (error.message.includes('Booking ID not found')) {
+      errorMessage = 'Booking created but failed to get booking ID. Please contact support.';
+    }
+    
+    alert(errorMessage);
+    setLoading(false);
+  }
+};
 
   const sliderSettings = {
     dots: true,
@@ -1620,7 +1813,7 @@ const CampsiteBooking: React.FC = () => {
   };
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent | KeyboardEventInit) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (fullscreenImgIdx !== null) {
         if (e.key === 'ArrowRight') {
           setFullscreenImgIdx((prev) => prev !== null ? (prev + 1) % imageLinks.length : 0);
@@ -1636,11 +1829,11 @@ const CampsiteBooking: React.FC = () => {
         if (e.key === 'ArrowLeft') sliderRef.current?.slickPrev();
       }
     };
-    window.addEventListener('keydown', handleKeyDown as any);
-    return () => window.removeEventListener('keydown', handleKeyDown as any);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [fullscreenImgIdx]);
 
-  if (!accommodation) {
+  if (!accommodation || packages.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -1776,9 +1969,12 @@ const CampsiteBooking: React.FC = () => {
                           required
                           value={guestInfo.name}
                           onChange={(e) => setGuestInfo(prev => ({ ...prev, name: e.target.value }))}
-                          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                          className={`w-full px-4 py-2 rounded-lg border ${
+                            errors.name ? 'border-red-500' : 'border-gray-300'
+                          } focus:ring-2 focus:ring-green-600 focus:border-transparent`}
                           placeholder="Enter your full name"
                         />
+                        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1789,23 +1985,53 @@ const CampsiteBooking: React.FC = () => {
                           required
                           value={guestInfo.email}
                           onChange={(e) => setGuestInfo(prev => ({ ...prev, email: e.target.value }))}
-                          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                          className={`w-full px-4 py-2 rounded-lg border ${
+                            errors.email ? 'border-red-500' : 'border-gray-300'
+                          } focus:ring-2 focus:ring-green-600 focus:border-transparent`}
                           placeholder="Enter your email"
                         />
+                        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Phone Number
+                          Phone Number *
                         </label>
                         <input
                           type="tel"
                           value={guestInfo.phone}
                           onChange={(e) => setGuestInfo(prev => ({ ...prev, phone: e.target.value }))}
-                          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                          className={`w-full px-4 py-2 rounded-lg border ${
+                            errors.phone ? 'border-red-500' : 'border-gray-300'
+                          } focus:ring-2 focus:ring-green-600 focus:border-transparent`}
                           placeholder="Enter your phone number"
                         />
+                        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                       </div>
                     </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Select Package</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {packages.map((pkg) => (
+                        <div 
+                          key={pkg.id}
+                          className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                            selectedPackage?.id === pkg.id 
+                              ? 'border-green-500 bg-green-50' 
+                              : 'border-gray-200 hover:border-green-300'
+                          }`}
+                          onClick={() => setSelectedPackage(pkg)}
+                        >
+                          <h4 className="font-bold text-lg mb-2">{pkg.name}</h4>
+                          <p className="text-gray-600 text-sm">{pkg.description}</p>
+                          <div className="mt-3 text-green-700 font-semibold">
+                            ₹{pkg.price}/night
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {errors.package && <p className="text-red-500 text-sm mt-2">{errors.package}</p>}
                   </div>
 
                   <div>
@@ -1814,7 +2040,9 @@ const CampsiteBooking: React.FC = () => {
                       <div className="flex-1">
                         <button
                           type="button"
-                          className="w-full px-4 py-2 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-600"
+                          className={`w-full px-4 py-2 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-600 ${
+                            errors.dates ? 'border-red-500' : ''
+                          }`}
                           onClick={() => {
                             setShowCalendar(true);
                             setCalendarTempRange(undefined);
@@ -1824,6 +2052,7 @@ const CampsiteBooking: React.FC = () => {
                             ? `${format(dateRange.from, 'dd MMM yyyy')} to ${format(dateRange.to, 'dd MMM yyyy')}`
                             : 'Select your stay dates'}
                         </button>
+                        {errors.dates && <p className="text-red-500 text-sm mt-1">{errors.dates}</p>}
 
                         {blockedDates.length === 0 && (
                           <p className="text-sm text-green-600 mt-2">
@@ -1895,12 +2124,12 @@ const CampsiteBooking: React.FC = () => {
                       <span className="font-bold text-lg">{rooms}</span>
                       <Button
                         type="button"
-                        onClick={() => handleRoomsChange(Math.min(MAX_ROOMS, rooms + 1))}
-                        disabled={rooms >= Math.min(MAX_ROOMS, accommodation?.availableRooms || MAX_ROOMS)}
+                        onClick={() => handleRoomsChange(Math.min(maxiRoom, rooms + 1))}
+                        disabled={rooms >= Math.min(maxiRoom, accommodation?.availableRooms || maxiRoom)}
                         className="px-3 py-1 bg-green-700 text-white rounded"
                       >+</Button>
                       <span className="text-xs text-gray-500">
-                        {Math.max(0, Math.min(MAX_ROOMS, accommodation?.availableRooms || MAX_ROOMS) - rooms)} rooms remaining
+                        {Math.max(0, Math.min(maxiRoom, accommodation?.availableRooms || maxiRoom) - rooms)} rooms remaining
                       </span>
                     </div>
 
@@ -1908,9 +2137,7 @@ const CampsiteBooking: React.FC = () => {
                       {Array.from({ length: rooms }).map((_, idx) => {
                         const adults = roomGuests[idx].adults;
                         const children = roomGuests[idx].children;
-                        const adultRate = Number(accommodation?.price || 0);
-                        const childRate = Math.round(adultRate * 0.6);
-                        const roomSubtotal = adults * adultRate + children * childRate;
+                        const roomSubtotal = adults * ADULT_RATE + children * CHILD_RATE;
 
                         return (
                           <div key={idx} className="flex flex-col gap-1 mb-2 border-b pb-2 last:border-0">
@@ -1980,6 +2207,7 @@ const CampsiteBooking: React.FC = () => {
                           <span className="text-red-600 ml-2">Must match total guests!</span>
                         )}
                       </div>
+                      {errors.food && <p className="text-red-500 text-sm mt-2">{errors.food}</p>}
                     </div>
                   </div>
 
@@ -1988,8 +2216,8 @@ const CampsiteBooking: React.FC = () => {
                       <h3 className="text-lg font-semibold mb-4">Extra Activities (Optional)</h3>
                       <div className="space-y-3 bg-gray-50 p-4 rounded border">
                         {accommodation.detailedInfo.activities
-                          .filter((activity: any) => ['speed boating', 'motor boating', 'kayaking'].includes(activity.name.toLowerCase()))
-                          .map((activity: any, index: number) => (
+                          .filter((activity: Activity) => ['speed boating', 'motor boating', 'kayaking'].includes(activity.name.toLowerCase()))
+                          .map((activity: Activity, index: number) => (
                             <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border">
                               <div className="flex items-center">
                                 <input
@@ -2142,7 +2370,7 @@ const CampsiteBooking: React.FC = () => {
                     </label>
                     <div className="flex items-center gap-2">
                       <select
-                        value={advanceAmount ?? minAdvance}
+                        value={advanceAmount}
                         onChange={e => handleAdvanceChange(Number(e.target.value))}
                         className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
                       >
@@ -2154,14 +2382,6 @@ const CampsiteBooking: React.FC = () => {
                       </span>
                     </div>
                   </div>
-
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200">
-                    <p className="text-center text-blue-700 font-medium flex items-center justify-center">
-                      <CheckCircle className="mr-2" size={16} />
-                      Reserve to get exciting offer for this property!
-                    </p>
-                  </div>
-
                   <div className="border-t pt-4">
                     <div className="flex justify-between text-xl font-bold text-green-800">
                       <span>Total</span>
@@ -2169,24 +2389,13 @@ const CampsiteBooking: React.FC = () => {
                     </div>
                     <div className="flex justify-between text-lg font-semibold text-blue-700 mt-2">
                       <span>Advance</span>
-                      <span>{formatCurrency(advanceAmount ?? 0)}</span>
+                      <span>{formatCurrency(advanceAmount)}</span>
                     </div>
                     <div className="flex justify-between text-sm text-gray-600 mt-1">
                       <span>Pay at property</span>
-                      <span>{formatCurrency(totalAmount - (advanceAmount ?? 0))}</span>
+                      <span>{formatCurrency(totalAmount - advanceAmount)}</span>
                     </div>
                   </div>
-
-                  {/* Validation warnings */}
-                  {!guestInfo.name && (
-                    <p className="text-red-500 text-sm mt-2">Please enter your name</p>
-                  )}
-                  {(!dateRange?.from || !dateRange?.to) && (
-                    <p className="text-red-500 text-sm mt-2">Please select your stay dates</p>
-                  )}
-                  {(foodCounts.veg + foodCounts.nonveg + foodCounts.jain) !== totalGuests && (
-                    <p className="text-red-500 text-sm mt-2">Food preferences must match total guest count</p>
-                  )}
 
                   <Button
                     onClick={handleBooking}
@@ -2207,7 +2416,7 @@ const CampsiteBooking: React.FC = () => {
                   </Button>
                   <p className="text-xs text-gray-500 text-center mt-2">
                     Secure booking with instant confirmation.<br />
-                    Pay {formatCurrency(advanceAmount ?? 0)} now, and the rest at the property.
+                    Pay {formatCurrency(advanceAmount)} now, and the rest at the property.
                   </p>
                 </div>
               </CardContent>

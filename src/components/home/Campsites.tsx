@@ -292,7 +292,7 @@ import Button from '../ui/Button';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { span } from 'framer-motion/client';
-
+import {CheckCircle} from 'lucide-react';
 interface Accommodation {
   id: number;
   name: string;
@@ -440,90 +440,88 @@ const Campsites: React.FC = () => {
   }
 
   const renderCard = (accommodation: Accommodation, index: number) => {
-    return (
-      <div key={accommodation.id} className="px-2">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: index * 0.1 }}
-          className="h-full"
-        >
-          <Card className="h-full flex flex-col p-3">
-            <CardImage
-              src={
-                accommodation.images[0] ||
-                'https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=1'
-              }
-              alt={accommodation.name}
-              className="h-58 sm:h-74"
-            />
-            <CardContent className="flex-1 flex flex-col">
-              <div className="flex-1">
-                <div className="flex items-center mb-2">
-                  <span className="text-xs font-semibold px-2 py-1 bg-brunswick-green text-baby-powder rounded-full mr-2">
-                    {accommodation.type}
-                  </span>
-                  <span className="text-xs font-semibold px-2 py-1 bg-brunswick-green/10 text-brunswick-green rounded-full">
-                    {accommodation.max_guests} max guests
-                  </span>
-                </div>
+   return (
+  <div key={accommodation.id} className="px-2">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.1 }}
+      className="h-full max-w-sm mx-auto" // Center card and limit width
+    >
+      <Card className="h-full flex flex-col p-3">
+        <CardImage
+          src={
+            accommodation.images[0] ||
+            'https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=1'
+          }
+          alt={accommodation.name}
+          className="h-58 sm:h-74"
+        />
+        <CardContent className="flex-1 flex flex-col">
+          <div className="flex-1">
+            <div className="flex items-center mb-2">
+              <span className="text-xs font-semibold px-2 py-1 bg-brunswick-green text-baby-powder rounded-full mr-2">
+                {accommodation.type}
+              </span>
+              <span className="text-xs font-semibold px-2 py-1 bg-brunswick-green/10 text-brunswick-green rounded-full">
+                {accommodation.max_guests} max guests
+              </span>
+            </div>
 
-                <CardTitle>{accommodation.name}</CardTitle>
-                <p className="text-black/70 mb-3">{accommodation.description}</p>
+            <CardTitle>{accommodation.name}</CardTitle>
+            <p className="text-black/70 mb-3 break-words">{accommodation.description}</p>
 
-                {accommodation.features.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {accommodation.features.slice(0, 3).map((feature: string, i: number) => (
-                      <span
-                        key={i}
-                        className="text-xs px-2 py-1 bg-rose-taupe/10 text-rose-taupe rounded-full"
-                      >
-                        {feature}
-                      </span>
-                    ))}
-                    {accommodation.features.length > 3 && (
-                      <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
-                        +{accommodation.features.length - 3} more
-                      </span>
-                    )}
-                  </div>
+            {accommodation.features.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-4">
+                {accommodation.features.slice(0, 3).map((feature: string, i: number) => (
+                  <span
+                    key={i}
+                    className="text-xs px-2 py-1 bg-rose-taupe/10 text-rose-taupe rounded-full"
+                  >
+                    {feature}
+                  </span>
+                ))}
+                {accommodation.features.length > 3 && (
+                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                    +{accommodation.features.length - 3} more
+                  </span>
                 )}
-
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  <div>
-                    <p className="text-xs text-gray-500">Adult Price</p>
-                    <p className="font-medium text-brunswick-green">
-                      {formatCurrency(accommodation.adult_price)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Child Price</p>
-                    <p className="font-medium text-brunswick-green">
-                      {formatCurrency(accommodation.child_price)}
-                    </p>
-                  </div>
-                </div>
-                
-                <p className="text-sm text-brunswick-green mb-2">
-                  {accommodation.available ? `${accommodation.rooms} Room Available` : 'Not Available'}
-                </p>
               </div>
+            )}
 
-              <div className="flex justify-between items-center mt-4">
-                <p className="font-bold text-brunswick-green">
-                  {formatCurrency(accommodation.price)}
-                  <span className="text-black/60 font-normal text-sm"> / night</span>
+            <div className="mb-4">
+              <div>
+                                   
+                <p className="text-brunswick-green font-medium flex items-center justify-center">
+                  <CheckCircle className="mr-2" size={16} />
+                  Reserve to get exciting offer for this property!
                 </p>
-                <Button variant="primary" size="sm">
-                  <Link to={`/campsites/${accommodation.id}`}>Book Now</Link>
-                </Button>
+                                 
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-    );
+              
+            </div>
+
+            <p className="text-sm text-brunswick-green mb-2">
+              {accommodation.available ? `${accommodation.rooms} Room Available` : 'Not Available'}
+            </p>
+          </div>
+
+          <div className="flex justify-between items-center mt-4">
+            <p className="font-bold text-brunswick-green">
+              {formatCurrency(accommodation.price)}
+              <span className="text-black/60 font-normal text-sm"> / night</span>
+            </p>
+            <Button variant="primary" size="sm">
+              <Link to={`/campsites/${accommodation.id}`}>Book Now</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  </div>
+);
+
   };
 
   return (

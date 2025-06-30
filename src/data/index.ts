@@ -10,7 +10,7 @@ type NavItem = {
 export const navItems: NavItem[] = [
   { label: 'Home', path: '/', sectionId: 'home' },
   { label: 'Campsites', path: '/', sectionId: 'campsites' },
-  { label: 'Gallery', path: '/', sectionId: 'gallery' },
+  { label: 'Gallery', path: '/gallery'},
   { label: 'About', path: '/about' },
   { label: 'Contact', path: '/contact' },
 ];
