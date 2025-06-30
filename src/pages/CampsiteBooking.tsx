@@ -1955,6 +1955,26 @@ const CampsiteBooking: React.FC = () => {
                 </CardContent>
               </Card>
             </div>
+            {/* Things to Carry - Desktop Only */}
+            <div className="hidden lg:block">
+              <Card>
+                <CardContent>
+                  <h3 className="text-lg font-semibold mb-4 text-orange-800 flex items-center">
+                    <CheckCircle className="mr-2" size={20} />
+                    Things to Carry
+                  </h3>
+                  <div className="bg-orange-50 p-4 rounded-lg">
+                    <ol className="list-decimal list-inside space-y-2 text-orange-700">
+                      <li>Always good to carry extra pair of clothes</li>
+                      <li>Winter and warm clothes as it will be cold night</li>
+                      <li>Toothbrush and paste (toiletries)</li>
+                      <li>Any other things you feel necessary</li>
+                      <li>Personal medicine if any</li>
+                    </ol>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
             <Card>
               <CardContent>
@@ -2225,26 +2245,7 @@ const CampsiteBooking: React.FC = () => {
             </Card>
           </div>
           <div className="lg:sticky lg:top-24 h-fit space-y-6">
-            {/* Things to Carry - Desktop Only */}
-            <div className="hidden lg:block">
-              <Card>
-                <CardContent>
-                  <h3 className="text-lg font-semibold mb-4 text-orange-800 flex items-center">
-                    <CheckCircle className="mr-2" size={20} />
-                    Things to Carry
-                  </h3>
-                  <div className="bg-orange-50 p-4 rounded-lg">
-                    <ol className="list-decimal list-inside space-y-2 text-orange-700">
-                      <li>Always good to carry extra pair of clothes</li>
-                      <li>Winter and warm clothes as it will be cold night</li>
-                      <li>Toothbrush and paste (toiletries)</li>
-                      <li>Any other things you feel necessary</li>
-                      <li>Personal medicine if any</li>
-                    </ol>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            
 
             <Card>
               <CardContent>
