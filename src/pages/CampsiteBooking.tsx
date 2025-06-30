@@ -1440,7 +1440,7 @@ const CampsiteBooking: React.FC = () => {
         const data = await res.json();
         
         setMaxiRoom(data.rooms);
-        setPackageDescription(data.package_description || '');
+        setPackageDescription(data.package_description);
         if (data) {
           const parsed: Accommodation = {
             ...data,
@@ -1906,7 +1906,32 @@ const CampsiteBooking: React.FC = () => {
             <Card>
               <CardContent>
                 <h2 className="text-3xl font-bold text-green-800 mb-6">Accommodation Details</h2>
-                <p className='text-black-600'>{packageDescription}</p>
+                <p className='m-2'>{packageDescription}</p>
+                {accommodation.detailedInfo && (
+                  <div className="space-y-6">
+                    {(
+                      <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-6 rounded-lg border-l-4 border-purple-500">
+                        <div className="flex items-center mb-3">
+                          <Music className="text-purple-600 mr-3" size={24} />
+                          <h3 className="text-xl font-bold text-purple-800">🎸 EVERY SATURDAY LIVE MUSIC GUITARIST 🎸</h3>
+                        </div>
+                        <p className="text-purple-700">Enjoy live acoustic performances every Saturday evening by the lakeside!</p>
+                      </div>
+                    )}
+
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-green-800">What's Included</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {accommodation.features.map((feature: string, index: number) => (
+                          <div key={index} className="flex items-center">
+                            <CheckCircle className="text-green-600 mr-2" size={16} />
+                            <span className="text-gray-700">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
