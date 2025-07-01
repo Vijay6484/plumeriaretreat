@@ -315,7 +315,7 @@ interface Accommodation {
   max_guests: number;
 }
 
-const API_BASE_URL = 'http://31.97.62.213:5001';
+const API_BASE_URL = 'https://adminplumeria-back.onrender.com';
 
 const Campsites: React.FC = () => {
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
@@ -340,7 +340,7 @@ const Campsites: React.FC = () => {
   const fetchAccommodations = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/accommodations`);
+      const response = await fetch(`${API_BASE_URL}/admin/properties/accommodations`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const data = await response.json();
