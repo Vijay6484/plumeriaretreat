@@ -10,7 +10,7 @@ interface GalleryImage {
   source: string;
 }
 
-const API_BASE_URL = 'https://api.plumeriaretreat.com/user';
+const API_BASE_URL = 'https://u.plumeriaretreat.com';
 
 // Local fallback image (you can replace this with your own image)
 const FALLBACK_IMAGE = 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500"%3E%3Crect fill="%23f0f0f0" width="500" height="500"/%3E%3Ctext fill="%23666" font-family="sans-serif" font-size="16" dy=".35em" x="50%" y="50%" text-anchor="middle"%3EImage Not Available%3C/text%3E%3C/svg%3E';
