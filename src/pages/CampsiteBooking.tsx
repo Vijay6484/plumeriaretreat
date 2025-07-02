@@ -1261,7 +1261,7 @@ interface Package {
 // ];
 async function fetchImageLinks(): Promise<string[]> {
   try {
-    const response = await axios.get('YOUR_API_URL_HERE');
+    const response = await axios.get(BACKEND_URL);
     const data = response.data;
 
     if (!Array.isArray(data)) {
