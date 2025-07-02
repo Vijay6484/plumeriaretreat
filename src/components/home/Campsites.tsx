@@ -183,10 +183,10 @@ const Campsites: React.FC = () => {
 
         {/* CardImage with multiple images in slider */}
         {accommodation.images.length > 0 ? (
-          <div className="relative h-64">
-            <Slider {...sliderSetting}>
+          <div className="relative h-64 overflow-hidden">
+            <Slider {...sliderSettings}>
               {accommodation.images.map((img: string, index: number) => (
-                <div key={index} className="h-64">
+                <div key={index}>
                   <img
                     src={img}
                     alt={`${accommodation.name}-${index}`}
