@@ -1164,6 +1164,7 @@ import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import './Gallery.css';
+import axios from 'axios';
 import {
   Calendar,
   Users,
@@ -1251,13 +1252,41 @@ interface Package {
   price: number;
 }
 
-const imageLinks = [
-  "https://images.pexels.com/photos/9144680/pexels-photo-9144680.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-  "https://images.pexels.com/photos/6640068/pexels-photo-6640068.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-  "https://images.pexels.com/photos/2526025/pexels-photo-2526025.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-  "https://images.pexels.com/photos/3045272/pexels-photo-3045272.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-  "https://images.pexels.com/photos/2351287/pexels-photo-2351287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-];
+// const imageLinks = [
+//   "https://images.pexels.com/photos/9144680/pexels-photo-9144680.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+//   "https://images.pexels.com/photos/6640068/pexels-photo-6640068.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+//   "https://images.pexels.com/photos/2526025/pexels-photo-2526025.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+//   "https://images.pexels.com/photos/3045272/pexels-photo-3045272.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+//   "https://images.pexels.com/photos/2351287/pexels-photo-2351287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+// ];
+async function fetchImageLinks(): Promise<string[]> {
+  try {
+    const response = await axios.get('YOUR_API_URL_HERE');
+    const data = response.data;
+
+    if (!Array.isArray(data)) {
+      throw new Error('Invalid API response: expected an array');
+    }
+
+    const imageLinks: string[] = data.flatMap(item => {
+      try {
+        const images = JSON.parse(item.images);
+        return Array.isArray(images) ? images : [];
+      } catch (e) {
+        console.error('Invalid JSON in images field', e);
+        return [];
+      }
+    });
+
+    return imageLinks;
+
+  } catch (error) {
+    console.error('Error fetching images:', error);
+    return [];
+  }
+}
+
+const imageLinks = await fetchImageLinks()
 
 const PartyEffect: React.FC<{ show: boolean; onComplete: () => void }> = ({ show, onComplete }) => {
   useEffect(() => {
