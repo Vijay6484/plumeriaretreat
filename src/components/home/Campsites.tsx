@@ -36,7 +36,7 @@ interface Accommodation {
   };
 }
 
-const API_BASE_URL = 'https://u.plumeriaretreat.com';
+const API_BASE_URL = 'https://a.plumeriaretreat.com';
 
 const Campsites: React.FC = () => {
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
