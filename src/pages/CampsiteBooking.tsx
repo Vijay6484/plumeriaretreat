@@ -1259,34 +1259,32 @@ interface Package {
 //   "https://images.pexels.com/photos/3045272/pexels-photo-3045272.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
 //   "https://images.pexels.com/photos/2351287/pexels-photo-2351287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
 // ];
-async function fetchImageLinks(): Promise<string[]> {
+
+const imageLinks = await (async () => {
   try {
-    const response = await axios.get(BACKEND_URL);
-    const data = response.data;
+    const response = await fetch(BACKEND_URL);
+    const data = await response.json();
 
     if (!Array.isArray(data)) {
       throw new Error('Invalid API response: expected an array');
     }
 
-    const imageLinks: string[] = data.flatMap(item => {
+    const images = data.flatMap(item => {
       try {
-        const images = JSON.parse(item.images);
-        return Array.isArray(images) ? images : [];
+        return JSON.parse(item.images);
       } catch (e) {
-        console.error('Invalid JSON in images field', e);
+        console.error('Invalid JSON in images field:', e);
         return [];
       }
     });
 
-    return imageLinks;
+    return images;
 
   } catch (error) {
     console.error('Error fetching images:', error);
     return [];
   }
-}
-
-const imageLinks = await fetchImageLinks()
+})();
 
 const PartyEffect: React.FC<{ show: boolean; onComplete: () => void }> = ({ show, onComplete }) => {
   useEffect(() => {
