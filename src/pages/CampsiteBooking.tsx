@@ -1263,7 +1263,7 @@ interface Package {
 
 async function getImageLinks(): Promise<string[]> {
   try {
-    const response = await fetch(BACKEND_URL);
+    const response = await fetch("https://u.plumeriaretreat.com/api/accommodations");
     const data = await response.json();
 
     if (!Array.isArray(data)) {
