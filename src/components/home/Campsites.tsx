@@ -286,12 +286,6 @@ const Campsites: React.FC = () => {
             {accommodations.map((a, i) => renderCard(a, i))}
           </div>
         )}
-
-        <div className="text-center mt-12">
-          <Button variant="secondary" size="lg">
-            <Link to="/campsites">View All Campsites</Link>
-          </Button>
-        </div>
       </div>
     </section>
   );
