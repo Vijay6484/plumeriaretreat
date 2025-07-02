@@ -37,7 +37,13 @@ interface Accommodation {
 }
 
 const API_BASE_URL = 'https://a.plumeriaretreat.com';
-
+const sliderSetting = {
+  dots: true,
+  infinite: true,
+  speed: 500,
+  slidesToShow: 1,
+  slidesToScroll: 1
+};
 const Campsites: React.FC = () => {
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -173,18 +179,25 @@ const Campsites: React.FC = () => {
       className="h-full max-w-sm mx-auto"
     >
       <Card className="h-full flex flex-col">
-        {/* CardImage with proper image URL and onError fallback */}
+
+
+        {/* CardImage with multiple images in slider */}
         {accommodation.images.length > 0 ? (
           <div className="relative h-64">
-            <img
-              src={accommodation.images[0]}
-              alt={accommodation.name}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                // Fallback to dummy image if original fails to load
-                e.currentTarget.src = 'https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=1';
-              }}
-            />
+            <Slider {...sliderSetting}>
+              {accommodation.images.map((img: string, index: number) => (
+                <div key={index} className="h-64">
+                  <img
+                    src={img}
+                    alt={`${accommodation.name}-${index}`}
+                    className="w-full h-64 object-cover rounded-xl"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=1';
+                    }}
+                  />
+                </div>
+              ))}
+            </Slider>
           </div>
         ) : (
           <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-64 flex items-center justify-center">
