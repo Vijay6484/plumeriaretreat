@@ -1260,7 +1260,8 @@ interface Package {
 //   "https://images.pexels.com/photos/2351287/pexels-photo-2351287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
 // ];
 
-const imageLinks = await (async () => {
+
+async function getImageLinks(): Promise<string[]> {
   try {
     const response = await fetch(BACKEND_URL);
     const data = await response.json();
@@ -1279,12 +1280,18 @@ const imageLinks = await (async () => {
     });
 
     return images;
-
   } catch (error) {
     console.error('Error fetching images:', error);
     return [];
   }
-})();
+}
+
+let imageLinks: string[] = [];
+
+getImageLinks().then(images => {
+  imageLinks = images;
+  console.log('Fetched images:', imageLinks);
+});
 
 const PartyEffect: React.FC<{ show: boolean; onComplete: () => void }> = ({ show, onComplete }) => {
   useEffect(() => {
