@@ -1734,7 +1734,7 @@ const CampsiteBooking: React.FC = () => {
 
       console.log('Booking payload:', bookingPayload);
 
-      const bookingResponse = await fetch(`http://localhost:5000/admin/bookings`, {
+      const bookingResponse = await fetch(`${API_BASE_URL}/admin/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
