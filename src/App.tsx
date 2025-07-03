@@ -9,6 +9,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
 import CampsiteBooking from './pages/CampsiteBooking';
+import StatusPage from './pages/PaymentSuccess';
 import { Success, Failure, Cancel } from './pages/PaymentSuccesss';
 import ScrollToTop from '../src/utils/ScrollToTop';  // ✅ import it
 
@@ -27,7 +28,7 @@ function App() {
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/success" element={<Success />} />
+            <Route path="payment/:status/:id" element={<StatusPage />} />
             <Route path="/failure" element={<Failure />} />
             <Route path="/cancel" element={<Cancel />} />
             <Route path="*" element={<NotFound />} />
