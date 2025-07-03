@@ -1766,7 +1766,7 @@ const CampsiteBooking: React.FC = () => {
 
     console.log('Payment payload:', paymentPayload);
 
-    const paymentResponse = await fetch(`http://localhost:5000/admin/bookings/payments/payu`, {
+    const paymentResponse = await fetch(`${API_BASE_URL}/admin/bookings/payments/payu`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
