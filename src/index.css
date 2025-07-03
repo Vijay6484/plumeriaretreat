@@ -1,8 +1,9 @@
-*{
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -15,6 +16,13 @@
   --color-black: #040403;
 }
 
+/* ======== FIX FOR HORIZONTAL SCROLLING ======== */
+html, body {
+  width: 100%;
+  overflow-x: hidden; /* Prevent horizontal overflow */
+  position: relative; /* Contain positioned elements */
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -23,6 +31,22 @@ body {
   font-family: 'Open Sans', sans-serif;
   background-color: var(--color-baby-powder);
   color: var(--color-black);
+}
+
+/* Prevent media elements from causing overflow */
+img,
+video,
+iframe,
+canvas,
+svg {
+  max-width: 100%;
+  display: block;
+  height: auto;
+}
+
+/* Prevent long words/URLs from overflowing */
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -41,6 +65,7 @@ p {
 .text-shadow {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
+
 .slick-arrow:before {
   color: #295C3D !important; /* Brunswick Green */
 }
@@ -99,6 +124,16 @@ p {
   }
   
   .container-custom {
-    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+    @apply container mx-auto px-4 sm:px-6 lg:px-8 max-w-full; /* Ensure containers don't cause overflow */
+  }
+  
+  /* New utility for full-width containers */
+  .full-bleed {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
   }
 }

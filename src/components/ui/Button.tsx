@@ -5,6 +5,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   children: React.ReactNode;
+  as?: React.ElementType; // New prop to allow rendering as different components
+  to?: string; // For React Router links
 }
 
 const Button: React.FC<ButtonProps> = ({ 
@@ -13,6 +15,7 @@ const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
   children, 
   className = '',
+  as: Component = 'button', // Default to regular button
   ...props 
 }) => {
   const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2';
@@ -34,10 +37,15 @@ const Button: React.FC<ButtonProps> = ({
   
   const buttonClasses = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${className}`;
   
+  // Render as custom component if provided, otherwise as button
   return (
-    <button className={buttonClasses} {...props}>
+    <Component 
+      className={buttonClasses} 
+      {...(Component === 'button' ? { type: 'button' } : {})}
+      {...props}
+    >
       {children}
-    </button>
+    </Component>
   );
 };
 

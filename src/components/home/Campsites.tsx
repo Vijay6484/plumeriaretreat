@@ -190,7 +190,7 @@ const Campsites: React.FC = () => {
                   <img
                     src={img}
                     alt={`${accommodation.name}-${index}`}
-                    className="w-full h-64 object-cover rounded-xl"
+                    className="w-full h-64 object-cover rounded-t-xl"
                     onError={(e) => {
                       e.currentTarget.src = 'https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=1';
                     }}

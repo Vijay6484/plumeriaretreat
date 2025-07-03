@@ -15,10 +15,11 @@ import ScrollToTop from '../src/utils/ScrollToTop';  // ✅ import it
 function App() {
   return (
     <Router>
-      <ScrollToTop /> {/* ✅ add this right after Router opens */}
-      <div className="flex flex-col min-h-screen">
+      <ScrollToTop />
+      {/* Main container with overflow constraints */}
+      <div className="flex flex-col min-h-screen w-full overflow-x-hidden">
         <Header />
-        <main className="flex-grow">
+        <main className="flex-grow w-full max-w-full overflow-x-hidden">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/campsites" element={<Campsites />} />

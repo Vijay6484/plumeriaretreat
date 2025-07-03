@@ -583,7 +583,7 @@
 //                           Meals Included
 //                         </h3>
 //                         <p className="text-green-700 mb-4">{accommodation.detailedInfo.meals.description}</p>
-                        
+
 //                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 //                           <div>
 //                             <h4 className="font-semibold text-green-800 mb-2">☕ Evening Snacks</h4>
@@ -1222,7 +1222,7 @@ interface Activity {
 
 interface Accommodation {
   id: number;
-  title: string;
+  name: string;
   price: number;
   type: string;
   capacity: number;
@@ -1243,6 +1243,7 @@ interface Coupon {
   maxDiscount?: string;
   expiryDate: string;
   active: boolean;
+  accommodationType: string;
 }
 
 interface Package {
@@ -1372,6 +1373,7 @@ const CampsiteBooking: React.FC = () => {
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const sliderRef = useRef<any>(null);
+  const [maxPeoplePerRoom, setMaxPeoplePerRoom] = useState<number>(MAX_PEOPLE_PER_ROOM);
   const [packageDescription, setPackageDescription] = useState<string>('');
   const totalAdults = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.adults, 0);
   const totalChildren = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.children, 0);
@@ -1380,14 +1382,14 @@ const CampsiteBooking: React.FC = () => {
   useEffect(() => {
     setFoodCounts(prev => {
       const totalFood = prev.veg + prev.nonveg + prev.jain;
-      
+
       if (totalFood > totalGuests) {
         const ratio = totalGuests / totalFood;
-        
+
         let newVeg = Math.max(0, Math.round(prev.veg * ratio));
         let newNonVeg = Math.max(0, Math.round(prev.nonveg * ratio));
         let newJain = Math.max(0, Math.round(prev.jain * ratio));
-        
+
         const newTotal = newVeg + newNonVeg + newJain;
         if (newTotal < totalGuests) {
           const remaining = totalGuests - newTotal;
@@ -1395,14 +1397,14 @@ const CampsiteBooking: React.FC = () => {
           else if (prev.nonveg > 0) newNonVeg += remaining;
           else if (prev.jain > 0) newJain += remaining;
         }
-        
+
         return {
           veg: newVeg,
           nonveg: newNonVeg,
           jain: newJain
         };
       }
-      
+
       const remaining = totalGuests - totalFood;
       if (remaining > 0) {
         return {
@@ -1410,7 +1412,7 @@ const CampsiteBooking: React.FC = () => {
           [foodChoice]: prev[foodChoice] + remaining
         };
       }
-      
+
       return prev;
     });
   }, [totalGuests, foodChoice]);
@@ -1418,9 +1420,9 @@ const CampsiteBooking: React.FC = () => {
   const handleRoomsChange = (newRooms: number) => {
     const newTotalGuests = roomGuests.slice(0, newRooms)
       .reduce((sum, r) => sum + r.adults + r.children, 0);
-    
+
     setRooms(newRooms);
-    
+
     setFoodCounts(prev => {
       const totalFood = prev.veg + prev.nonveg + prev.jain;
       if (totalFood > newTotalGuests) {
@@ -1440,8 +1442,8 @@ const CampsiteBooking: React.FC = () => {
       const updated = [...prev];
       const otherType = type === 'adults' ? 'children' : 'adults';
       const otherValue = updated[roomIdx][otherType];
-      if (value + otherValue > MAX_PEOPLE_PER_ROOM) {
-        updated[roomIdx][type] = MAX_PEOPLE_PER_ROOM - otherValue;
+      if (value + otherValue > maxPeoplePerRoom) {
+        updated[roomIdx][type] = maxPeoplePerRoom - otherValue;
       } else {
         updated[roomIdx][type] = value;
       }
@@ -1452,7 +1454,7 @@ const CampsiteBooking: React.FC = () => {
   const handleFoodCount = (type: 'veg' | 'nonveg' | 'jain', delta: number) => {
     setFoodCounts(prev => {
       const newValue = Math.max(0, prev[type] + delta);
-      const newTotal = Object.values(prev).reduce((sum, v, idx) => 
+      const newTotal = Object.values(prev).reduce((sum, v, idx) =>
         sum + (type === Object.keys(prev)[idx] ? newValue : v), 0);
       if (newTotal > totalGuests) return prev;
       return { ...prev, [type]: newValue };
@@ -1472,8 +1474,11 @@ const CampsiteBooking: React.FC = () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/accommodations/${id}`);
         const data = await res.json();
-        
+
         setMaxiRoom(data.rooms);
+        console.log('Accommodation data:', data.rooms, data.capacity);
+        setMaxPeoplePerRoom(data.capacity || MAX_PEOPLE_PER_ROOM);
+        // setRoomGuests(Array.from({ length: data.rooms }, () => ({ adults: 2, children: 0 })));
         setPackageDescription(data.package_description);
         if (data) {
           const parsed: Accommodation = {
@@ -1505,7 +1510,7 @@ const CampsiteBooking: React.FC = () => {
         navigate('/campsites');
       }
     };
-    
+
     if (id) fetchAccommodation();
   }, [id, navigate]);
 
@@ -1537,6 +1542,7 @@ const CampsiteBooking: React.FC = () => {
           const activeCoupons = result.data.filter((coupon: Coupon) =>
             coupon.active && new Date(coupon.expiryDate) > new Date()
           );
+          console.log('Active Coupons:', activeCoupons);
           setAvailableCoupons(activeCoupons.slice(0, 3));
         }
       } catch (error) {
@@ -1683,7 +1689,7 @@ const CampsiteBooking: React.FC = () => {
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    
+
     if (!guestInfo.name) newErrors.name = 'Name is required';
     if (!guestInfo.email) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(guestInfo.email)) newErrors.email = 'Email is invalid';
@@ -1694,16 +1700,16 @@ const CampsiteBooking: React.FC = () => {
     if ((foodCounts.veg + foodCounts.nonveg + foodCounts.jain) !== totalGuests) {
       newErrors.food = 'Food preferences must match total guests';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleBooking = async () => {
     if (!validateForm()) return;
-    
+
     setLoading(true);
-    
+
     try {
       const formatDate = (date: Date | undefined) => date ? format(date, 'yyyy-MM-dd') : undefined;
 
@@ -1754,14 +1760,14 @@ const CampsiteBooking: React.FC = () => {
         firstname: guestInfo.name,
         email: guestInfo.email,
         phone: guestInfo.phone || '',
-        productinfo: `Booking for ${accommodation?.title}`,
+        productinfo: `Booking for ${accommodation?.name}`,
         booking_id: bookingId,
         surl: `${window.location.origin}/payment/success`,
         furl: `${window.location.origin}/payment/failure`,
       };
 
       console.log('Payment payload:', paymentPayload);
-      
+
       const paymentResponse = await fetch(`${API_BASE_URL}/admin/bookings/payments/payu`, {
         method: 'POST',
         headers: {
@@ -1799,16 +1805,16 @@ const CampsiteBooking: React.FC = () => {
 
     } catch (error: any) {
       console.error('Full booking error:', error);
-      
+
       let errorMessage = error.message || 'Something went wrong. Please try again.';
-      
+
       if (error.message.includes('Cannot convert undefined or null to object')) {
         errorMessage = 'Payment system configuration error. Please contact support.';
       }
       else if (error.message.includes('Booking ID not found')) {
         errorMessage = 'Booking created but failed to get booking ID. Please contact support.';
       }
-      
+
       alert(errorMessage);
       setLoading(false);
     }
@@ -1920,7 +1926,7 @@ const CampsiteBooking: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               className="text-white max-w-3xl"
             >
-              <h1 className="text-4xl md:text-6xl font-bold mb-4">{accommodation?.title}</h1>
+              <h1 className="text-4xl md:text-6xl font-bold mb-4">{accommodation?.name}</h1>
               <div className="flex items-center mt-4 space-x-4">
                 <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm">
                   {accommodation?.type}
@@ -2027,9 +2033,8 @@ const CampsiteBooking: React.FC = () => {
                           required
                           value={guestInfo.name}
                           onChange={(e) => setGuestInfo(prev => ({ ...prev, name: e.target.value }))}
-                          className={`w-full px-4 py-2 rounded-lg border ${
-                            errors.name ? 'border-red-500' : 'border-gray-300'
-                          } focus:ring-2 focus:ring-green-600 focus:border-transparent`}
+                          className={`w-full px-4 py-2 rounded-lg border ${errors.name ? 'border-red-500' : 'border-gray-300'
+                            } focus:ring-2 focus:ring-green-600 focus:border-transparent`}
                           placeholder="Enter your full name"
                         />
                         {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
@@ -2043,9 +2048,8 @@ const CampsiteBooking: React.FC = () => {
                           required
                           value={guestInfo.email}
                           onChange={(e) => setGuestInfo(prev => ({ ...prev, email: e.target.value }))}
-                          className={`w-full px-4 py-2 rounded-lg border ${
-                            errors.email ? 'border-red-500' : 'border-gray-300'
-                          } focus:ring-2 focus:ring-green-600 focus:border-transparent`}
+                          className={`w-full px-4 py-2 rounded-lg border ${errors.email ? 'border-red-500' : 'border-gray-300'
+                            } focus:ring-2 focus:ring-green-600 focus:border-transparent`}
                           placeholder="Enter your email"
                         />
                         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
@@ -2058,9 +2062,8 @@ const CampsiteBooking: React.FC = () => {
                           type="tel"
                           value={guestInfo.phone}
                           onChange={(e) => setGuestInfo(prev => ({ ...prev, phone: e.target.value }))}
-                          className={`w-full px-4 py-2 rounded-lg border ${
-                            errors.phone ? 'border-red-500' : 'border-gray-300'
-                          } focus:ring-2 focus:ring-green-600 focus:border-transparent`}
+                          className={`w-full px-4 py-2 rounded-lg border ${errors.phone ? 'border-red-500' : 'border-gray-300'
+                            } focus:ring-2 focus:ring-green-600 focus:border-transparent`}
                           placeholder="Enter your phone number"
                         />
                         {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
@@ -2074,9 +2077,8 @@ const CampsiteBooking: React.FC = () => {
                       <div className="flex-1">
                         <button
                           type="button"
-                          className={`w-full px-4 py-2 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-600 ${
-                            errors.dates ? 'border-red-500' : ''
-                          }`}
+                          className={`w-full px-4 py-2 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-600 ${errors.dates ? 'border-red-500' : ''
+                            }`}
                           onClick={() => {
                             setShowCalendar(true);
                             setCalendarTempRange(undefined);
@@ -2182,8 +2184,8 @@ const CampsiteBooking: React.FC = () => {
                                 onChange={e => handleRoomGuestChange(idx, 'adults', Number(e.target.value))}
                                 className="border rounded px-2 py-1"
                               >
-                                {[...Array(MAX_PEOPLE_PER_ROOM + 1).keys()].map(n =>
-                                  n + children <= MAX_PEOPLE_PER_ROOM && (
+                                {[...Array(maxPeoplePerRoom + 1).keys()].map(n =>
+                                  n + children <= maxPeoplePerRoom && (
                                     <option key={n} value={n}>{n} Adults</option>
                                   )
                                 )}
@@ -2193,8 +2195,8 @@ const CampsiteBooking: React.FC = () => {
                                 onChange={e => handleRoomGuestChange(idx, 'children', Number(e.target.value))}
                                 className="border rounded px-2 py-1"
                               >
-                                {[...Array(MAX_PEOPLE_PER_ROOM + 1).keys()].map(n =>
-                                  n + adults <= MAX_PEOPLE_PER_ROOM && (
+                                {[...Array(maxPeoplePerRoom + 1).keys()].map(n =>
+                                  n + adults <= maxPeoplePerRoom && (
                                     <option key={n} value={n}>{n} Children</option>
                                   )
                                 )}
@@ -2279,7 +2281,7 @@ const CampsiteBooking: React.FC = () => {
             </Card>
           </div>
           <div className="lg:sticky lg:top-24 h-fit space-y-6">
-            
+
 
             <Card>
               <CardContent>
@@ -2288,7 +2290,7 @@ const CampsiteBooking: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span className="font-medium">Accommodation</span>
-                    <span className="text-green-600">{accommodation.title}</span>
+                    <span className="text-green-600">{accommodation.name}</span>
                   </div>
 
                   {dateRange?.from && dateRange?.to && (
@@ -2324,17 +2326,30 @@ const CampsiteBooking: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Available Offers</label>
                       <div className="flex overflow-x-auto space-x-2 mb-3 px-1 sm:flex-wrap sm:space-x-0 sm:gap-2 no-scrollbar">
-                        {availableCoupons.map((availableCoupon) => (
-                          <button
-                            key={availableCoupon.id}
-                            onClick={() => handleCouponSelect(availableCoupon)}
-                            className="flex-shrink-0 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium hover:bg-green-200 transition-colors whitespace-nowrap"
-                          >
-                            {availableCoupon.code} - {availableCoupon.discountType === 'percentage'
-                              ? `${availableCoupon.discount}%`
-                              : `₹${availableCoupon.discount}`} OFF
-                          </button>
-                        ))}
+                        {(() => {
+                          // Get all coupons matching the current accommodation
+                          const matchingCoupons = availableCoupons.filter(
+                            coupon => coupon.accommodationType === accommodation?.name
+                          );
+
+                          // Use matching coupons if any exist, otherwise use 'All' coupons
+                          const couponsToShow = matchingCoupons.length > 0
+                            ? matchingCoupons
+                            : availableCoupons.filter(coupon => coupon.accommodationType === 'All');
+
+                          return couponsToShow.map((availableCoupon) => (
+                            <button
+                              key={availableCoupon.id}
+                              onClick={() => handleCouponSelect(availableCoupon)}
+                              className="flex-shrink-0 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium hover:bg-green-200 transition-colors whitespace-nowrap"
+                            >
+                              {availableCoupon.code} - {availableCoupon.discountType === 'percentage'
+                                ? `${availableCoupon.discount}%`
+                                : `₹${availableCoupon.discount}`} OFF
+                            </button>
+                          ));
+                        })()}
+
                       </div>
                     </div>
                   )}

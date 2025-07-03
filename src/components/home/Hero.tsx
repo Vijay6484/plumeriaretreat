@@ -1,9 +1,32 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Button from '../ui/Button';
+import { navItems } from '../../data';
 
 const Hero: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleScrollToSection = (sectionId: string) => {
+    if (location.pathname === '/') {
+      // Already on home page - scroll to section
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // Navigate to home first then scroll
+      navigate('/');
+      setTimeout(() => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-hero-pattern bg-cover bg-center flex items-center">
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-brunswick-green/60"></div>
@@ -26,8 +49,7 @@ const Hero: React.FC = () => {
             <Button 
               variant="secondary" 
               size="lg"
-              as={Link}
-              to="/campsites"
+              onClick={() => handleScrollToSection('campsites')}
             >
               Explore Campsites
             </Button>
@@ -35,10 +57,10 @@ const Hero: React.FC = () => {
               variant="outline" 
               size="lg"
               as={Link}
-              to="/packages"
+              to="/gallery"
               className="!text-baby-powder !border-baby-powder !bg-transparent !hover:bg-white/10 !hover:text-baby-powder !hover:border-baby-powder"
             >
-              View Packages
+              View Gallery
             </Button>
           </div>
         </motion.div>
