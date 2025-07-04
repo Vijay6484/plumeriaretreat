@@ -28,7 +28,7 @@ function App() {
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="payment/:status/:id" element={<StatusPage />} />
+            <Route path="/payment/:status/:id" element={<StatusPage />} />
             <Route path="/failure" element={<Failure />} />
             <Route path="/cancel" element={<Cancel />} />
             <Route path="*" element={<NotFound />} />
