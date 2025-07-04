@@ -170,7 +170,7 @@ const Campsites: React.FC = () => {
 
   const renderCard = (accommodation: Accommodation, index: number) => {
    return (
-  <div key={accommodation.id} className="px-2">
+  <div key={accommodation.id} className="px-2 mx-2">
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}

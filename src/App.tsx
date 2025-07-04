@@ -23,7 +23,7 @@ function App() {
         <main className="flex-grow w-full max-w-full overflow-x-hidden">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/campsites" element={<Campsites />} />
+            {/* <Route path="/campsites" element={<Campsites />} /> */}
             <Route path="/campsites/:id" element={<CampsiteBooking />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/about" element={<About />} />
