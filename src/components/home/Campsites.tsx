@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Slider from 'react-slick';
 import { formatCurrency } from '../../utils/helpers';
-import Card, { CardImage, CardContent, CardTitle } from '../ui/Card';
+import Card, { CardContent, CardTitle } from '../ui/Card';
 import Button from '../ui/Button';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -37,13 +37,7 @@ interface Accommodation {
 }
 
 const API_BASE_URL = 'https://a.plumeriaretreat.com';
-const sliderSetting = {
-  dots: true,
-  infinite: true,
-  speed: 500,
-  slidesToShow: 1,
-  slidesToScroll: 1
-};
+
 const Campsites: React.FC = () => {
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,10 +66,9 @@ const Campsites: React.FC = () => {
 
       const responseData = await response.json();
       console.log('Fetched accommodations:', responseData);
-      
-      // Access the data array from the response
+
       const data = responseData.data || [];
-      
+
       const mapped: Accommodation[] = data.map((item: any) => ({
         id: item.id || 0,
         name: item.name || '',
@@ -86,9 +79,8 @@ const Campsites: React.FC = () => {
         rooms: item.rooms || 0,
         available: Boolean(item.available),
         features: parseStringToArray(item.features),
-        // FIX: Get images from package.images if available
-        images: item.package?.images?.length > 0 
-          ? parseStringToArray(item.package.images) 
+        images: item.package?.images?.length > 0
+          ? parseStringToArray(item.package.images)
           : parseStringToArray(item.images),
         amenity_ids: parseStringToArray(item.amenity_ids),
         address: item.address || '',
@@ -117,7 +109,7 @@ const Campsites: React.FC = () => {
     }
   }, [fetchAccommodations]);
 
-  const sliderSettings = {
+  const outerSliderSettings = {
     dots: true,
     infinite: accommodations.length >= 3,
     speed: 500,
@@ -168,106 +160,113 @@ const Campsites: React.FC = () => {
     );
   }
 
-  const renderCard = (accommodation: Accommodation, index: number) => {
-   return (
-  <div key={accommodation.id} className="px-2 mx-2">
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      className="h-full max-w-sm mx-auto"
-    >
-      <Card className="h-full flex flex-col">
-
-
-        {/* CardImage with multiple images in slider */}
-        {accommodation.images.length > 0 ? (
-          <div className="relative h-64 overflow-hidden">
-            <Slider {...sliderSettings}>
-              {accommodation.images.map((img: string, index: number) => (
-                <div key={index}>
-                  <img
-                    src={img}
-                    alt={`${accommodation.name}-${index}`}
-                    className="w-full h-64 object-cover rounded-t-xl"
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=1';
-                    }}
-                  />
-                </div>
-              ))}
-            </Slider>
-          </div>
-        ) : (
-          <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-64 flex items-center justify-center">
-            <span className="text-gray-500">No image available</span>
-          </div>
-        )}
-        
-        <CardContent className="flex-1 flex flex-col">
-          <div className="flex-1">
-            <div className="flex items-center mb-2">
-              <span className="text-xs font-semibold px-2 py-1 bg-brunswick-green text-baby-powder rounded-full mr-2">
-                {accommodation.type}
-              </span>
-              <span className="text-xs font-semibold px-2 py-1 bg-brunswick-green/10 text-brunswick-green rounded-full">
-                {accommodation.capacity} max guests
-              </span>
-            </div>
-
-            <CardTitle>{accommodation.name}</CardTitle>
-            <p className="text-black/70 mb-3 break-words line-clamp-3">
-              {accommodation.description}
-            </p>
-
-            {accommodation.features.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-4">
-                {accommodation.features.slice(0, 3).map((feature: string, i: number) => (
-                  <span
-                    key={i}
-                    className="text-xs px-2 py-1 bg-rose-taupe/10 text-rose-taupe rounded-full"
-                  >
-                    {feature}
-                  </span>
+  const renderCard = (accommodation: Accommodation, index: number) => (
+    <div key={accommodation.id} className="px-2 sm:px-4 lg:px-6 mb-6 w-full sm:w-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: index * 0.1 }}
+        className="h-full max-w-sm mx-auto"
+      >
+        <Card className="h-full flex flex-col">
+          {/* CardImage with multiple images in slider */}
+          {accommodation.images.length > 0 ? (
+            <div className="relative h-64 overflow-hidden rounded-t-xl">
+              <Slider
+                dots={true}
+                infinite={true}
+                speed={500}
+                slidesToShow={1}
+                slidesToScroll={1}
+                autoplay={true}
+                autoplaySpeed={4000}
+                arrows={false}
+                centerMode={false}
+                centerPadding="0px"
+                className="h-full w-full"
+              >
+                {accommodation.images.map((img: string, idx: number) => (
+                  <div key={idx} className="h-64 w-full">
+                    <img
+                      src={img}
+                      alt={`${accommodation.name}-${idx}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src =
+                          'https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=1';
+                      }}
+                    />
+                  </div>
                 ))}
-                {accommodation.features.length > 3 && (
-                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
-                    +{accommodation.features.length - 3} more
-                  </span>
-                )}
-              </div>
-            )}
+              </Slider>
+            </div>
+          ) : (
+            <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-64 flex items-center justify-center">
+              <span className="text-gray-500">No image available</span>
+            </div>
+          )}
 
-            <div className="mb-4">
-              <div>
+          <CardContent className="flex-1 flex flex-col">
+            <div className="flex-1">
+              <div className="flex items-center mb-2">
+                <span className="text-xs font-semibold px-2 py-1 bg-brunswick-green text-baby-powder rounded-full mr-2">
+                  {accommodation.type}
+                </span>
+                <span className="text-xs font-semibold px-2 py-1 bg-brunswick-green/10 text-brunswick-green rounded-full">
+                  {accommodation.capacity} max guests
+                </span>
+              </div>
+
+              <CardTitle>{accommodation.name}</CardTitle>
+              <p className="text-black/70 mb-3 break-words line-clamp-3">
+                {accommodation.description}
+              </p>
+
+              {accommodation.features.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-4">
+                  {accommodation.features.slice(0, 3).map((feature: string, i: number) => (
+                    <span
+                      key={i}
+                      className="text-xs px-2 py-1 bg-rose-taupe/10 text-rose-taupe rounded-full"
+                    >
+                      {feature}
+                    </span>
+                  ))}
+                  {accommodation.features.length > 3 && (
+                    <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                      +{accommodation.features.length - 3} more
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <div className="mb-4">
                 <p className="text-brunswick-green font-medium flex items-center justify-center">
                   <CheckCircle className="mr-2" size={16} />
                   Reserve to get exciting offer for this property!
                 </p>
               </div>
+
+              <p className="text-sm text-brunswick-green mb-2">
+                {accommodation.available ? `${accommodation.rooms} Room Available` : 'Not Available'}
+              </p>
             </div>
 
-            <p className="text-sm text-brunswick-green mb-2">
-              {accommodation.available ? `${accommodation.rooms} Room Available` : 'Not Available'}
-            </p>
-          </div>
-
-          <div className="flex justify-between items-center mt-4">
-            <p className="font-bold text-brunswick-green">
-              {formatCurrency(accommodation.price)}
-              <span className="text-black/60 font-normal text-sm"> / night</span>
-            </p>
-            <Button variant="primary" size="sm">
-              <Link to={`/campsites/${accommodation.id}`}>Book Now</Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  </div>
-);
-  };
+            <div className="flex justify-between items-center mt-4">
+              <p className="font-bold text-brunswick-green">
+                {formatCurrency(accommodation.price)}
+                <span className="text-black/60 font-normal text-sm"> / night</span>
+              </p>
+              <Button variant="primary" size="sm">
+                <Link to={`/campsites/${accommodation.id}`}>Book Now</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+  );
 
   return (
     <section className="section-padding bg-baby-powder">
@@ -291,7 +290,7 @@ const Campsites: React.FC = () => {
             <p className="text-brunswick-green text-lg">No campsites available at the moment.</p>
           </div>
         ) : accommodations.length >= 3 ? (
-          <Slider {...sliderSettings} className="campsites-slider">
+          <Slider {...outerSliderSettings} className="campsites-slider">
             {accommodations.map((a, i) => renderCard(a, i))}
           </Slider>
         ) : (
