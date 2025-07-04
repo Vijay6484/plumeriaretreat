@@ -1734,7 +1734,7 @@ const CampsiteBooking: React.FC = () => {
 
       console.log('Booking payload:', bookingPayload);
 
-      const bookingResponse = await fetch(`${API_BASE_URL}/admin/bookings`, {
+      const bookingResponse = await fetch(`https://adminplumeria-back.onrender.com/admin/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1766,7 +1766,7 @@ const CampsiteBooking: React.FC = () => {
 
     console.log('Payment payload:', paymentPayload);
 
-    const paymentResponse = await fetch(`${API_BASE_URL}/admin/bookings/payments/payu`, {
+    const paymentResponse = await fetch(`https://adminplumeria-back.onrender.com/admin/bookings/payments/payu`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
