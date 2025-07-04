@@ -1367,6 +1367,7 @@ const CampsiteBooking: React.FC = () => {
   const [showPartyEffect, setShowPartyEffect] = useState(false);
   const [selectedActivities, setSelectedActivities] = useState<{ [key: string]: boolean }>({});
   const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
+  const [allAvailableCoupons, setAllAvailableCoupons] = useState<Coupon[]>([]);
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
   const [maxiRoom, setMaxiRoom] = useState<number>(MAX_ROOMS);
   const [packages, setPackages] = useState<Package[]>([]);
@@ -1543,6 +1544,7 @@ const CampsiteBooking: React.FC = () => {
             coupon.active && new Date(coupon.expiryDate) > new Date()
           );
           console.log('Active Coupons:', activeCoupons);
+          setAllAvailableCoupons(activeCoupons);
           setAvailableCoupons(activeCoupons.slice(0, 3));
         }
       } catch (error) {
@@ -1755,53 +1757,53 @@ const CampsiteBooking: React.FC = () => {
         throw new Error('Booking ID not found in response');
       }
 
-       const paymentPayload = {
-      amount: advanceAmount,
-      firstname: guestInfo.name,
-      email: guestInfo.email,
-      phone: guestInfo.phone || '',
-      productinfo: `Booking for ${accommodation?.name}`,
-      booking_id: bookingId,
-    };
+      const paymentPayload = {
+        amount: advanceAmount,
+        firstname: guestInfo.name,
+        email: guestInfo.email,
+        phone: guestInfo.phone || '',
+        productinfo: `Booking for ${accommodation?.name}`,
+        booking_id: bookingId,
+      };
 
-    console.log('Payment payload:', paymentPayload);
+      console.log('Payment payload:', paymentPayload);
 
-    const paymentResponse = await fetch(`https://a.plumeriaretreat.com/admin/bookings/payments/payu`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(paymentPayload),
-    });
+      const paymentResponse = await fetch(`https://a.plumeriaretreat.com/admin/bookings/payments/payu`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paymentPayload),
+      });
 
-    const paymentData = await paymentResponse.json();
-    console.log('Payment response:', paymentData);
+      const paymentData = await paymentResponse.json();
+      console.log('Payment response:', paymentData);
 
-    if (!paymentResponse.ok) {
-      throw new Error(paymentData.error || paymentData.message || 'Failed to initiate payment');
-    }
+      if (!paymentResponse.ok) {
+        throw new Error(paymentData.error || paymentData.message || 'Failed to initiate payment');
+      }
 
-    // Type guard for response validation
-    if (!paymentData.payu_url || !paymentData.payment_data || typeof paymentData.payment_data !== 'object') {
-      console.error('Invalid payment data structure:', paymentData);
-      throw new Error('Invalid payment data received from server');
-    }
+      // Type guard for response validation
+      if (!paymentData.payu_url || !paymentData.payment_data || typeof paymentData.payment_data !== 'object') {
+        console.error('Invalid payment data structure:', paymentData);
+        throw new Error('Invalid payment data received from server');
+      }
 
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = paymentData.payu_url;
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = paymentData.payu_url;
 
-    // Create hidden inputs with type-safe values
-    Object.entries(paymentData.payment_data).forEach(([key, value]) => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = String(value);  // Explicit string conversion
-      form.appendChild(input);
-    });
+      // Create hidden inputs with type-safe values
+      Object.entries(paymentData.payment_data).forEach(([key, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = String(value);  // Explicit string conversion
+        form.appendChild(input);
+      });
 
-    document.body.appendChild(form);
-    form.submit();
+      document.body.appendChild(form);
+      form.submit();
     } catch (error: any) {
       console.error('Full booking error:', error);
 
@@ -2321,22 +2323,32 @@ const CampsiteBooking: React.FC = () => {
                     </span>
                   </div>
 
-                  {availableCoupons.length > 0 && (
+                  {allAvailableCoupons.length > 0 && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Available Offers</label>
                       <div className="flex overflow-x-auto space-x-2 mb-3 px-1 sm:flex-wrap sm:space-x-0 sm:gap-2 no-scrollbar">
                         {(() => {
-                          // Get all coupons matching the current accommodation
-                          const matchingCoupons = availableCoupons.filter(
-                            coupon => coupon.accommodationType === accommodation?.name
+                          console.log("Accommodation name:", accommodation?.name);
+                          console.log("All available coupons:", allAvailableCoupons);
+
+                          const matchingCoupons = allAvailableCoupons.filter(
+                            (coupon: Coupon) =>
+                              coupon.accommodationType?.trim() === accommodation?.name?.trim()
                           );
 
-                          // Use matching coupons if any exist, otherwise use 'All' coupons
-                          const couponsToShow = matchingCoupons.length > 0
-                            ? matchingCoupons
-                            : availableCoupons.filter(coupon => coupon.accommodationType === 'All');
+                          let couponsToShow: Coupon[] = [];
 
-                          return couponsToShow.map((availableCoupon) => (
+                          if (matchingCoupons.length > 0) {
+                            // ✅ Show up to 3 matching coupons
+                            couponsToShow = matchingCoupons.slice(0, 3);
+                          } else {
+                            // ✅ Show up to 3 from all available coupons if no match
+                            couponsToShow = allAvailableCoupons.slice(0, 3);
+                          }
+
+                          console.log("Coupons to show:", couponsToShow);
+
+                          return couponsToShow.map((availableCoupon: Coupon) => (
                             <button
                               key={availableCoupon.id}
                               onClick={() => handleCouponSelect(availableCoupon)}
@@ -2348,10 +2360,10 @@ const CampsiteBooking: React.FC = () => {
                             </button>
                           ));
                         })()}
-
                       </div>
                     </div>
                   )}
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
                     <div className="flex gap-2">
