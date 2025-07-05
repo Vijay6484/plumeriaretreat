@@ -1736,7 +1736,7 @@ const CampsiteBooking: React.FC = () => {
 
       console.log('Booking payload:', bookingPayload);
 
-      const bookingResponse = await fetch(`https://a.plumeriaretreat.com/admin/bookings`, {
+      const bookingResponse = await fetch(`http://localhost:5000/admin/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1768,7 +1768,7 @@ const CampsiteBooking: React.FC = () => {
 
       console.log('Payment payload:', paymentPayload);
 
-      const paymentResponse = await fetch(`https://a.plumeriaretreat.com/admin/bookings/payments/payu`, {
+      const paymentResponse = await fetch(`http://localhost:5000/admin/bookings/payments/payu`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2363,7 +2363,6 @@ const CampsiteBooking: React.FC = () => {
                       </div>
                     </div>
                   )}
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
                     <div className="flex gap-2">

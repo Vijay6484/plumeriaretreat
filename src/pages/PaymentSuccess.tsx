@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const StatusPage: React.FC = () => {
   const { status, id } = useParams<{ status: string; id: string }>();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Log the status and id for debugging purposes
+    console.log('Payment Status:', status);
+    console.log('Transaction ID:', id);
+
+    // Optionally, you can add any additional logic here, like fetching payment details
+  }, [status, id]);
   // Determine styles and messages
   const statusConfig = {
     success: {

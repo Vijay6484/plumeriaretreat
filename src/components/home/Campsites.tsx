@@ -240,10 +240,9 @@ const Campsites: React.FC = () => {
                   )}
                 </div>
               )}
-
-              <div className="mb-4">
+              <div className="mb-4 border-2 border-green-400 bg-white-50 text-green-700 px-2 py-4 rounded-md text-center font-medium">
                 <p className="text-brunswick-green font-medium flex items-center justify-center">
-                  <CheckCircle className="mr-2" size={16} />
+                  <CheckCircle className="mr-0" size={16} />
                   Reserve to get exciting offer for this property!
                 </p>
               </div>
