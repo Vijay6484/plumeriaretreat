@@ -2134,7 +2134,15 @@ const CampsiteBooking: React.FC = () => {
                             <DayPicker
                               mode="range"
                               selected={calendarTempRange}
-                              onSelect={setCalendarTempRange}
+                              onSelect={(range) => {
+                                if (range?.from && !range.to) {
+                                  // Automatically set 'to' to next day
+                                  const nextDay = addDays(range.from, 1);
+                                  setCalendarTempRange({ from: range.from, to: nextDay });
+                                } else {
+                                  setCalendarTempRange(range);
+                                }
+                              }}
                               numberOfMonths={1}
                               fromDate={new Date()}
                               toDate={addDays(new Date(), 365)}
@@ -2145,9 +2153,8 @@ const CampsiteBooking: React.FC = () => {
                               modifiersClassNames={{
                                 blocked: 'bg-red-100 text-gray-400 line-through cursor-not-allowed',
                               }}
-                              className="mx-auto bg-white p-2 rounded-lg shadow-lg"
-                            />
-
+                              className="mx-auto bg-white p-2 rounded-lg shadow-lg"/>
+                          
                             <div className="flex justify-end mt-2">
                               <button
                                 type="button"

@@ -115,7 +115,7 @@ Maharashtra 410406</span>
                     e.currentTarget.nextElementSibling!.textContent = 'Digital Diaries';
                   }}
                 />
-                <span>Digital Diaries</span>
+                <span className="text-white">Digital Diaries</span>
               </a>
             </div>
           </div>
