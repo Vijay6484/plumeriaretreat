@@ -1253,15 +1253,6 @@ interface Package {
   price: number;
 }
 
-// const imageLinks = [
-//   "https://images.pexels.com/photos/9144680/pexels-photo-9144680.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-//   "https://images.pexels.com/photos/6640068/pexels-photo-6640068.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-//   "https://images.pexels.com/photos/2526025/pexels-photo-2526025.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-//   "https://images.pexels.com/photos/3045272/pexels-photo-3045272.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-//   "https://images.pexels.com/photos/2351287/pexels-photo-2351287.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-// ];
-
-
 async function getImageLinks(): Promise<string[]> {
   try {
     const response = await fetch("https://u.plumeriaretreat.com/api/accommodations");
@@ -1347,9 +1338,9 @@ const CampsiteBooking: React.FC = () => {
   const [accommodation, setAccommodation] = useState<Accommodation | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [rooms, setRooms] = useState(1);
-  const [roomGuests, setRoomGuests] = useState<RoomGuest[]>(
-    Array.from({ length: MAX_ROOMS }, () => ({ adults: 2, children: 0 }))
-  );
+  const [roomGuests, setRoomGuests] = useState<RoomGuest[]>([
+    { adults: 2, children: 0 }
+  ]);
   const [guestInfo, setGuestInfo] = useState<GuestInfo>({
     name: '',
     email: '',
@@ -1419,6 +1410,23 @@ const CampsiteBooking: React.FC = () => {
   }, [totalGuests, foodChoice]);
 
   const handleRoomsChange = (newRooms: number) => {
+    // Update roomGuests array to match new room count
+    setRoomGuests(prev => {
+      if (newRooms > prev.length) {
+        // Add new rooms with default configuration
+        const newEntries = Array.from({ length: newRooms - prev.length }, () => ({
+          adults: 2,
+          children: 0
+        }));
+        return [...prev, ...newEntries];
+      } else if (newRooms < prev.length) {
+        // Remove extra rooms
+        return prev.slice(0, newRooms);
+      }
+      return prev;
+    });
+
+    // Calculate new total guests for food adjustment
     const newTotalGuests = roomGuests.slice(0, newRooms)
       .reduce((sum, r) => sum + r.adults + r.children, 0);
 
@@ -1470,6 +1478,21 @@ const CampsiteBooking: React.FC = () => {
     return isPast || isBlocked;
   };
 
+  // Helper function to check if a date range includes blocked dates
+  const isRangeBlocked = (start: Date, end: Date) => {
+    const startDate = startOfDay(start);
+    const endDate = startOfDay(end);
+    let current = new Date(startDate);
+
+    while (current <= endDate) {
+      if (blockedDates.some(blockedDate => isSameDay(current, new Date(blockedDate)))) {
+        return true;
+      }
+      current = addDays(current, 1);
+    }
+    return false;
+  };
+
   useEffect(() => {
     const fetchAccommodation = async () => {
       try {
@@ -1479,7 +1502,6 @@ const CampsiteBooking: React.FC = () => {
         setMaxiRoom(data.rooms);
         console.log('Accommodation data:', data.rooms, data.capacity);
         setMaxPeoplePerRoom(data.capacity || MAX_PEOPLE_PER_ROOM);
-        // setRoomGuests(Array.from({ length: data.rooms }, () => ({ adults: 2, children: 0 })));
         setPackageDescription(data.package_description);
         if (data) {
           const parsed: Accommodation = {
@@ -1701,6 +1723,11 @@ const CampsiteBooking: React.FC = () => {
     if (!selectedPackage) newErrors.package = 'Please select a package';
     if ((foodCounts.veg + foodCounts.nonveg + foodCounts.jain) !== totalGuests) {
       newErrors.food = 'Food preferences must match total guests';
+    }
+
+    // Check for blocked dates in selected range
+    if (dateRange?.from && dateRange?.to && isRangeBlocked(dateRange.from, dateRange.to)) {
+      newErrors.dates = 'Your selected dates include some blocked dates. Please choose different dates.';
     }
 
     setErrors(newErrors);
@@ -2096,6 +2123,11 @@ const CampsiteBooking: React.FC = () => {
                             All dates are currently available!
                           </p>
                         )}
+                        {blockedDates.length > 0 && (
+                          <p className="text-sm text-yellow-600 mt-2">
+                            Some dates are blocked. Please check the calendar before booking.
+                          </p>
+                        )}
 
                         {showCalendar && (
                           <div className="relative z-10 mt-2">
@@ -2122,8 +2154,18 @@ const CampsiteBooking: React.FC = () => {
                                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
                                 onClick={() => {
                                   if (calendarTempRange?.from && calendarTempRange?.to) {
+                                    // Check if range includes blocked dates
+                                    if (isRangeBlocked(calendarTempRange.from, calendarTempRange.to)) {
+                                      setErrors(prev => ({ 
+                                        ...prev, 
+                                        dates: 'Your selected dates include some blocked dates. Please choose different dates.' 
+                                      }));
+                                      return;
+                                    }
+                                    
                                     setDateRange(calendarTempRange);
                                     setShowCalendar(false);
+                                    setErrors(prev => ({ ...prev, dates: '' }));
                                   }
                                 }}
                                 disabled={!calendarTempRange?.from || !calendarTempRange?.to}
@@ -2166,14 +2208,14 @@ const CampsiteBooking: React.FC = () => {
                         className="px-3 py-1 bg-green-700 text-white rounded"
                       >+</Button>
                       <span className="text-xs text-gray-500">
-                        {Math.max(0, Math.min(maxiRoom, accommodation?.availableRooms || maxiRoom) - rooms)} rooms remaining
+                        {Math.max(0, (accommodation?.availableRooms || maxiRoom) - rooms)} rooms remaining
                       </span>
                     </div>
 
                     <div className="border rounded p-2 bg-gray-50">
-                      {Array.from({ length: rooms }).map((_, idx) => {
-                        const adults = roomGuests[idx].adults;
-                        const children = roomGuests[idx].children;
+                      {roomGuests.slice(0, rooms).map((room, idx) => {
+                        const adults = room.adults;
+                        const children = room.children;
                         const roomSubtotal = adults * ADULT_RATE + children * CHILD_RATE;
 
                         return (
