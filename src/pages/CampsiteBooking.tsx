@@ -2105,8 +2105,7 @@ const CampsiteBooking: React.FC = () => {
                       <div className="flex-1">
                         <button
                           type="button"
-                          className={`w-full px-4 py-2 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-600 ${errors.dates ? 'border-red-500' : ''
-                            }`}
+                          className={`w-full px-4 py-2 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-600 ${errors.dates ? 'border-red-500' : ''}`}
                           onClick={() => {
                             setShowCalendar(true);
                             setCalendarTempRange(undefined);
@@ -2116,7 +2115,9 @@ const CampsiteBooking: React.FC = () => {
                             ? `${format(dateRange.from, 'dd MMM yyyy')} to ${format(dateRange.to, 'dd MMM yyyy')}`
                             : 'Select your stay dates'}
                         </button>
-                        {errors.dates && <p className="text-red-500 text-sm mt-1">{errors.dates}</p>}
+                        {errors.dates && (
+                          <p className="text-red-500 text-sm mt-1">{errors.dates}</p>
+                        )}
 
                         {blockedDates.length === 0 && (
                           <p className="text-sm text-green-600 mt-2">
@@ -2136,7 +2137,7 @@ const CampsiteBooking: React.FC = () => {
                               selected={calendarTempRange}
                               onSelect={(range) => {
                                 if (range?.from && !range.to) {
-                                  // Automatically set 'to' to next day
+                                  // Automatically set 'to' as next day
                                   const nextDay = addDays(range.from, 1);
                                   setCalendarTempRange({ from: range.from, to: nextDay });
                                 } else {
@@ -2153,8 +2154,9 @@ const CampsiteBooking: React.FC = () => {
                               modifiersClassNames={{
                                 blocked: 'bg-red-100 text-gray-400 line-through cursor-not-allowed',
                               }}
-                              className="mx-auto bg-white p-2 rounded-lg shadow-lg"/>
-                          
+                              className="mx-auto bg-white p-2 rounded-lg shadow-lg"
+                            />
+
                             <div className="flex justify-end mt-2">
                               <button
                                 type="button"
@@ -2163,16 +2165,16 @@ const CampsiteBooking: React.FC = () => {
                                   if (calendarTempRange?.from && calendarTempRange?.to) {
                                     // Check if range includes blocked dates
                                     if (isRangeBlocked(calendarTempRange.from, calendarTempRange.to)) {
-                                      setErrors(prev => ({ 
-                                        ...prev, 
-                                        dates: 'Your selected dates include some blocked dates. Please choose different dates.' 
+                                      setErrors((prev) => ({
+                                        ...prev,
+                                        dates: 'Your selected dates include some blocked dates. Please choose different dates.',
                                       }));
                                       return;
                                     }
-                                    
+
                                     setDateRange(calendarTempRange);
                                     setShowCalendar(false);
-                                    setErrors(prev => ({ ...prev, dates: '' }));
+                                    setErrors((prev) => ({ ...prev, dates: '' }));
                                   }
                                 }}
                                 disabled={!calendarTempRange?.from || !calendarTempRange?.to}
@@ -2183,6 +2185,7 @@ const CampsiteBooking: React.FC = () => {
                           </div>
                         )}
                       </div>
+
                       <div className="lg:w-64">
                         <div className="bg-green-50 p-4 rounded-lg">
                           <h4 className="font-semibold text-green-800 mb-3 flex items-center">
@@ -2197,6 +2200,7 @@ const CampsiteBooking: React.FC = () => {
                       </div>
                     </div>
                   </div>
+
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Rooms</label>
