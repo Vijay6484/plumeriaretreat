@@ -109,7 +109,7 @@ Maharashtra 410406</span>
                 <img 
                   src="https://digitaldiaries.in.net/black_logo.png" 
                   alt="Digital Diaries" 
-                  className="h-6 mr-2"
+                  className="h-6 mr-2 rounded"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                     e.currentTarget.nextElementSibling!.textContent = 'Digital Diaries';
