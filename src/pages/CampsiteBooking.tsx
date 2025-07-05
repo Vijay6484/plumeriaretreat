@@ -2136,12 +2136,11 @@ const CampsiteBooking: React.FC = () => {
                               mode="range"
                               selected={calendarTempRange}
                               onSelect={(range) => {
-                                if (range?.from && !range.to) {
-                                  // Automatically set 'to' as next day
+                                if (range?.from) {
                                   const nextDay = addDays(range.from, 1);
                                   setCalendarTempRange({ from: range.from, to: nextDay });
                                 } else {
-                                  setCalendarTempRange(range);
+                                  setCalendarTempRange(undefined);
                                 }
                               }}
                               numberOfMonths={1}
@@ -2156,6 +2155,7 @@ const CampsiteBooking: React.FC = () => {
                               }}
                               className="mx-auto bg-white p-2 rounded-lg shadow-lg"
                             />
+
 
                             <div className="flex justify-end mt-2">
                               <button
