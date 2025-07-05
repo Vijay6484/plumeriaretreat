@@ -34,7 +34,7 @@ const CallToAction: React.FC = () => {
               <Link to="/campsites">View Accommodations</Link>
             </Button>
             <Button variant="outline" size="lg">
-              <Link to="/packages">Explore Packages</Link>
+              <Link to="/gallery">Explore Gallery</Link>
             </Button>
           </div>
         </motion.div>

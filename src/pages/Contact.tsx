@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin } from 'lucide-react';
-import { faqs } from '../data';
-import Card, { CardContent } from '../components/ui/Card';
 
 const Contact: React.FC = () => {
   useEffect(() => {
@@ -80,7 +78,7 @@ const Contact: React.FC = () => {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl font-bold mb-6 text-brunswick-green">Contact Information</h2>
-            <div className="space-y-6 mb-12">
+            <div className="space-y-6">
               <div className="flex items-start">
                 <MapPin size={24} className="text-brunswick-green mt-1" />
                 <div className="ml-4">
@@ -102,18 +100,6 @@ const Contact: React.FC = () => {
                   <p className="text-black/70">campatpawna@gmail.com</p>
                 </div>
               </div>
-            </div>
-
-            <h2 className="text-3xl font-bold mb-6 text-brunswick-green">FAQs</h2>
-            <div className="space-y-4">
-              {faqs.map((faq) => (
-                <Card key={faq.id}>
-                  <CardContent>
-                    <h3 className="font-semibold text-lg mb-2 text-brunswick-green">{faq.question}</h3>
-                    <p className="text-black/70">{faq.answer}</p>
-                  </CardContent>
-                </Card>
-              ))}
             </div>
           </motion.div>
         </div>

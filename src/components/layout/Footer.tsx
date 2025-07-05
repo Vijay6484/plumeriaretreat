@@ -15,7 +15,6 @@ const Footer: React.FC = () => {
           <div>
             <Link to="/" className="flex items-center mb-4">
               <Logo color="white" />
-              {/* <span className="ml-2 text-2xl font-bold font-montserrat">Plumeria</span> */}
             </Link>
             <p className="mb-4 text-baby-powder/80">
               Experience the perfect lakeside getaway with our premium cottages, luxury tents and exciting activities.
@@ -47,14 +46,6 @@ const Footer: React.FC = () => {
                   </Link>
                 </li>
               ))}
-              <li>
-                <Link 
-                  to="/book" 
-                  className="hover:text-rose-taupe transition-colors"
-                >
-                  Book Now
-                </Link>
-              </li>
             </ul>
           </div>
           
@@ -104,8 +95,30 @@ Maharashtra 410406</span>
           </div>
         </div>
         
-        <div className="border-t border-white/20 mt-12 pt-8 text-center text-baby-powder/60">
-          <p>&copy; {currentYear} Plumeria Retreat. All rights reserved.</p>
+        <div className="border-t border-white/20 mt-12 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center text-baby-powder/60">
+            <p>&copy; {currentYear} Plumeria Retreat. All rights reserved.</p>
+            <div className="flex items-center mt-4 md:mt-0">
+              <span className="mr-2">Powered by</span>
+              <a 
+                href="https://digitaldiaries.in" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center hover:text-rose-taupe transition-colors"
+              >
+                <img 
+                  src="https://digitaldiaries.in/assets/logo-white.png" 
+                  alt="Digital Diaries" 
+                  className="h-6 mr-2"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling!.textContent = 'Digital Diaries';
+                  }}
+                />
+                <span>Digital Diaries</span>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
