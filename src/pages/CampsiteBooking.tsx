@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { DayPicker, DateRange } from 'react-day-picker';
+import { DayPicker } from 'react-day-picker';
 import { format, addDays, isBefore, startOfDay, isSameDay } from 'date-fns';
 import { X } from 'lucide-react';
 import Slider from 'react-slick';
@@ -187,7 +187,7 @@ const CampsiteBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [accommodation, setAccommodation] = useState<Accommodation | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [checkInDate, setCheckInDate] = useState<Date | undefined>();
   const [rooms, setRooms] = useState(1);
   const [fullyBlocked, setFullyBlocked] = useState<Date[]>([]);
   const [partiallyBlocked, setPartiallyBlocked] = useState<Date[]>([]);
@@ -206,7 +206,7 @@ const CampsiteBooking: React.FC = () => {
   const [foodChoice, setFoodChoice] = useState<'veg' | 'nonveg' | 'jain'>('veg');
   const [foodCounts, setFoodCounts] = useState<FoodCounts>({ veg: 0, nonveg: 0, jain: 0 });
   const [showCalendar, setShowCalendar] = useState(false);
-  const [calendarTempRange, setCalendarTempRange] = useState<DateRange | undefined>(undefined);
+  const [calendarTempDate, setCalendarTempDate] = useState<Date | undefined>(undefined);
   const [fullscreenImgIdx, setFullscreenImgIdx] = useState<number | null>(null);
   const [showPartyEffect, setShowPartyEffect] = useState(false);
   const [selectedActivities, setSelectedActivities] = useState<{ [key: string]: boolean }>({});
@@ -220,10 +220,13 @@ const CampsiteBooking: React.FC = () => {
   const sliderRef = useRef<any>(null);
   const [maxPeoplePerRoom, setMaxPeoplePerRoom] = useState<number>(MAX_PEOPLE_PER_ROOM);
   const [packageDescription, setPackageDescription] = useState<string>('');
-  const [availableRoomsForSelectedDates, setAvailableRoomsForSelectedDates] = useState<number>(0);
+  const [availableRoomsForSelectedDate, setAvailableRoomsForSelectedDate] = useState<number>(0);
   const totalAdults = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.adults, 0);
   const totalChildren = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.children, 0);
   const totalGuests = totalAdults + totalChildren;
+
+  // Calculate checkout date as next day
+  const checkOutDate = checkInDate ? addDays(checkInDate, 1) : undefined;
 
   useEffect(() => {
     setFoodCounts(prev => {
@@ -345,90 +348,47 @@ const CampsiteBooking: React.FC = () => {
   useEffect(() => {
     calculateBlockedDateTypes();
   }, [blockedDates, maxiRoom]);
+  
   const isDateDisabled = (date: Date) => {
     const isPast = isBefore(date, startOfDay(new Date()));
     return isPast || fullyBlocked.some(d => isSameDay(d, date));
   };
 
-  // Helper function to check if a date range includes blocked dates
-  const isRangeBlocked = (start: Date, end: Date) => {
-    const startDate = startOfDay(start);
-    const endDate = startOfDay(end);
+  // Calculate available rooms for selected date
+  const calculateAvailableRoomsForDate = () => {
+    if (!checkInDate) return maxiRoom;
 
-    // Special case: if range is exactly start → start+1 day, only check start date
-    const oneDayLater = addDays(startDate, 1);
-    if (isSameDay(oneDayLater, endDate)) {
-      return isDateDisabled(startDate);
-    }
-
-    // Otherwise, check whole range
-    let current = new Date(startDate);
-    while (current < endDate) {
-      if (isDateDisabled(current)) {
-        return true;
-      }
-      current = addDays(current, 1);
-    }
-    return false;
+    const date = startOfDay(checkInDate);
+    const blockedInfo = blockedDates.find(b => isSameDay(b.date, date));
+    const blockedRooms = blockedInfo?.blockedRooms || 0;
+    return maxiRoom - blockedRooms;
   };
 
-  // Calculate available rooms for selected date range
-  const calculateAvailableRoomsForDates = () => {
-    if (!dateRange?.from || !dateRange?.to) return maxiRoom;
-
-    let minAvailable = maxiRoom;
-    let current = startOfDay(dateRange.from);
-    const end = startOfDay(dateRange.to);
-
-    while (current < end) {
-      const blockedInfo = blockedDates.find(b => isSameDay(b.date, current));
-      const blockedRooms = blockedInfo?.blockedRooms || 0;
-      const available = maxiRoom - blockedRooms;
-
-      if (available < minAvailable) {
-        minAvailable = available;
-      }
-
-      current = addDays(current, 1);
-    }
-
-    return minAvailable;
-  };
-
-  // Update available rooms when date range changes
+  // Update available rooms when date changes
   useEffect(() => {
-    if (dateRange?.from && dateRange?.to) {
-      const available = calculateAvailableRoomsForDates();
-      setAvailableRoomsForSelectedDates(available);
+    if (checkInDate) {
+      const available = calculateAvailableRoomsForDate();
+      setAvailableRoomsForSelectedDate(available);
 
       // Adjust room count if it exceeds available rooms
       if (rooms > available) {
         setRooms(available);
       }
     }
-  }, [dateRange, blockedDates, maxiRoom]);
+  }, [checkInDate, blockedDates, maxiRoom]);
 
   // Validate room availability during booking
   const validateRoomAvailability = () => {
-    if (!dateRange?.from || !dateRange?.to) return true;
+    if (!checkInDate) return true;
 
-    let current = startOfDay(dateRange.from);
-    const end = startOfDay(dateRange.to);
-
-    while (current < end) {
-      const blockedInfo = blockedDates.find(b => isSameDay(b.date, current));
-      const blockedRooms = blockedInfo?.blockedRooms || 0;
-      const availableRooms = maxiRoom - blockedRooms;
-
-      if (availableRooms < rooms) {
-        setErrors(prev => ({
-          ...prev,
-          dates: `On ${format(current, 'dd MMM yyyy')}, only ${availableRooms} room(s) available. Reduce rooms or choose different dates.`
-        }));
-        return false;
-      }
-
-      current = addDays(current, 1);
+    const availableRooms = calculateAvailableRoomsForDate();
+    
+    if (availableRooms < rooms) {
+      setErrors(prev => ({
+        ...prev,
+        dates: `On ${format(checkInDate, 'dd MMM yyyy')}, only ${availableRooms} room(s) available. Reduce rooms or choose different date.`
+      }));
+      return false;
     }
 
     return true;
@@ -539,18 +499,19 @@ const CampsiteBooking: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!dateRange) {
-      const today = new Date();
-      setDateRange({ from: today, to: addDays(today, 1) });
+    if (!checkInDate) {
+      setCheckInDate(new Date());
     }
-  }, [dateRange]);
+  }, [checkInDate]);
 
   const ADULT_RATE = accommodation?.price || 0;
   const CHILD_RATE = Math.round(ADULT_RATE * 0.6);
 
   const calculateTotal = () => {
-    if (!accommodation || !dateRange?.from || !dateRange?.to) return 0;
-    const nights = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
+    if (!accommodation || !checkInDate) return 0;
+    
+    // Always 1 night stay
+    const nights = 1;
     const adultsTotal = totalAdults * ADULT_RATE * nights;
     const childrenTotal = totalChildren * CHILD_RATE * nights;
 
@@ -600,8 +561,8 @@ const CampsiteBooking: React.FC = () => {
       }
 
       const subtotal = (() => {
-        if (!accommodation || !dateRange?.from || !dateRange?.to) return 0;
-        const nights = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
+        if (!accommodation || !checkInDate) return 0;
+        const nights = 1;
         const adultsTotal = totalAdults * ADULT_RATE * nights;
         const childrenTotal = totalChildren * CHILD_RATE * nights;
         return adultsTotal + childrenTotal;
@@ -665,15 +626,15 @@ const CampsiteBooking: React.FC = () => {
     else if (!/\S+@\S+\.\S+/.test(guestInfo.email)) newErrors.email = 'Email is invalid';
     if (!guestInfo.phone) newErrors.phone = 'Phone is required';
     else if (!/^\d{10}$/.test(guestInfo.phone)) newErrors.phone = 'Phone must be 10 digits';
-    if (!dateRange?.from || !dateRange?.to) newErrors.dates = 'Please select dates';
+    if (!checkInDate) newErrors.dates = 'Please select a date';
     if (!selectedPackage) newErrors.package = 'Please select a package';
     if ((foodCounts.veg + foodCounts.nonveg + foodCounts.jain) !== totalGuests) {
       newErrors.food = 'Food preferences must match total guests';
     }
 
-    // Check for blocked dates in selected range
-    if (dateRange?.from && dateRange?.to && isRangeBlocked(dateRange.from, dateRange.to)) {
-      newErrors.dates = 'Your selected dates include some blocked dates. Please choose different dates.';
+    // Check for blocked date
+    if (checkInDate && isDateDisabled(checkInDate)) {
+      newErrors.dates = 'Your selected date is not available. Please choose different date.';
     }
 
     setErrors(newErrors);
@@ -699,8 +660,8 @@ const CampsiteBooking: React.FC = () => {
         guest_email: guestInfo.email,
         guest_phone: guestInfo.phone || null,
         accommodation_id: id,
-        check_in: formatDate(dateRange?.from),
-        check_out: formatDate(dateRange?.to),
+        check_in: formatDate(checkInDate),
+        check_out: formatDate(checkOutDate),
         adults: totalAdults,
         children: totalChildren,
         rooms: rooms,
@@ -1052,7 +1013,7 @@ const CampsiteBooking: React.FC = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">Select Dates</h3>
+                    <h3 className="text-lg font-semibold mb-4">Select Date</h3>
                     <div className="flex flex-col lg:flex-row gap-6">
                       <div className="flex-1">
                         <button
@@ -1060,12 +1021,12 @@ const CampsiteBooking: React.FC = () => {
                           className={`w-full px-4 py-2 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-600 ${errors.dates ? 'border-red-500' : ''}`}
                           onClick={() => {
                             setShowCalendar(true);
-                            setCalendarTempRange(undefined);
+                            setCalendarTempDate(checkInDate);
                           }}
                         >
-                          {dateRange?.from && dateRange?.to
-                            ? `${format(dateRange.from, 'dd MMM yyyy')} to ${format(dateRange.to, 'dd MMM yyyy')}`
-                            : 'Select your stay dates'}
+                          {checkInDate
+                            ? `${format(checkInDate, 'dd MMM yyyy')} (Check-in)`
+                            : 'Select your stay date'}
                         </button>
                         {errors.dates && (
                           <p className="text-red-500 text-sm mt-1">{errors.dates}</p>
@@ -1085,16 +1046,9 @@ const CampsiteBooking: React.FC = () => {
                         {showCalendar && (
                           <div className="relative z-10 mt-2">
                             <DayPicker
-                              mode="range"
-                              selected={calendarTempRange}
-                              onSelect={(range) => {
-                                if (range?.from) {
-                                  const nextDay = addDays(range.from, 1);
-                                  setCalendarTempRange({ from: range.from, to: nextDay });
-                                } else {
-                                  setCalendarTempRange(undefined);
-                                }
-                              }}
+                              mode="single"
+                              selected={calendarTempDate}
+                              onSelect={setCalendarTempDate}
                               numberOfMonths={1}
                               fromDate={new Date()}
                               toDate={addDays(new Date(), 365)}
@@ -1106,6 +1060,7 @@ const CampsiteBooking: React.FC = () => {
                               modifiersClassNames={{
                                 fullyBlocked: 'bg-red-100 text-gray-400 line-through cursor-not-allowed',
                                 partiallyBlocked: 'bg-yellow-100 relative partially-blocked',
+                                selected: 'bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:bg-blue-600',
                               }}
                               className="mx-auto bg-white p-2 rounded-lg shadow-lg"
                             />
@@ -1131,22 +1086,22 @@ const CampsiteBooking: React.FC = () => {
                                 type="button"
                                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
                                 onClick={() => {
-                                  if (calendarTempRange?.from && calendarTempRange?.to) {
-                                    // Check if range includes blocked dates
-                                    if (isRangeBlocked(calendarTempRange.from, calendarTempRange.to)) {
+                                  if (calendarTempDate) {
+                                    // Check if date is blocked
+                                    if (isDateDisabled(calendarTempDate)) {
                                       setErrors((prev) => ({
                                         ...prev,
-                                        dates: 'Your selected dates include some blocked dates. Please choose different dates.',
+                                        dates: 'Your selected date is not available. Please choose different date.',
                                       }));
                                       return;
                                     }
 
-                                    setDateRange(calendarTempRange);
+                                    setCheckInDate(calendarTempDate);
                                     setShowCalendar(false);
                                     setErrors((prev) => ({ ...prev, dates: '' }));
                                   }
                                 }}
-                                disabled={!calendarTempRange?.from || !calendarTempRange?.to}
+                                disabled={!calendarTempDate}
                               >
                                 Select
                               </button>
@@ -1185,12 +1140,12 @@ const CampsiteBooking: React.FC = () => {
                       <span className="font-bold text-lg">{rooms}</span>
                       <Button
                         type="button"
-                        onClick={() => handleRoomsChange(Math.min(availableRoomsForSelectedDates, rooms + 1))}
-                        disabled={rooms >= availableRoomsForSelectedDates}
+                        onClick={() => handleRoomsChange(Math.min(availableRoomsForSelectedDate, rooms + 1))}
+                        disabled={rooms >= availableRoomsForSelectedDate}
                         className="px-3 py-1 bg-green-700 text-white rounded"
                       >+</Button>
                       <span className="text-xs text-gray-500">
-                        {Math.max(0, availableRoomsForSelectedDates - rooms)} rooms remaining
+                        {Math.max(0, availableRoomsForSelectedDate - rooms)} rooms remaining
                       </span>
                     </div>
 
@@ -1318,18 +1273,24 @@ const CampsiteBooking: React.FC = () => {
                     <span className="text-green-600">{accommodation.name}</span>
                   </div>
 
-                  {dateRange?.from && dateRange?.to && (
+                  {checkInDate && (
                     <>
                       <div className="flex justify-between">
-                        <span className="font-medium">Dates</span>
+                        <span className="font-medium">Check-in Date</span>
                         <span className="text-gray-600">
-                          {format(dateRange.from, 'MMM dd')} - {format(dateRange.to, 'MMM dd')}
+                          {format(checkInDate, 'dd MMM yyyy')}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-medium">Check-out Date</span>
+                        <span className="text-gray-600">
+                          {format(addDays(checkInDate, 1), 'dd MMM yyyy')}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="font-medium">Nights</span>
                         <span className="text-gray-600">
-                          {Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))}
+                          1
                         </span>
                       </div>
                     </>
