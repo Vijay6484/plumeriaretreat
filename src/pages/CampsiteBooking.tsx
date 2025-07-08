@@ -69,8 +69,8 @@ interface Accommodation {
   name: string;
   price: number;
   type: string;
-  adult: number;
-  child: number;
+  adult_price: number;
+  child_price: number;
   capacity: number;
   availableRooms?: number;
   features: string[];
@@ -501,12 +501,14 @@ const CampsiteBooking: React.FC = () => {
     }
   }, [checkInDate]);
 
-  const ADULT_RATE = accommodation?.adult || 0;
-  const CHILD_RATE = accommodation.child;
+  // Use dynamic prices from accommodation data
+  const ADULT_RATE = accommodation?.adult_price || 0;
+  const CHILD_RATE = accommodation?.child_price || 0;
 
   const calculateTotal = () => {
     if (!accommodation || !checkInDate) return 0;
 
+    // Always 1 night stay
     const nights = 1;
     const adultsTotal = totalAdults * ADULT_RATE * nights;
     const childrenTotal = totalChildren * CHILD_RATE * nights;
@@ -655,5 +657,4 @@ const CampsiteBooking: React.FC = () => {
     if (!guestInfo.phone) newErrors.phone = 'Phone is required';
     else if (!/^\d{10}$/.test(guestInfo.phone)) newErrors.phone = 'Phone must be 10 digits';
     if (!checkInDate) newErrors.dates = 'Please select a date';
-    if ((foodCounts.veg + foodCounts.nonveg + foodCounts.jain) !== totalGuests) {
-      newErrors.food = 'Food prefe
+    if ((foodCounts.veg + foodCo
