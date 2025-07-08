@@ -69,8 +69,8 @@ interface Accommodation {
   name: string;
   price: number;
   type: string;
-  adult_price: number;
-  child_price: number;
+  adult: number;
+  child: number;
   capacity: number;
   availableRooms?: number;
   features: string[];
@@ -501,8 +501,8 @@ const CampsiteBooking: React.FC = () => {
     }
   }, [checkInDate]);
 
-  const ADULT_RATE = accommodation?.price || 0;
-  const CHILD_RATE = Math.round(ADULT_RATE * 0.6);
+  const ADULT_RATE = accommodation?.adult || 0;
+  const CHILD_RATE = accommodation.child;
 
   const calculateTotal = () => {
     if (!accommodation || !checkInDate) return 0;
