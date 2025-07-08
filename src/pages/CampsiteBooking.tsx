@@ -191,6 +191,7 @@ const CampsiteBooking: React.FC = () => {
   const [rooms, setRooms] = useState(1);
   const [fullyBlocked, setFullyBlocked] = useState<Date[]>([]);
   const [partiallyBlocked, setPartiallyBlocked] = useState<Date[]>([]);
+  const [bookedRooms, setBookedRooms] = useState<number[]>([]);
   const [roomGuests, setRoomGuests] = useState<RoomGuest[]>([
     { adults: 2, children: 0 }
   ]);
@@ -227,7 +228,9 @@ const CampsiteBooking: React.FC = () => {
 
   // Calculate checkout date as next day
   const checkOutDate = checkInDate ? addDays(checkInDate, 1) : undefined;
-
+  /*write a code to fetch all booking rooms count based on the checkin dates and if rooms books then show only total available -booked date -blocked dates(if available) rooms by fetching base_url_api/admin/bookings
+  that happend only when user click on calendar button and select the date then show the how many rooms are available for booking date 
+  */
   useEffect(() => {
     setFoodCounts(prev => {
       const totalFood = prev.veg + prev.nonveg + prev.jain;
@@ -1086,6 +1089,7 @@ const CampsiteBooking: React.FC = () => {
                                 type="button"
                                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
                                 onClick={() => {
+
                                   if (calendarTempDate) {
                                     // Check if date is blocked
                                     if (isDateDisabled(calendarTempDate)) {
