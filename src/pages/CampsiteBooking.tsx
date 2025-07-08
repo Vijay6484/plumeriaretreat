@@ -498,8 +498,8 @@ const CampsiteBooking: React.FC = () => {
     }
   }, [checkInDate]);
 
-  const ADULT_RATE = accommodation?.price || 0;
-  const CHILD_RATE = Math.round(ADULT_RATE * 0.6);
+  const ADULT_RATE = accommodation?.adult_price || 0;
+  const CHILD_RATE = accommodation?.child_price;
 
   const calculateTotal = () => {
     if (!accommodation || !checkInDate) return 0;
