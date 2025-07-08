@@ -233,6 +233,9 @@ const CampsiteBooking: React.FC = () => {
   const totalAdults = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.adults, 0);
   const totalChildren = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.children, 0);
   const totalGuests = totalAdults + totalChildren;
+  
+  // Calculate checkout date as next day
+  const checkOutDate = checkInDate ? addDays(checkInDate, 1) : undefined;
 
   useEffect(() => {
     setFoodCounts(prev => {
@@ -498,8 +501,8 @@ const CampsiteBooking: React.FC = () => {
     }
   }, [checkInDate]);
 
-  const ADULT_RATE = accommodation?.adult_price || 0;
-  const CHILD_RATE = accommodation?.child_price;
+  const ADULT_RATE = accommodation?.price || 0;
+  const CHILD_RATE = Math.round(ADULT_RATE * 0.6);
 
   const calculateTotal = () => {
     if (!accommodation || !checkInDate) return 0;
@@ -653,8 +656,4 @@ const CampsiteBooking: React.FC = () => {
     else if (!/^\d{10}$/.test(guestInfo.phone)) newErrors.phone = 'Phone must be 10 digits';
     if (!checkInDate) newErrors.dates = 'Please select a date';
     if ((foodCounts.veg + foodCounts.nonveg + foodCounts.jain) !== totalGuests) {
-      newErrors.food = 'Food preferences must match total guests';
-    }
-
-    if (checkInDate && isDateDisabled(checkInDate)) {
-      newErrors.dates = 
+      newErrors.food = 'Food prefe
