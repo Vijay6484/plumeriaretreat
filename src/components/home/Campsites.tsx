@@ -167,9 +167,9 @@ const Campsites: React.FC = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ delay: index * 0.1 }}
-        className="h-full max-w-sm mx-auto"
+        className="h-full"
       >
-        <Card className="h-full flex flex-col">
+        <Card className="h-full flex flex-col" style={{ minHeight: '550px', maxHeight: '550px' }}>
           {/* CardImage with multiple images in slider */}
           {accommodation.images.length > 0 ? (
             <div className="relative h-64 overflow-hidden rounded-t-xl">
@@ -207,8 +207,8 @@ const Campsites: React.FC = () => {
             </div>
           )}
 
-          <CardContent className="flex-1 flex flex-col">
-            <div className="flex-1">
+          <CardContent className="flex-1 flex flex-col" style={{ minHeight: '286px' }}>
+            <div className="flex-1 flex flex-col">
               <div className="flex items-center mb-2">
                 <span className="text-xs font-semibold px-2 py-1 bg-brunswick-green text-baby-powder rounded-full mr-2">
                   {accommodation.type}
@@ -218,10 +218,12 @@ const Campsites: React.FC = () => {
                 </span>
               </div>
 
-              <CardTitle>{accommodation.name}</CardTitle>
-              <p className="text-black/70 mb-3 break-words line-clamp-3">
-                {accommodation.description}
-              </p>
+              <CardTitle className="mb-2">{accommodation.name}</CardTitle>
+              <div className="flex-1 overflow-hidden">
+                <p className="text-black/70 mb-3 break-words line-clamp-3 h-16">
+                  {accommodation.description}
+                </p>
+              </div>
 
               {accommodation.features.length > 0 && (
                 <div className="flex flex-wrap gap-1 mb-4">
@@ -254,7 +256,7 @@ const Campsites: React.FC = () => {
               </p>
             </div>
 
-            <div className="flex justify-between items-center mt-4">
+            <div className="flex justify-between items-center mt-auto">
               <p className="font-bold text-brunswick-green">
                 {formatCurrency(accommodation.price)}
                 <span className="text-black/60 font-normal text-sm"> / night</span>
