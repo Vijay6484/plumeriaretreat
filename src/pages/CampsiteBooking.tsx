@@ -183,7 +183,7 @@ const CampsiteBooking: React.FC = () => {
   const [availableRoomsForSelectedDate, setAvailableRoomsForSelectedDate] = useState<number>(0);
   const [currentAdultRate, setCurrentAdultRate] = useState<number>(0);
   const [currentChildRate, setCurrentChildRate] = useState<number>(0);
-  
+
   // Refs for scrolling to errors
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -194,7 +194,7 @@ const CampsiteBooking: React.FC = () => {
   const totalAdults = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.adults, 0);
   const totalChildren = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.children, 0);
   const totalGuests = totalAdults + totalChildren;
-  
+
   // Calculate checkout date as next day
   const checkOutDate = checkInDate ? addDays(checkInDate, 1) : undefined;
 
@@ -311,7 +311,7 @@ const CampsiteBooking: React.FC = () => {
     setFullyBlocked(fully);
     setPartiallyBlocked(partial);
   };
-  
+
   useEffect(() => {
     calculateBlockedDateTypes();
   }, [blockedDates, maxiRoom]);
@@ -364,23 +364,27 @@ const CampsiteBooking: React.FC = () => {
         if (!res.ok) {
           throw new Error('Failed to fetch accommodation');
         }
-        
+
         const data = await res.json();
 
         setMaxiRoom(data.rooms);
         setMaxPeoplePerRoom(data.capacity || MAX_PEOPLE_PER_ROOM);
         setPackageDescription(data.package_description);
-        
+        console.log('Accommodation data:', data);
         if (data) {
           // Process images
           let accommodationImages: string[] = [];
           try {
-            const parsedImages = JSON.parse(data.image);
-            accommodationImages = Array.isArray(parsedImages) ? parsedImages : [data.image];
-          } catch {
-            accommodationImages = [data.image];
+            const imgs = typeof data.images === 'string' ? JSON.parse(data.images) : data.images;
+            if (Array.isArray(imgs)) {
+              accommodationImages = imgs;
+              console.log('Parsed images:', accommodationImages);
+            }
+          } catch (e) {
+            console.error('Failed to parse images:', e);
           }
           setImages(accommodationImages);
+
 
           const parsed: Accommodation = {
             ...data,
@@ -395,7 +399,7 @@ const CampsiteBooking: React.FC = () => {
             })(),
             detailedInfo: data.detailed_info ? JSON.parse(data.detailed_info) : {},
           };
-          
+
           setAccommodation(parsed);
           setCurrentAdultRate(data.adult_price);
           setCurrentChildRate(data.child_price);
@@ -455,7 +459,7 @@ const CampsiteBooking: React.FC = () => {
   }, []);
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
-    
+
     if (isDateDisabled(date)) {
       setErrors(prev => ({
         ...prev,
@@ -472,7 +476,7 @@ const CampsiteBooking: React.FC = () => {
     } else if (accommodation) {
       setCurrentAdultRate(accommodation.adult_price);
     }
-    
+
     // Set child price - use custom if available, otherwise default
     if (blockedInfo && blockedInfo.childPrice !== null) {
       setCurrentChildRate(blockedInfo.childPrice);
@@ -562,7 +566,7 @@ const CampsiteBooking: React.FC = () => {
       } else if (couponData.discountType === 'percentage') {
         const percent = parseFloat(couponData.discount);
         appliedDiscount = (subtotal * percent) / 100;
-        
+
         // Only cap discount if maxDiscount is provided and not null
         if (couponData.maxDiscount !== null && couponData.maxDiscount !== undefined) {
           const maxAllowed = parseFloat(couponData.maxDiscount);
@@ -625,8 +629,8 @@ const CampsiteBooking: React.FC = () => {
 
     if (elementToScroll) {
       elementToScroll.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      if (elementToScroll instanceof HTMLInputElement || 
-          elementToScroll instanceof HTMLButtonElement) {
+      if (elementToScroll instanceof HTMLInputElement ||
+        elementToScroll instanceof HTMLButtonElement) {
         elementToScroll.focus();
       }
     }
@@ -1117,14 +1121,14 @@ const CampsiteBooking: React.FC = () => {
                           <div className="space-y-2 text-sm">
                             <p>
                               <strong>Check-in:</strong><br />
-                              {checkInDate 
-                                ? `${format(checkInDate, 'dd MMM yyyy')}, 3:00 PM` 
+                              {checkInDate
+                                ? `${format(checkInDate, 'dd MMM yyyy')}, 3:00 PM`
                                 : 'Select a date'}
                             </p>
                             <p>
                               <strong>Check-out:</strong><br />
-                              {checkInDate 
-                                ? `${format(addDays(checkInDate, 1), 'dd MMM yyyy')}, 11:00 AM` 
+                              {checkInDate
+                                ? `${format(addDays(checkInDate, 1), 'dd MMM yyyy')}, 11:00 AM`
                                 : 'Select a date'}
                             </p>
                           </div>
