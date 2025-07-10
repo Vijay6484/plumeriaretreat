@@ -102,37 +102,12 @@ p {
   background-color: rgba(6, 81, 67, 0.1) !important;
 }
 
-/* Swiper 3D Coverflow Styles */
-.nearby-locations-swiper {
-  padding: 50px 0;
-}
-
-.nearby-locations-swiper .swiper-slide {
-  background-position: center;
-  background-size: cover;
-  width: 300px;
-  height: 400px;
-}
-
-.nearby-locations-swiper .swiper-pagination-bullet {
-  background: var(--color-brunswick-green);
-  opacity: 0.5;
-}
-
-.nearby-locations-swiper .swiper-pagination-bullet-active {
-  opacity: 1;
-  background: var(--color-brunswick-green);
-}
-
-.nearby-locations-swiper .swiper-button-next,
-.nearby-locations-swiper .swiper-button-prev {
-  color: var(--color-brunswick-green);
-  font-weight: bold;
-}
-
-.nearby-locations-swiper .swiper-button-next:after,
-.nearby-locations-swiper .swiper-button-prev:after {
-  font-size: 20px;
+/* Stacked Cards Styles */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 @layer components {
