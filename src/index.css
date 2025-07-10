@@ -110,6 +110,93 @@ p {
   overflow: hidden;
 }
 
+/* Nearby Locations Swiper Styles */
+.nearby-locations-swiper {
+  padding: 4rem 0 6rem 0 !important;
+  overflow: visible !important;
+}
+
+.nearby-slide {
+  width: 320px !important;
+  height: 400px !important;
+}
+
+@media (max-width: 640px) {
+  .nearby-slide {
+    width: 280px !important;
+    height: 360px !important;
+  }
+}
+
+.nearby-slide-card {
+  filter: drop-shadow(0px 8px 24px rgba(6, 81, 67, 0.15));
+}
+
+.swiper-navigation-controls {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -2rem;
+  gap: 2rem;
+}
+
+.slider-arrow {
+  background: var(--color-baby-powder);
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0px 8px 24px rgba(6, 81, 67, 0.1));
+  color: var(--color-brunswick-green);
+}
+
+.slider-arrow:hover {
+  background: var(--color-brunswick-green);
+  color: var(--color-baby-powder);
+  transform: scale(1.1);
+}
+
+.slider-arrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Swiper Pagination Customization */
+.nearby-locations-swiper .swiper-pagination {
+  position: relative !important;
+  margin-top: 2rem;
+}
+
+.nearby-locations-swiper .swiper-pagination-bullet {
+  width: 12px;
+  height: 12px;
+  background: rgba(6, 81, 67, 0.3);
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+.nearby-locations-swiper .swiper-pagination-bullet-active {
+  background: var(--color-brunswick-green);
+  transform: scale(1.2);
+}
+
+/* Coverflow Effect Enhancements */
+.nearby-locations-swiper .swiper-slide-shadow-left,
+.nearby-locations-swiper .swiper-slide-shadow-right {
+  background-image: linear-gradient(to right, rgba(6, 81, 67, 0.5), transparent);
+}
+
+.nearby-locations-swiper .swiper-slide-active .nearby-slide-card {
+  transform: scale(1.05);
+  filter: drop-shadow(0px 12px 32px rgba(6, 81, 67, 0.25));
+}
+
 @layer components {
   .btn-primary {
     @apply bg-brunswick-green text-baby-powder py-2 px-6 rounded-md font-medium transition-all duration-300 hover:bg-brunswick-green/90 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-brunswick-green/50;
