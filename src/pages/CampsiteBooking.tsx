@@ -8,18 +8,7 @@ import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import './Gallery.css';
-import axios from 'axios';
 import {
-  Calendar,
-  Users,
-  Wifi,
-  Car,
-  Coffee,
-  Utensils,
-  Music,
-  Waves,
-  Target,
-  Gamepad2,
   Clock,
   MapPin,
   Phone,
@@ -27,7 +16,8 @@ import {
   CheckCircle,
   CreditCard,
   MessageCircle,
-  Activity
+  Activity,
+  Music
 } from 'lucide-react';
 import {
   MAX_ROOMS,
@@ -35,7 +25,7 @@ import {
   PARTIAL_PAYMENT_MIN_PERCENT,
 } from '../data';
 import { formatCurrency } from '../utils/helpers';
-import Card, { CardContent, CardImage } from '../components/ui/Card';
+import Card, { CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import 'react-day-picker/dist/style.css';
 
@@ -86,7 +76,7 @@ interface Coupon {
   discountType: 'fixed' | 'percentage';
   discount: string;
   minAmount: string;
-  maxDiscount?: string;
+  maxDiscount?: string | null;
   expiryDate: string;
   active: boolean;
   accommodationType: string;
@@ -102,39 +92,9 @@ interface Package {
 interface BlockedDateInfo {
   date: Date;
   blockedRooms: number;
+  adultPrice: number | null;
+  childPrice: number | null;
 }
-
-async function getImageLinks(): Promise<string[]> {
-  try {
-    const response = await fetch("https://u.plumeriaretreat.com/api/accommodations");
-    const data = await response.json();
-
-    if (!Array.isArray(data)) {
-      throw new Error('Invalid API response: expected an array');
-    }
-
-    const images = data.flatMap(item => {
-      try {
-        return JSON.parse(item.images);
-      } catch (e) {
-        console.error('Invalid JSON in images field:', e);
-        return [];
-      }
-    });
-
-    return images;
-  } catch (error) {
-    console.error('Error fetching images:', error);
-    return [];
-  }
-}
-
-let imageLinks: string[] = [];
-
-getImageLinks().then(images => {
-  imageLinks = images;
-  console.log('Fetched images:', imageLinks);
-});
 
 const PartyEffect: React.FC<{ show: boolean; onComplete: () => void }> = ({ show, onComplete }) => {
   useEffect(() => {
@@ -187,11 +147,11 @@ const CampsiteBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [accommodation, setAccommodation] = useState<Accommodation | null>(null);
+  const [images, setImages] = useState<string[]>([]);
   const [checkInDate, setCheckInDate] = useState<Date | undefined>();
-  const [rooms, setRooms] = useState(1);
+  const [rooms, setRooms] = useState(0);
   const [fullyBlocked, setFullyBlocked] = useState<Date[]>([]);
   const [partiallyBlocked, setPartiallyBlocked] = useState<Date[]>([]);
-  const [bookedRooms, setBookedRooms] = useState<number[]>([]);
   const [roomGuests, setRoomGuests] = useState<RoomGuest[]>([
     { adults: 2, children: 0 }
   ]);
@@ -204,14 +164,13 @@ const CampsiteBooking: React.FC = () => {
   const [coupon, setCoupon] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
+  const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
   const [foodChoice, setFoodChoice] = useState<'veg' | 'nonveg' | 'jain'>('veg');
   const [foodCounts, setFoodCounts] = useState<FoodCounts>({ veg: 0, nonveg: 0, jain: 0 });
   const [showCalendar, setShowCalendar] = useState(false);
-  const [calendarTempDate, setCalendarTempDate] = useState<Date | undefined>(undefined);
   const [fullscreenImgIdx, setFullscreenImgIdx] = useState<number | null>(null);
   const [showPartyEffect, setShowPartyEffect] = useState(false);
   const [selectedActivities, setSelectedActivities] = useState<{ [key: string]: boolean }>({});
-  const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
   const [allAvailableCoupons, setAllAvailableCoupons] = useState<Coupon[]>([]);
   const [blockedDates, setBlockedDates] = useState<BlockedDateInfo[]>([]);
   const [maxiRoom, setMaxiRoom] = useState<number>(MAX_ROOMS);
@@ -222,6 +181,8 @@ const CampsiteBooking: React.FC = () => {
   const [maxPeoplePerRoom, setMaxPeoplePerRoom] = useState<number>(MAX_PEOPLE_PER_ROOM);
   const [packageDescription, setPackageDescription] = useState<string>('');
   const [availableRoomsForSelectedDate, setAvailableRoomsForSelectedDate] = useState<number>(0);
+  const [currentAdultRate, setCurrentAdultRate] = useState<number>(0);
+  const [currentChildRate, setCurrentChildRate] = useState<number>(0);
   
   // Refs for scrolling to errors
   const nameRef = useRef<HTMLInputElement>(null);
@@ -350,6 +311,7 @@ const CampsiteBooking: React.FC = () => {
     setFullyBlocked(fully);
     setPartiallyBlocked(partial);
   };
+  
   useEffect(() => {
     calculateBlockedDateTypes();
   }, [blockedDates, maxiRoom]);
@@ -399,22 +361,30 @@ const CampsiteBooking: React.FC = () => {
     const fetchAccommodation = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/accommodations/${id}`);
+        if (!res.ok) {
+          throw new Error('Failed to fetch accommodation');
+        }
+        
         const data = await res.json();
 
         setMaxiRoom(data.rooms);
         setMaxPeoplePerRoom(data.capacity || MAX_PEOPLE_PER_ROOM);
         setPackageDescription(data.package_description);
+        
         if (data) {
+          // Process images
+          let accommodationImages: string[] = [];
+          try {
+            const parsedImages = JSON.parse(data.image);
+            accommodationImages = Array.isArray(parsedImages) ? parsedImages : [data.image];
+          } catch {
+            accommodationImages = [data.image];
+          }
+          setImages(accommodationImages);
+
           const parsed: Accommodation = {
             ...data,
-            image: (() => {
-              try {
-                const imgArr = JSON.parse(data.image);
-                return Array.isArray(imgArr) ? imgArr[0] : data.image;
-              } catch {
-                return data.image;
-              }
-            })(),
+            image: data.image, // Keep original image field
             features: (() => {
               try {
                 const featArr = JSON.parse(data.features);
@@ -425,7 +395,10 @@ const CampsiteBooking: React.FC = () => {
             })(),
             detailedInfo: data.detailed_info ? JSON.parse(data.detailed_info) : {},
           };
+          
           setAccommodation(parsed);
+          setCurrentAdultRate(data.adult_price);
+          setCurrentChildRate(data.child_price);
         } else {
           navigate('/campsites');
         }
@@ -448,8 +421,11 @@ const CampsiteBooking: React.FC = () => {
         if (json.success) {
           const dates = json.data.map((d: any) => ({
             date: new Date(d.blocked_date),
-            blockedRooms: d.rooms ? parseInt(d.rooms) : maxiRoom
+            blockedRooms: d.rooms ? parseInt(d.rooms) : maxiRoom,
+            adultPrice: d.adult_price ? parseFloat(d.adult_price) : null,
+            childPrice: d.child_price ? parseFloat(d.child_price) : null
           }));
+          console.log('Blocked Dates:', dates);
           setBlockedDates(dates);
         }
       } catch (error) {
@@ -459,7 +435,6 @@ const CampsiteBooking: React.FC = () => {
 
     fetchBlockedDates();
   }, [id, maxiRoom]);
-
   useEffect(() => {
     const fetchCoupons = async () => {
       try {
@@ -478,40 +453,45 @@ const CampsiteBooking: React.FC = () => {
     };
     fetchCoupons();
   }, []);
-
-  useEffect(() => {
-    const fetchPackages = async () => {
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/packages`);
-        const result = await response.json();
-        if (result && result.length > 0) {
-          setPackages(result);
-          setSelectedPackage(result[0]);
-        }
-      } catch (error) {
-        console.error('Error fetching packages:', error);
-      }
-    };
-    fetchPackages();
-  }, []);
-
-  useEffect(() => {
-    if (!checkInDate) {
-      setCheckInDate(new Date());
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    
+    if (isDateDisabled(date)) {
+      setErrors(prev => ({
+        ...prev,
+        dates: 'Your selected date is not available. Please choose different date.'
+      }));
+      return;
     }
-  }, [checkInDate]);
 
-  // Use dynamic prices from accommodation data
-  const ADULT_RATE = accommodation?.adult_price || 0;
-  const CHILD_RATE = accommodation?.child_price || 0;
+    // Find if there's custom pricing for this date
+    const blockedInfo = blockedDates.find(b => isSameDay(b.date, date));
+    // Set adult price - use custom if available, otherwise default
+    if (blockedInfo && blockedInfo.adultPrice !== null) {
+      setCurrentAdultRate(blockedInfo.adultPrice);
+    } else if (accommodation) {
+      setCurrentAdultRate(accommodation.adult_price);
+    }
+    
+    // Set child price - use custom if available, otherwise default
+    if (blockedInfo && blockedInfo.childPrice !== null) {
+      setCurrentChildRate(blockedInfo.childPrice);
+    } else if (accommodation) {
+      setCurrentChildRate(accommodation.child_price);
+    }
+
+    setCheckInDate(date);
+    setShowCalendar(false);
+    setErrors(prev => ({ ...prev, dates: '' }));
+  };
 
   const calculateTotal = () => {
     if (!accommodation || !checkInDate) return 0;
 
     // Always 1 night stay
     const nights = 1;
-    const adultsTotal = totalAdults * ADULT_RATE * nights;
-    const childrenTotal = totalChildren * CHILD_RATE * nights;
+    const adultsTotal = totalAdults * currentAdultRate * nights;
+    const childrenTotal = totalChildren * currentChildRate * nights;
 
     let activityCost = 0;
     if (accommodation.detailedInfo?.activities) {
@@ -561,8 +541,8 @@ const CampsiteBooking: React.FC = () => {
       const subtotal = (() => {
         if (!accommodation || !checkInDate) return 0;
         const nights = 1;
-        const adultsTotal = totalAdults * ADULT_RATE * nights;
-        const childrenTotal = totalChildren * CHILD_RATE * nights;
+        const adultsTotal = totalAdults * currentAdultRate * nights;
+        const childrenTotal = totalChildren * currentChildRate * nights;
         return adultsTotal + childrenTotal;
       })();
 
@@ -581,10 +561,14 @@ const CampsiteBooking: React.FC = () => {
         }
       } else if (couponData.discountType === 'percentage') {
         const percent = parseFloat(couponData.discount);
-        const maxAllowed = parseFloat(couponData.maxDiscount || '0');
         appliedDiscount = (subtotal * percent) / 100;
-        if (appliedDiscount > maxAllowed) {
-          appliedDiscount = maxAllowed;
+        
+        // Only cap discount if maxDiscount is provided and not null
+        if (couponData.maxDiscount !== null && couponData.maxDiscount !== undefined) {
+          const maxAllowed = parseFloat(couponData.maxDiscount);
+          if (appliedDiscount > maxAllowed) {
+            appliedDiscount = maxAllowed;
+          }
         }
       }
 
@@ -805,10 +789,10 @@ const CampsiteBooking: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (fullscreenImgIdx !== null) {
         if (e.key === 'ArrowRight') {
-          setFullscreenImgIdx((prev) => prev !== null ? (prev + 1) % imageLinks.length : 0);
+          setFullscreenImgIdx((prev) => prev !== null ? (prev + 1) % images.length : 0);
         }
         if (e.key === 'ArrowLeft') {
-          setFullscreenImgIdx((prev) => prev !== null ? (prev - 1 + imageLinks.length) % imageLinks.length : 0);
+          setFullscreenImgIdx((prev) => prev !== null ? (prev - 1 + images.length) % images.length : 0);
         }
         if (e.key === 'Escape') {
           setFullscreenImgIdx(null);
@@ -820,9 +804,9 @@ const CampsiteBooking: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [fullscreenImgIdx]);
+  }, [fullscreenImgIdx, images]);
 
-  if (!accommodation || packages.length === 0) {
+  if (!accommodation) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -841,19 +825,33 @@ const CampsiteBooking: React.FC = () => {
       />
 
       <div className="relative h-[60vh] overflow-hidden">
-        <Slider {...sliderSettings} ref={sliderRef}>
-          {imageLinks.map((img, idx) => (
-            <div key={idx} className="h-[60vh] flex items-center justify-center bg-black/40">
-              <img
-                src={img}
-                alt={`Campsite ${idx + 1}`}
-                className="object-cover w-full h-[60vh] transition-transform duration-200 hover:scale-105 cursor-pointer"
-                onClick={() => setFullscreenImgIdx(idx)}
-                draggable={false}
-              />
+        {images.length > 0 ? (
+          <Slider {...sliderSettings} ref={sliderRef}>
+            {images.map((img, idx) => (
+              <div key={img} className="h-[60vh] flex items-center justify-center bg-black/40">
+                <img
+                  src={img}
+                  alt={`Campsite ${idx + 1}`}
+                  className="object-cover w-full h-[60vh] transition-transform duration-200 hover:scale-105 cursor-pointer"
+                  onClick={() => setFullscreenImgIdx(idx)}
+                  draggable={false}
+                />
+              </div>
+            ))}
+          </Slider>
+        ) : (
+          <div className="h-[60vh] bg-gray-200 flex items-center justify-center">
+            <div className="text-gray-500 text-center">
+              <div className="mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <p>No images available</p>
             </div>
-          ))}
-        </Slider>
+          </div>
+        )}
+
         {fullscreenImgIdx !== null && (
           <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
             <button
@@ -865,20 +863,20 @@ const CampsiteBooking: React.FC = () => {
             </button>
             <button
               className="absolute left-4 top-1/2 -translate-y-1/2 text-white text-4xl z-50"
-              onClick={() => setFullscreenImgIdx((fullscreenImgIdx - 1 + imageLinks.length) % imageLinks.length)}
+              onClick={() => setFullscreenImgIdx((fullscreenImgIdx - 1 + images.length) % images.length)}
               aria-label="Previous"
             >
               &#8592;
             </button>
             <img
-              src={imageLinks[fullscreenImgIdx]}
+              src={images[fullscreenImgIdx]}
               alt="Full screen"
               className="max-h-[90vh] max-w-[95vw] rounded-lg shadow-lg"
               draggable={false}
             />
             <button
               className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-4xl z-50"
-              onClick={() => setFullscreenImgIdx((fullscreenImgIdx + 1) % imageLinks.length)}
+              onClick={() => setFullscreenImgIdx((fullscreenImgIdx + 1) % images.length)}
               aria-label="Next"
             >
               &#8594;
@@ -892,7 +890,7 @@ const CampsiteBooking: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               className="text-white max-w-3xl"
             >
-              <h1 className="text-4xl md:text-6xl font-bold mb-4">{accommodation?.name}</h1>
+              <h1 className="text-4xl md:text-4xl font-bold mb-4">{accommodation?.name}</h1>
               <div className="flex items-center mt-4 space-x-4">
                 <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm">
                   {accommodation?.type}
@@ -929,7 +927,7 @@ const CampsiteBooking: React.FC = () => {
                       <h3 className="text-xl font-semibold mb-4 text-green-800">What's Included</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {accommodation.features.map((feature: string, index: number) => (
-                          <div key={index} className="flex items-center">
+                          <div key={feature} className="flex items-center">
                             <CheckCircle className="text-green-600 mr-2" size={16} />
                             <span className="text-gray-700">{feature}</span>
                           </div>
@@ -1048,10 +1046,7 @@ const CampsiteBooking: React.FC = () => {
                           type="button"
                           ref={dateRef}
                           className={`w-full px-4 py-2 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-600 ${errors.dates ? 'border-red-500' : ''}`}
-                          onClick={() => {
-                            setShowCalendar(true);
-                            setCalendarTempDate(checkInDate);
-                          }}
+                          onClick={() => setShowCalendar(!showCalendar)}
                         >
                           {checkInDate
                             ? `${format(checkInDate, 'dd MMM yyyy')} (Check-in)`
@@ -1068,7 +1063,7 @@ const CampsiteBooking: React.FC = () => {
                         )}
                         {blockedDates.length > 0 && (
                           <p className="text-sm text-yellow-600 mt-2">
-                            Some dates are blocked. Please check the calendar before booking.
+                            Some dates have special pricing. Please check the calendar before booking.
                           </p>
                         )}
 
@@ -1076,8 +1071,8 @@ const CampsiteBooking: React.FC = () => {
                           <div className="relative z-10 mt-2">
                             <DayPicker
                               mode="single"
-                              selected={calendarTempDate}
-                              onSelect={setCalendarTempDate}
+                              selected={checkInDate}
+                              onSelect={handleDateSelect}
                               numberOfMonths={1}
                               fromDate={new Date()}
                               toDate={addDays(new Date(), 365)}
@@ -1109,36 +1104,8 @@ const CampsiteBooking: React.FC = () => {
                                 <span>Available</span>
                               </div>
                             </div>
-
-                            <div className="flex justify-end mt-2">
-                              <button
-                                type="button"
-                                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                                onClick={() => {
-
-                                  if (calendarTempDate) {
-                                    if (isDateDisabled(calendarTempDate)) {
-                                      setErrors((prev) => ({
-                                        ...prev,
-                                        dates: 'Your selected date is not available. Please choose different date.',
-                                      }));
-                                      return;
-                                    }
-
-                                    setCheckInDate(calendarTempDate);
-                                    setShowCalendar(false);
-                                    setErrors((prev) => ({ ...prev, dates: '' }));
-                                  }
-                                }}
-                                disabled={!calendarTempDate}
-                              >
-                                Select
-                              </button>
-                            </div>
                           </div>
                         )}
-
-
                       </div>
 
                       <div className="lg:w-64">
@@ -1151,13 +1118,13 @@ const CampsiteBooking: React.FC = () => {
                             <p>
                               <strong>Check-in:</strong><br />
                               {checkInDate 
-                                ? `${format(checkInDate, 'dd MMM yyyy')}, 3:00 PM (checkin)` 
+                                ? `${format(checkInDate, 'dd MMM yyyy')}, 3:00 PM` 
                                 : 'Select a date'}
                             </p>
                             <p>
                               <strong>Check-out:</strong><br />
                               {checkInDate 
-                                ? `${format(addDays(checkInDate, 1), 'dd MMM yyyy')}, 11:00 AM (checkout)` 
+                                ? `${format(addDays(checkInDate, 1), 'dd MMM yyyy')}, 11:00 AM` 
                                 : 'Select a date'}
                             </p>
                           </div>
@@ -1192,10 +1159,10 @@ const CampsiteBooking: React.FC = () => {
                       {roomGuests.slice(0, rooms).map((room, idx) => {
                         const adults = room.adults;
                         const children = room.children;
-                        const roomSubtotal = adults * ADULT_RATE + children * CHILD_RATE;
+                        const roomSubtotal = adults * currentAdultRate + children * currentChildRate;
 
                         return (
-                          <div key={idx} className="flex flex-col gap-1 mb-2 border-b pb-2 last:border-0">
+                          <div key={`room-${idx}`} className="flex flex-col gap-1 mb-2 border-b pb-2 last:border-0">
                             <div className="flex items-center gap-4">
                               <span className="w-16 font-medium">Room {idx + 1}</span>
                               <select
@@ -1205,7 +1172,7 @@ const CampsiteBooking: React.FC = () => {
                               >
                                 {[...Array(maxPeoplePerRoom + 1).keys()].map(n =>
                                   n + children <= maxPeoplePerRoom && (
-                                    <option key={n} value={n}>{n} Adults</option>
+                                    <option key={`adults-${n}`} value={n}>{n} Adults</option>
                                   )
                                 )}
                               </select>
@@ -1216,7 +1183,7 @@ const CampsiteBooking: React.FC = () => {
                               >
                                 {[...Array(maxPeoplePerRoom + 1).keys()].map(n =>
                                   n + adults <= maxPeoplePerRoom && (
-                                    <option key={n} value={n}>{n} Children</option>
+                                    <option key={`children-${n}`} value={n}>{n} Children</option>
                                   )
                                 )}
                               </select>
@@ -1229,9 +1196,8 @@ const CampsiteBooking: React.FC = () => {
                     <div className="mt-2 text-sm">
                       <span className="font-medium">Total:</span> {totalAdults} Adults, {totalChildren} Children
                     </div>
-
-                    <div className="mt-1 text-sm text-gray-600">
-                      Adult rate: ₹{accommodation?.adult_price || 0} / night, Child rate: ₹{accommodation?.child_price || 0} / night
+                    <div className="text-xs text-gray-600">
+                      Adult rate: ₹{currentAdultRate} / night, Child rate: ₹{currentChildRate} / night
                     </div>
                   </div>
 
@@ -1272,17 +1238,17 @@ const CampsiteBooking: React.FC = () => {
                       <div className="space-y-3 bg-gray-50 p-4 rounded border">
                         {accommodation.detailedInfo.activities
                           .filter((activity: Activity) => ['speed boating', 'motor boating', 'kayaking'].includes(activity.name.toLowerCase()))
-                          .map((activity: Activity, index: number) => (
-                            <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                          .map((activity: Activity) => (
+                            <div key={activity.name} className="flex items-center justify-between p-3 bg-white rounded-lg border">
                               <div className="flex items-center">
                                 <input
                                   type="checkbox"
-                                  id={`activity-${index}`}
+                                  id={`activity-${activity.name}`}
                                   checked={selectedActivities[activity.name] || false}
                                   onChange={() => handleActivityToggle(activity.name)}
                                   className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                                 />
-                                <label htmlFor={`activity-${index}`} className="flex items-center cursor-pointer">
+                                <label htmlFor={`activity-${activity.name}`} className="flex items-center cursor-pointer">
                                   <Activity className="text-green-600 mr-2" size={16} />
                                   <span className="text-gray-700 capitalize">{activity.name}</span>
                                 </label>
@@ -1347,6 +1313,15 @@ const CampsiteBooking: React.FC = () => {
                     </span>
                   </div>
 
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Adult rate</span>
+                    <span>₹{currentAdultRate}/night</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Child rate</span>
+                    <span>₹{currentChildRate}/night</span>
+                  </div>
+
                   {allAvailableCoupons.length > 0 && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Available Offers</label>
@@ -1367,7 +1342,7 @@ const CampsiteBooking: React.FC = () => {
 
                           return couponsToShow.map((availableCoupon: Coupon) => (
                             <button
-                              key={availableCoupon.id}
+                              key={availableCoupon.code}
                               onClick={() => handleCouponSelect(availableCoupon)}
                               className="flex-shrink-0 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium hover:bg-green-200 transition-colors whitespace-nowrap"
                             >
