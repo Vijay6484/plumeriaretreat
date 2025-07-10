@@ -1,38 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import Slider from 'react-slick';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { EffectCoverflow, Pagination, Navigation } from 'swiper/modules';
 import { nearbyLocations } from '../../data';
 import Card, { CardImage, CardContent } from '../ui/Card';
 import { MapPin } from 'lucide-react';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
+import 'swiper/css';
+import 'swiper/css/effect-coverflow';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 
 const NearbyLocations: React.FC = () => {
-  const settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 3,
-    slidesToScroll: 1,
-    autoplay: false,
-    arrows: true,
-    responsive: [
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-        }
-      },
-      {
-        breakpoint: 640,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        }
-      }
-    ]
-  };
 
   return (
     <section className="section-padding bg-brunswick-green/5 py-16">
@@ -52,15 +30,48 @@ const NearbyLocations: React.FC = () => {
         </motion.div>
 
         <div className="relative">
-          <Slider {...settings} className="nearby-locations-slider">
+          <Swiper
+            effect={'coverflow'}
+            grabCursor={true}
+            centeredSlides={true}
+            slidesPerView={'auto'}
+            coverflowEffect={{
+              rotate: 50,
+              stretch: 0,
+              depth: 100,
+              modifier: 1,
+              slideShadows: true,
+            }}
+            pagination={{
+              clickable: true,
+              dynamicBullets: true,
+            }}
+            navigation={true}
+            modules={[EffectCoverflow, Pagination, Navigation]}
+            className="nearby-locations-swiper"
+            breakpoints={{
+              320: {
+                slidesPerView: 1,
+                spaceBetween: 20,
+              },
+              640: {
+                slidesPerView: 2,
+                spaceBetween: 30,
+              },
+              1024: {
+                slidesPerView: 3,
+                spaceBetween: 40,
+              },
+            }}
+          >
             {nearbyLocations.map((location, index) => (
-              <div key={location.id} className="px-2 h-full">
+              <SwiperSlide key={location.id} className="max-w-sm">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="h-full"
+                  className="h-full px-2"
                 >
                   <Card className="h-full flex flex-col shadow-lg rounded-lg overflow-hidden bg-white">
                     <CardImage
@@ -80,9 +91,9 @@ const NearbyLocations: React.FC = () => {
                     </CardContent>
                   </Card>
                 </motion.div>
-              </div>
+              </SwiperSlide>
             ))}
-          </Slider>
+          </Swiper>
         </div>
       </div>
     </section>

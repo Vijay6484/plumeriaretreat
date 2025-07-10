@@ -8,6 +8,7 @@ import Button from '../ui/Button';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { CheckCircle } from 'lucide-react';
+import { Tag } from 'lucide-react';
 
 interface Accommodation {
   id: number;
@@ -245,7 +246,7 @@ const Campsites: React.FC = () => {
               
               <div className="mb-4 border border-green-300 bg-green-50 text-green-700 px-3 py-2 rounded-lg">
                 <p className="text-sm font-medium flex items-center justify-center">
-                  <CheckCircle className="mr-1" size={14} />
+                  <Tag className="mr-1" size={14} />
                   Reserve for exciting offers!
                 </p>
               </div>

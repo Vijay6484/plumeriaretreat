@@ -102,6 +102,39 @@ p {
   background-color: rgba(6, 81, 67, 0.1) !important;
 }
 
+/* Swiper 3D Coverflow Styles */
+.nearby-locations-swiper {
+  padding: 50px 0;
+}
+
+.nearby-locations-swiper .swiper-slide {
+  background-position: center;
+  background-size: cover;
+  width: 300px;
+  height: 400px;
+}
+
+.nearby-locations-swiper .swiper-pagination-bullet {
+  background: var(--color-brunswick-green);
+  opacity: 0.5;
+}
+
+.nearby-locations-swiper .swiper-pagination-bullet-active {
+  opacity: 1;
+  background: var(--color-brunswick-green);
+}
+
+.nearby-locations-swiper .swiper-button-next,
+.nearby-locations-swiper .swiper-button-prev {
+  color: var(--color-brunswick-green);
+  font-weight: bold;
+}
+
+.nearby-locations-swiper .swiper-button-next:after,
+.nearby-locations-swiper .swiper-button-prev:after {
+  font-size: 20px;
+}
+
 @layer components {
   .btn-primary {
     @apply bg-brunswick-green text-baby-powder py-2 px-6 rounded-md font-medium transition-all duration-300 hover:bg-brunswick-green/90 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-brunswick-green/50;
