@@ -2,9 +2,24 @@ import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import {format} from 'date-fns'
 const StatusPage: React.FC = () => {
   const { status, id } = useParams<{ status: string; id: string }>();
   const navigate = useNavigate();
+
+const formatDate = (dateValue: string | number | Date | null | undefined): string => {
+  if (!dateValue) return 'Invalid date';
+
+  try {
+    const date = new Date(dateValue);
+    if (isNaN(date.getTime())) throw new Error('Invalid date');
+    return format(date, 'dd/MM/yyyy');
+  } catch (e) {
+    console.error('Invalid date format:', dateValue);
+    return 'Invalid date';
+  }
+};
+
   const downloadPdf = (
     email: string,
     name: string,
@@ -382,7 +397,7 @@ const StatusPage: React.FC = () => {
                                         <p style="padding-bottom: 5px;margin: 0px;">Mobile: <b>${mobile}</b></p>
                                         <p style="padding-bottom: 5px;margin: 0px;">Check In: <b>${BookingDate}</b></p>
                                         <p style="padding-bottom: 5px;margin: 0px;">Check Out: <b>${CheckoutDate}</b></p>
-                                        <p style="padding-bottom: 5px;margin: 0px;">Total Person: <b>${totalPerson}</b></p>
+                                        <p style="padding-bottom: 5px;margin: 0px;">Total Room: <b>${totalPerson}</b></p>
                                         <p style="padding-bottom: 5px;margin: 0px;">Adult: <b>${adult}</b></p>
                                         <p style="padding-bottom: 5px;margin: 0px;">Child: <b>${child}</b></p>
                                         <p style="padding-bottom: 5px;margin: 0px;">Veg Count: <b>${vegCount}</b></p>
@@ -615,8 +630,8 @@ const StatusPage: React.FC = () => {
             booking.guest_email,
             booking.guest_name,
             booking.id,
-            booking.check_in,
-            booking.check_out,
+            formatDate(booking.check_in),
+            formatDate(booking.check_out),
             booking.total_amount,
             booking.advance_amount,
             booking.total_amount - booking.advance_amount,
