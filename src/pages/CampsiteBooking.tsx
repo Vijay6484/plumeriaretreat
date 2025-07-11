@@ -691,7 +691,7 @@ const CampsiteBooking: React.FC = () => {
         food_jain: foodCounts.jain,
         total_amount: totalAmount,
         advance_amount: advanceAmount,
-        package_id: selectedPackage?.id ||0,
+        package_id: 0,
         coupon_code: couponApplied ? coupon : null,
       };
 
