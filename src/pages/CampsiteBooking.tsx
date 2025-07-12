@@ -440,23 +440,26 @@ const CampsiteBooking: React.FC = () => {
     fetchBlockedDates();
   }, [id, maxiRoom]);
   useEffect(() => {
-    const fetchCoupons = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/admin/coupons`);
-        const result = await response.json();
-        if (result.success && result.data) {
-          const activeCoupons = result.data.filter((coupon: Coupon) =>
-            coupon.active && new Date(coupon.expiryDate) > new Date()
-          );
-          setAllAvailableCoupons(activeCoupons);
-          setAvailableCoupons(activeCoupons.slice(0, 3));
-        }
-      } catch (error) {
-        console.error('Error fetching coupons:', error);
+  const fetchCoupons = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/coupons`);
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        const currentDate = new Date();
+        // Filter active coupons with valid expiry dates
+        const activeCoupons = result.data.filter((coupon: Coupon) => 
+          coupon.active === 1 && new Date(coupon.expiryDate) > currentDate
+        );
+        
+        setAllAvailableCoupons(activeCoupons);
       }
-    };
-    fetchCoupons();
-  }, []);
+    } catch (error) {
+      console.error('Error fetching coupons:', error);
+    }
+  };
+  fetchCoupons();
+}, []);
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
 
@@ -1327,38 +1330,46 @@ const CampsiteBooking: React.FC = () => {
                   </div>
 
                   {allAvailableCoupons.length > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Available Offers</label>
-                      <div className="flex overflow-x-auto space-x-2 mb-3 px-1 sm:flex-wrap sm:space-x-0 sm:gap-2 no-scrollbar">
-                        {(() => {
-                          const matchingCoupons = allAvailableCoupons.filter(
-                            (coupon: Coupon) =>
-                              coupon.accommodationType?.trim() === accommodation?.name?.trim()
-                          );
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Available Offers
+    </label>
+    <div className="flex overflow-x-auto space-x-2 mb-3 px-1 sm:flex-wrap sm:space-x-0 sm:gap-2 no-scrollbar">
+      {(() => {
+        // Find accommodation-specific coupon
+        const accommodationCoupon = allAvailableCoupons.find(
+          (coupon: Coupon) =>
+            coupon.accommodationType?.trim() === accommodation?.name?.trim()
+        );
 
-                          let couponsToShow: Coupon[] = [];
+        // Find 'all' coupon if no specific coupon exists
+        const allCoupon = !accommodationCoupon 
+          ? allAvailableCoupons.find(
+              (coupon: Coupon) => 
+                coupon.accommodationType?.trim().toLowerCase() === 'all'
+            )
+          : null;
 
-                          if (matchingCoupons.length > 0) {
-                            couponsToShow = matchingCoupons.slice(0, 3);
-                          } else {
-                            couponsToShow = allAvailableCoupons.slice(0, 3);
-                          }
+        // Create array with max 2 coupons (specific or all)
+        const couponsToShow = [];
+        if (accommodationCoupon) couponsToShow.push(accommodationCoupon);
+        if (allCoupon) couponsToShow.push(allCoupon);
 
-                          return couponsToShow.map((availableCoupon: Coupon) => (
-                            <button
-                              key={availableCoupon.code}
-                              onClick={() => handleCouponSelect(availableCoupon)}
-                              className="flex-shrink-0 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium hover:bg-green-200 transition-colors whitespace-nowrap"
-                            >
-                              {availableCoupon.code} - {availableCoupon.discountType === 'percentage'
-                                ? `${availableCoupon.discount}%`
-                                : `₹${availableCoupon.discount}`} OFF
-                            </button>
-                          ));
-                        })()}
-                      </div>
-                    </div>
-                  )}
+        return couponsToShow.map((coupon: Coupon) => (
+          <button
+            key={coupon.code}
+            onClick={() => handleCouponSelect(coupon)}
+            className="flex-shrink-0 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium hover:bg-green-200 transition-colors whitespace-nowrap"
+          >
+            {coupon.code} - {coupon.discountType === 'percentage'
+              ? `${coupon.discount}%`
+              : `₹${coupon.discount}`} OFF
+          </button>
+        ));
+      })()}
+    </div>
+  </div>
+)}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
                     <div className="flex gap-2">
