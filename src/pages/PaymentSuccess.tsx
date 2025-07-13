@@ -40,7 +40,8 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
     accommodationAddress: string,
     latitude: string,
     longitude: string,
-    ownerEmail:string
+    ownerEmail:string,
+    bookedDate:string
   ) => {
     const html = `<!DOCTYPE html
   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -266,7 +267,7 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
                               <tr>
                                 <td class="pb25"
                                   style="color:#000000; font-family:Lato, Arial,sans-serif; font-size:14px; line-height:15px; padding-bottom:0;width:100%;padding-right: 5px;">
-                                  <div mc:edit="text_3">Booking Date - <span>${BookingDate}</span></div>
+                                  <div mc:edit="text_3">Booking Date - <span>${bookedDate}</span></div>
                                 </td>
                               </tr>
                             </table>
@@ -553,14 +554,31 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
                                           been sent from an
                                           email account that is not monitored. To ensure that you receive
                                           communication related to your booking from Plumeria Retreat Pawna lake AC
-                                          cottage , please add <a href="mailto: ${ownerEmail}"
-                                            style="color: #164e6f;"><b>${ownerEmail}</b></a> to your contact list
+                                          cottage , please add <a href="mailto:babukale60@gmail.com"
+                                            style="color: #164e6f;"><b>babukale60@gmail.com</b></a> to your contact list
                                           and
                                           address book.</div>
                                       </td>
                                     </tr>
                                   </table>
-
+                                   <table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding-top: 15px;">
+                                    <tr>
+                                      <td class="pb25 bordr"
+                                        style="color:#216896;border-bottom: 3px solid #216896; font-family:Lato, Arial,sans-serif; font-size:15px; line-height:22px; padding-bottom:6px;">
+                                        <div mc:edit="text_3"><b>Things to Carry</b></div>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td class="pb25"
+                                        style="color:#000000; font-family:Lato, Arial,sans-serif; font-size:15px; line-height:22px; padding-top:8px; padding-bottom:8px;">
+                                        • Always good to carry extra pair of clothes<br>
+                                        • Winter and warm clothes as it will be cold night<br>
+                                        • Toothbrush and paste (toiletries)<br>
+                                        • Any other things you feel necessary<br>
+                                        • Personal medicine if any
+                                      </td>
+                                    </tr>
+                                  </table>
                                 </td>
                               </tr>
                             </table>
@@ -595,27 +613,47 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
     container.style.position = 'absolute';
     container.style.top = '-9999px';
     container.style.left = '-9999px';
-    container.style.width = '800px'; // Fixed width to avoid layout issues
+    container.style.width = '675px'; // Match template width
+    container.style.margin = '0';
+    container.style.padding = '0';
+    container.style.boxSizing = 'border-box';
     document.body.appendChild(container);
 
-    // Step 2: Convert to canvas
-    html2canvas(container, { scale: 2 }).then(canvas => {
-      const imgData = canvas.toDataURL('image/png');
+    html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: null,
+        ignoreElements: element => element.tagName === 'IFRAME'
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'pt', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        let position = 0;
+        let page = 0;
 
-      const pdf = new jsPDF('p', 'pt', 'a4');
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        while (position < pdfHeight) {
+            if (page > 0) pdf.addPage();
+            pdf.addImage(
+                imgData, 
+                'PNG', 
+                0, 
+                -position, 
+                pdfWidth, 
+                canvas.height * pdfWidth / canvas.width
+            );
+            position += pdf.internal.pageSize.getHeight();
+            page++;
+        }
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Booking-${BookingId}.pdf`);
-
-      document.body.removeChild(container); // Cleanup
+        pdf.save(`Booking-${BookingId}.pdf`);
+        document.body.removeChild(container);
     }).catch(error => {
-      console.error("Failed to generate PDF:", error);
-      document.body.removeChild(container);
+        console.error("PDF generation failed:", error);
+        document.body.removeChild(container);
     });
-
 
     }
   useEffect(() => {
@@ -625,7 +663,7 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
           const res = await fetch(`https://a.plumeriaretreat.com/admin/bookings/details/${id}`);
           if (!res.ok) throw new Error('Booking not found');
 
-          const { booking, accommodation ,ownerEmail} = await res.json();
+          const { booking, accommodation ,ownerEmail,bookedDate} = await res.json();
 
           // Call downloadPdf
           downloadPdf(
@@ -648,7 +686,9 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
             accommodation.address,
             accommodation.latitude,
             accommodation.longitude,
-            ownerEmail
+            ownerEmail,
+            bookedDate
+            
           );
         } catch (error) {
           console.error('Error fetching booking or generating PDF:', error);
