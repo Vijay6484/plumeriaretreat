@@ -613,48 +613,29 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
     container.style.position = 'absolute';
     container.style.top = '-9999px';
     container.style.left = '-9999px';
-    container.style.width = '675px'; // Match template width
+     container.style.width = '675px'; // Match template width
     container.style.margin = '0';
     container.style.padding = '0';
     container.style.boxSizing = 'border-box';
     document.body.appendChild(container);
 
-    html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: null,
-        ignoreElements: element => element.tagName === 'IFRAME'
-    }).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'pt', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        
-        let position = 0;
-        let page = 0;
+    // Step 2: Convert to canvas
+    html2canvas(container, { scale: 2 }).then(canvas => {
+      const imgData = canvas.toDataURL('image/png');
 
-        while (position < pdfHeight) {
-            if (page > 0) pdf.addPage();
-            pdf.addImage(
-                imgData, 
-                'PNG', 
-                0, 
-                -position, 
-                pdfWidth, 
-                canvas.height * pdfWidth / canvas.width
-            );
-            position += pdf.internal.pageSize.getHeight();
-            page++;
-        }
+      const pdf = new jsPDF('p', 'pt', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-        pdf.save(`Booking-${BookingId}.pdf`);
-        document.body.removeChild(container);
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Booking-${BookingId}.pdf`);
+
+      document.body.removeChild(container); // Cleanup
     }).catch(error => {
-        console.error("PDF generation failed:", error);
-        document.body.removeChild(container);
+      console.error("Failed to generate PDF:", error);
+      document.body.removeChild(container);
     });
-
     }
   useEffect(() => {
       if (status === 'success' && id) {
