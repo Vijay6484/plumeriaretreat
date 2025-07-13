@@ -39,7 +39,9 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
     accommodationName: string,
     accommodationAddress: string,
     latitude: string,
-    longitude: string) => {
+    longitude: string,
+    ownerEmail:string
+  ) => {
     const html = `<!DOCTYPE html
   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
@@ -348,8 +350,8 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
                                         <div mc:edit="text_3"><b>The amount payable to <span>Plumeria Retreat Pawna lake
                                               AC cottage </span> for this booking
                                             is <span>INR ${advancePayable}</span> as per the details below. Please email us at
-                                            <a href="mailto: booking@pawanaicamping.com"
-                                              style="color: #216896;">booking@pawanaicamping.com</a> if there is any
+                                            <a href="mailto: ${ownerEmail}"
+                                              style="color: #216896;">${ownerEmail}</a> if there is any
                                             discrepancy in this payment
                                             amount.</b></div>
                                       </td>
@@ -551,8 +553,8 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
                                           been sent from an
                                           email account that is not monitored. To ensure that you receive
                                           communication related to your booking from Plumeria Retreat Pawna lake AC
-                                          cottage , please add <a href="mailto: babukale60@gmail.com"
-                                            style="color: #164e6f;"><b>babukale60@gmail.com</b></a> to your contact list
+                                          cottage , please add <a href="mailto: ${ownerEmail}"
+                                            style="color: #164e6f;"><b>${ownerEmail}</b></a> to your contact list
                                           and
                                           address book.</div>
                                       </td>
@@ -623,7 +625,7 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
           const res = await fetch(`https://a.plumeriaretreat.com/admin/bookings/details/${id}`);
           if (!res.ok) throw new Error('Booking not found');
 
-          const { booking, accommodation } = await res.json();
+          const { booking, accommodation ,ownerEmail} = await res.json();
 
           // Call downloadPdf
           downloadPdf(
@@ -645,7 +647,8 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
             accommodation.name,
             accommodation.address,
             accommodation.latitude,
-            accommodation.longitude
+            accommodation.longitude,
+            ownerEmail
           );
         } catch (error) {
           console.error('Error fetching booking or generating PDF:', error);
