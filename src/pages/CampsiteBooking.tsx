@@ -78,7 +78,7 @@ interface Coupon {
   minAmount: string;
   maxDiscount?: string | null;
   expiryDate: string;
-  active: boolean;
+  active:number;
   accommodationType: string;
 }
 
@@ -96,6 +96,9 @@ interface BlockedDateInfo {
   childPrice: number | null;
 }
 
+interface TotalRoomBooked {
+  totalRooms: number;
+}
 const PartyEffect: React.FC<{ show: boolean; onComplete: () => void }> = ({ show, onComplete }) => {
   useEffect(() => {
     if (show) {
@@ -170,6 +173,7 @@ const CampsiteBooking: React.FC = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [fullscreenImgIdx, setFullscreenImgIdx] = useState<number | null>(null);
   const [showPartyEffect, setShowPartyEffect] = useState(false);
+  const [bookedRoom, setBookedRoom] = useState<number>(0);
   const [selectedActivities, setSelectedActivities] = useState<{ [key: string]: boolean }>({});
   const [allAvailableCoupons, setAllAvailableCoupons] = useState<Coupon[]>([]);
   const [blockedDates, setBlockedDates] = useState<BlockedDateInfo[]>([]);
@@ -321,30 +325,67 @@ const CampsiteBooking: React.FC = () => {
     return isPast || fullyBlocked.some(d => isSameDay(d, date));
   };
 
-  const calculateAvailableRoomsForDate = () => {
-    if (!checkInDate) return maxiRoom;
+  // FIXED: Properly calculate available rooms
+  const calculateAvailableRoomsForDate = (date?: Date) => {
+    if (!date) return maxiRoom;
 
-    const date = startOfDay(checkInDate);
-    const blockedInfo = blockedDates.find(b => isSameDay(b.date, date));
-    const blockedRooms = blockedInfo?.blockedRooms || 0;
-    return maxiRoom - blockedRooms;
+    const dateObj = startOfDay(date);
+    let availableRooms = maxiRoom;
+
+    // Subtract blocked rooms
+    const blockedInfo = blockedDates.find(b => isSameDay(b.date, dateObj));
+    if (blockedInfo) {
+      availableRooms -= blockedInfo.blockedRooms;
+    }
+
+    // Subtract already booked rooms
+    availableRooms -= bookedRoom;
+
+    return Math.max(0, availableRooms);
   };
+
+  const fetchTotalRoom = async (date: Date) => {
+    const formattedDate = format(date, 'yyyy-MM-dd');
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/admin/bookings/room-occupancy?check_in=${formattedDate}&id=${id}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setBookedRoom(data.total_rooms || 0);
+      } else {
+        setBookedRoom(0);
+      }
+    } catch (error) {
+      console.error("Error fetching booked rooms:", error);
+      setBookedRoom(0);
+    }
+  };
+
+  // FIXED: Update available rooms when date or bookings change
+  useEffect(() => {
+    if (checkInDate) {
+      fetchTotalRoom(checkInDate);
+    }
+  }, [checkInDate]);
 
   useEffect(() => {
     if (checkInDate) {
-      const available = calculateAvailableRoomsForDate();
+      const available = calculateAvailableRoomsForDate(checkInDate);
       setAvailableRoomsForSelectedDate(available);
 
       if (rooms > available) {
         setRooms(available);
       }
     }
-  }, [checkInDate, blockedDates, maxiRoom]);
+  }, [checkInDate, bookedRoom, blockedDates]);
 
   const validateRoomAvailability = () => {
     if (!checkInDate) return true;
 
-    const availableRooms = calculateAvailableRoomsForDate();
+    const availableRooms = calculateAvailableRoomsForDate(checkInDate);
 
     if (availableRooms < rooms) {
       setErrors(prev => ({
@@ -370,7 +411,6 @@ const CampsiteBooking: React.FC = () => {
         setMaxiRoom(data.rooms);
         setMaxPeoplePerRoom(data.capacity || MAX_PEOPLE_PER_ROOM);
         setPackageDescription(data.package_description);
-        console.log('Accommodation data:', data);
         if (data) {
           // Process images
           let accommodationImages: string[] = [];
@@ -378,13 +418,11 @@ const CampsiteBooking: React.FC = () => {
             const imgs = typeof data.images === 'string' ? JSON.parse(data.images) : data.images;
             if (Array.isArray(imgs)) {
               accommodationImages = imgs;
-              console.log('Parsed images:', accommodationImages);
             }
           } catch (e) {
             console.error('Failed to parse images:', e);
           }
           setImages(accommodationImages);
-
 
           const parsed: Accommodation = {
             ...data,
@@ -420,16 +458,15 @@ const CampsiteBooking: React.FC = () => {
 
     const fetchBlockedDates = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/admin/calendar/blocked-dates/id?accommodation_id=${id}`);
+        const res = await fetch(`${API_BASE_URL}/admin/calendar/blocked-dates?id=${id}`);
         const json = await res.json();
         if (json.success) {
           const dates = json.data.map((d: any) => ({
             date: new Date(d.blocked_date),
-            blockedRooms: d.rooms ? parseInt(d.rooms) : maxiRoom,
+            blockedRooms: d.rooms ? parseInt(d.rooms) : 0,
             adultPrice: d.adult_price ? parseFloat(d.adult_price) : null,
             childPrice: d.child_price ? parseFloat(d.child_price) : null
           }));
-          console.log('Blocked Dates:', dates);
           setBlockedDates(dates);
         }
       } catch (error) {
@@ -439,24 +476,32 @@ const CampsiteBooking: React.FC = () => {
 
     fetchBlockedDates();
   }, [id, maxiRoom]);
+
   useEffect(() => {
-    const fetchCoupons = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/admin/coupons`);
-        const result = await response.json();
-        if (result.success && result.data) {
-          const activeCoupons = result.data.filter((coupon: Coupon) =>
-            coupon.active && new Date(coupon.expiryDate) > new Date()
-          );
-          setAllAvailableCoupons(activeCoupons);
-          setAvailableCoupons(activeCoupons.slice(0, 3));
-        }
-      } catch (error) {
-        console.error('Error fetching coupons:', error);
+  const fetchCoupons = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/coupons`);
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        const currentDate = new Date();
+        
+        // Filter active coupons (active=1) with future expiry dates
+        const activeCoupons = result.data.filter((coupon: Coupon) => 
+          coupon.active === 1 && new Date(coupon.expiryDate) > currentDate
+        );
+        
+        setAllAvailableCoupons(activeCoupons);
       }
-    };
-    fetchCoupons();
-  }, []);
+    } catch (error) {
+      console.error('Error fetching coupons:', error);
+    }
+  };
+  fetchCoupons();
+}, []);
+
+
+
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
 
@@ -1155,7 +1200,7 @@ const CampsiteBooking: React.FC = () => {
                         className="px-3 py-1 bg-green-700 text-white rounded"
                       >+</Button>
                       <span className="text-xs text-gray-500">
-                        {Math.max(0, availableRoomsForSelectedDate - rooms)} rooms remaining
+                        {availableRoomsForSelectedDate - rooms} rooms remaining
                       </span>
                     </div>
 
@@ -1328,31 +1373,39 @@ const CampsiteBooking: React.FC = () => {
 
                   {allAvailableCoupons.length > 0 && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Available Offers</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Available Offers
+                      </label>
                       <div className="flex overflow-x-auto space-x-2 mb-3 px-1 sm:flex-wrap sm:space-x-0 sm:gap-2 no-scrollbar">
                         {(() => {
-                          const matchingCoupons = allAvailableCoupons.filter(
+                          // Find accommodation-specific coupon
+                          const accommodationCoupon = allAvailableCoupons.find(
                             (coupon: Coupon) =>
                               coupon.accommodationType?.trim() === accommodation?.name?.trim()
                           );
 
-                          let couponsToShow: Coupon[] = [];
+                          // Find 'all' coupon if no specific coupon exists
+                          const allCoupon = !accommodationCoupon
+                            ? allAvailableCoupons.find(
+                              (coupon: Coupon) =>
+                                coupon.accommodationType?.trim().toLowerCase() === 'all'
+                            )
+                            : null;
 
-                          if (matchingCoupons.length > 0) {
-                            couponsToShow = matchingCoupons.slice(0, 3);
-                          } else {
-                            couponsToShow = allAvailableCoupons.slice(0, 3);
-                          }
+                          // Create array with max 2 coupons (specific or all)
+                          const couponsToShow = [];
+                          if (accommodationCoupon) couponsToShow.push(accommodationCoupon);
+                          if (allCoupon) couponsToShow.push(allCoupon);
 
-                          return couponsToShow.map((availableCoupon: Coupon) => (
+                          return couponsToShow.map((coupon: Coupon) => (
                             <button
-                              key={availableCoupon.code}
-                              onClick={() => handleCouponSelect(availableCoupon)}
+                              key={coupon.code}
+                              onClick={() => handleCouponSelect(coupon)}
                               className="flex-shrink-0 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium hover:bg-green-200 transition-colors whitespace-nowrap"
                             >
-                              {availableCoupon.code} - {availableCoupon.discountType === 'percentage'
-                                ? `${availableCoupon.discount}%`
-                                : `₹${availableCoupon.discount}`} OFF
+                              {coupon.code} - {coupon.discountType === 'percentage'
+                                ? `${coupon.discount}%`
+                                : `₹${coupon.discount}`} OFF
                             </button>
                           ));
                         })()}
