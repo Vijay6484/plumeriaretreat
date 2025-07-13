@@ -609,33 +609,40 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
 
 </html>`
     const container = document.createElement('div');
-    container.innerHTML = html;
-    container.style.position = 'absolute';
-    container.style.top = '-9999px';
-    container.style.left = '-9999px';
-     container.style.width = '675px'; // Match template width
-    container.style.margin = '0';
-    container.style.padding = '0';
-    container.style.boxSizing = 'border-box';
-    document.body.appendChild(container);
+  container.innerHTML = html;
 
-    // Step 2: Convert to canvas
-    html2canvas(container, { scale: 2 }).then(canvas => {
-      const imgData = canvas.toDataURL('image/png');
+  container.style.position = 'absolute';
+  container.style.top = '-9999px';
+  container.style.left = '-9999px';
+  container.style.width = '794px'; // A4 width in pixels at 96 DPI
+  container.style.background = 'white';
+  container.style.padding = '0';
+  container.style.margin = '0';
 
-      const pdf = new jsPDF('p', 'pt', 'a4');
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+  document.body.appendChild(container);
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Booking-${BookingId}.pdf`);
+  html2canvas(container, {
+    scale: 2,
+    useCORS: true
+  }).then((canvas) => {
+    const imgData = canvas.toDataURL('image/png');
 
-      document.body.removeChild(container); // Cleanup
-    }).catch(error => {
-      console.error("Failed to generate PDF:", error);
-      document.body.removeChild(container);
-    });
+    // Use image size to create a custom-height PDF
+    const imgWidth = canvas.width;
+    const imgHeight = canvas.height;
+
+    const pdfWidth = 595.28; // A4 width in pt
+    const pdfHeight = (imgHeight * pdfWidth) / imgWidth; // dynamic height
+
+    const pdf = new jsPDF('p', 'pt', [pdfWidth, pdfHeight]);
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`Booking-${BookingId}.pdf`);
+
+    document.body.removeChild(container);
+  }).catch((error) => {
+    console.error("PDF generation failed:", error);
+    document.body.removeChild(container);
+  });
     }
   useEffect(() => {
       if (status === 'success' && id) {
