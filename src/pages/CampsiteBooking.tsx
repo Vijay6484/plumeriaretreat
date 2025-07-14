@@ -457,9 +457,11 @@ const CampsiteBooking: React.FC = () => {
     if (!id) return;
 
     const fetchBlockedDates = async () => {
+      console.log("AccommodationID ",id);
       try {
-        const res = await fetch(`${API_BASE_URL}/admin/calendar/blocked-dates?id=${id}`);
+        const res = await fetch(`${API_BASE_URL}/admin/calendar/blocked-dates/${id}`);
         const json = await res.json();
+        console.log("Blocked Date with id  ",json);
         if (json.success) {
           const dates = json.data.map((d: any) => ({
             date: new Date(d.blocked_date),
