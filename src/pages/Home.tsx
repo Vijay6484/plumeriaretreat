@@ -6,6 +6,7 @@ import GalleryPreview from '../components/home/GalleryPreview';
 import WeatherWidget from '../components/home/WeatherWidget';
 import CallToAction from '../components/home/CallToAction';
 import NearbyLocations from '../components/home/NearbyLocations';
+import WhatsAppButton from '../components/ui/WhatsAppButton';
 
 const Home: React.FC = () => {
   useEffect(() => {
@@ -22,7 +23,7 @@ const Home: React.FC = () => {
   }, []);
   
   return (
-    <div>
+    <div className="relative">
       <section id="home">
         <Hero />
       </section>
@@ -35,6 +36,7 @@ const Home: React.FC = () => {
         <GalleryPreview />
       </section>
       <NearbyLocations />
+      <WhatsAppButton />
     </div>
   );
 };

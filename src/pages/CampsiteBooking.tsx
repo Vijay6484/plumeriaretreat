@@ -13,6 +13,7 @@ import {
   MapPin,
   Phone,
   Mail,
+  MessageCircle,
   CheckCircle,
   CreditCard,
   MessageCircle,
