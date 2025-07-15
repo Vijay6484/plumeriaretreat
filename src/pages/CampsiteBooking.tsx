@@ -1503,51 +1503,70 @@ const CampsiteBooking: React.FC = () => {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent>
-                <h3 className="text-lg font-semibold text-green-800 mb-4">Need Help?</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center">
-                    <Phone className="text-green-600 mr-2" size={16} />
-                    <a href="tel:+919226869678" className="text-gray-700 hover:text-green-600">
-                      +91 9226869678
-                    </a>
-                  </div>
-                  <div className="flex items-center">
-                    <MessageCircle className="text-green-600 mr-2" size={16} />
-                    <a
-                      href="https://wa.me/919226869678"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-700 hover:text-green-600"
-                    >
-                      WhatsApp
-                    </a>
-                  </div>
-                  <div className="flex items-center">
-                    <Mail className="text-green-600 mr-2" size={16} />
-                    <a
-                      href="mailto:campatpawna@gmail.com"
-                      className="text-gray-700 hover:text-green-600"
-                    >
-                      campatpawna@gmail.com
-                    </a>
-                  </div>
-                  <div className="flex items-start">
-                    <MapPin className="text-green-600 mr-2 mt-1 py" size={16} />
-                    <a
-                      href="https://maps.google.com/?q=Plumeria+Retreat+Pawna+Lakeside+Cottages"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-700 hover:text-green-600"
-                    >
-                      Plumeria Retreat, Lakeside Drive, Nature Valley
-                    </a>
-                  </div>
-
+            <div className="mt-6 relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 border-2 border-transparent bg-clip-padding">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 opacity-20"></div>
+              <div className="absolute top-4 right-4 w-20 h-20 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full opacity-30"></div>
+              <div className="absolute bottom-4 left-4 w-16 h-16 bg-gradient-to-br from-pink-200 to-blue-200 rounded-full opacity-20"></div>
+              
+              <div className="relative p-6">
+                <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Need Help? 🤝
+                </h3>
+                <p className="text-gray-600 mb-6 text-sm">
+                  Our friendly support team is here to assist you with your booking
+                </p>
+                
+                <div className="space-y-4">
+                  <a
+                    href="tel:+919226869678"
+                    className="flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  >
+                    <Phone className="mr-3" size={20} />
+                    <div className="text-left">
+                      <div className="font-semibold">Call Now</div>
+                      <div className="text-sm opacity-90">+91 9226869678</div>
+                    </div>
+                  </a>
+                  
+                  <a
+                    href="https://wa.me/919226869678"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center bg-gradient-to-r from-green-400 to-green-500 text-white py-3 px-4 rounded-xl hover:from-green-500 hover:to-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  >
+                    <MessageCircle className="mr-3" size={20} />
+                    <div className="text-left">
+                      <div className="font-semibold">WhatsApp</div>
+                      <div className="text-sm opacity-90">Quick Support</div>
+                    </div>
+                  </a>
+                  
+                  <a
+                    href="mailto:campatpawna@gmail.com"
+                    className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  >
+                    <Mail className="mr-3" size={20} />
+                    <div className="text-left">
+                      <div className="font-semibold">Email Us</div>
+                      <div className="text-sm opacity-90">campatpawna@gmail.com</div>
+                    </div>
+                  </a>
                 </div>
-              </CardContent>
-            </Card>
+                
+                <div className="mt-6 p-4 bg-white/50 backdrop-blur-sm rounded-xl border border-white/20">
+                  <div className="flex items-start">
+                    <MapPin className="text-gray-600 mr-3 mt-1 flex-shrink-0" size={18} />
+                    <div>
+                      <div className="font-semibold text-gray-800 mb-1">Visit Us</div>
+                      <div className="text-sm text-gray-600">
+                        At- Bramhanoli fangne post, tal, pawnanagar,<br />
+                        maval, Maharashtra 410406
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <div className="rounded-lg overflow-hidden shadow-lg">
               <iframe
