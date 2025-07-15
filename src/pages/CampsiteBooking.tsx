@@ -16,7 +16,6 @@ import {
   MessageCircle,
   CheckCircle,
   CreditCard,
-  MessageCircle,
   Activity,
   Music
 } from 'lucide-react';
