@@ -8,6 +8,9 @@ import Gallery from './pages/Gallery';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
+import TermsConditions from './pages/TermsConditions';
+import CancellationPolicy from './pages/CancellationPolicy';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import CampsiteBooking from './pages/CampsiteBooking';
 import StatusPage from './pages/PaymentSuccess';
 import { Success, Failure, Cancel } from './pages/PaymentSuccesss';
@@ -28,6 +31,9 @@ function App() {
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/terms-conditions" element={<TermsConditions />} />
+            <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/payment/:status/:id" element={<StatusPage />} />
             <Route path="/failure" element={<Failure />} />
             <Route path="/cancel" element={<Cancel />} />

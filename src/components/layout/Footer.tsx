@@ -49,6 +49,37 @@ const Footer: React.FC = () => {
             </ul>
           </div>
           
+          {/* Legal Links */}
+          <div>
+            <h3 className="text-xl font-bold mb-4 font-montserrat">Legal</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link 
+                  to="/terms-conditions" 
+                  className="hover:text-rose-taupe transition-colors"
+                >
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/cancellation-policy" 
+                  className="hover:text-rose-taupe transition-colors"
+                >
+                  Cancellation Policy
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/privacy-policy" 
+                  className="hover:text-rose-taupe transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+            </ul>
+          </div>
+          
           {/* Contact Info */}
           <div>
             <h3 className="text-xl font-bold mb-4 font-montserrat">Contact Us</h3>
@@ -97,7 +128,10 @@ Maharashtra 410406</span>
         
         <div className="border-t border-white/20 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center text-baby-powder/60">
-            <p>&copy; {currentYear} Plumeria Retreat. All rights reserved.</p>
+            <div className="text-center md:text-left">
+              <p>&copy; {currentYear} Plumeria Retreat. All rights reserved.</p>
+              <p className="text-sm mt-1">Operated by Pawanai Agro Tourism</p>
+            </div>
             <div className="flex items-center mt-4 md:mt-0">
               <span className="mr-2">Powered by</span>
               <a 
