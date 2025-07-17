@@ -554,8 +554,8 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
                                           been sent from an
                                           email account that is not monitored. To ensure that you receive
                                           communication related to your booking from Plumeria Retreat Pawna lake AC
-                                          cottage , please add <a href="mailto:babukale60@gmail.com"
-                                            style="color: #164e6f;"><b>babukale60@gmail.com</b></a> to your contact list
+                                          cottage , please add <a href="mailto:${ownerEmail}"
+                                            style="color: #164e6f;"><b>${ownerEmail}</b></a> to your contact list
                                           and
                                           address book.</div>
                                       </td>
