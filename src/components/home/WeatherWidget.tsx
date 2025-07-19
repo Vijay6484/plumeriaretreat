@@ -62,10 +62,10 @@ const WeatherWidget: React.FC = () => {
           const currentIndex = hourly.time.findIndex((time: string) => time === currentTime) || 0;
           
           setWeather({
-            temperature: Math.round(current.temperature),
+            temperature: Math.round((current.temperature - 32) *  0.5556),
             condition: getConditionFromCode(current.weathercode),
             humidity: hourly.relativehumidity_2m[currentIndex] || 65,
-            windSpeed: Math.round(current.windspeed * 0.621371), // Convert km/h to mph
+            windSpeed: Math.round(current.windspeed), // Convert km/h to mph
             description: getDescriptionFromCode(current.weathercode),
             feelsLike: Math.round(current.temperature + 2), // Approximate feels like
             visibility: 10,
@@ -223,11 +223,11 @@ const WeatherWidget: React.FC = () => {
                   <div className="bg-gradient-to-br from-orange-50 to-red-50 p-4 rounded-xl text-center border border-orange-100">
                     <Thermometer className="w-6 h-6 text-orange-600 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-orange-700">
-                      {convertToFahrenheit(weather.temperature)}°F
+                      {convertToFahrenheit(weather.temperature)}°C
                     </div>
                     <div className="text-xs text-orange-600 font-medium">Temperature</div>
                     <div className="text-xs text-orange-500 mt-1">
-                      Feels {convertToFahrenheit(weather.feelsLike)}°F
+                      Feels {(weather.feelsLike)}°C
                     </div>
                   </div>
                   

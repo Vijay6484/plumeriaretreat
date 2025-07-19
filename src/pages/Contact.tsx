@@ -26,7 +26,7 @@ const Contact: React.FC = () => {
 
       <div className="container-custom py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -70,7 +70,7 @@ const Contact: React.FC = () => {
                 Send Message
               </button>
             </form>
-          </motion.div>
+          </motion.div> */}
 
           <motion.div
             initial={{ opacity: 0, x: 20 }}

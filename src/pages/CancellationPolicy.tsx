@@ -102,13 +102,7 @@ const CancellationPolicy: React.FC = () => {
             <section>
               <h2 className="text-2xl font-bold text-brunswick-green mb-4">Special Circumstances</h2>
               <div className="space-y-4">
-                <div className="border-l-4 border-gray-400 pl-4">
-                  <h4 className="font-semibold text-gray-800 mb-2">Medical Emergencies</h4>
-                  <p className="text-gray-700">
-                    While we understand that medical emergencies can occur, our zero refund policy applies 
-                    to all situations. We recommend purchasing travel insurance to cover such contingencies.
-                  </p>
-                </div>
+
                 
                 <div className="border-l-4 border-gray-400 pl-4">
                   <h4 className="font-semibold text-gray-800 mb-2">Weather Conditions</h4>
@@ -132,10 +126,8 @@ const CancellationPolicy: React.FC = () => {
               <h2 className="text-2xl font-bold text-brunswick-green mb-4">Recommendations</h2>
               <div className="bg-green-50 p-6 rounded-lg">
                 <ul className="list-disc pl-6 space-y-2 text-green-800">
-                  <li>Purchase comprehensive travel insurance before booking</li>
                   <li>Ensure your travel dates are confirmed before making payment</li>
                   <li>Check weather forecasts and plan accordingly</li>
-                  <li>Keep emergency contacts handy for any last-minute issues</li>
                   <li>Read all terms and conditions carefully before booking</li>
                 </ul>
               </div>
