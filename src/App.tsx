@@ -21,17 +21,11 @@ import ScrollToTop from '../src/utils/ScrollToTop';
 
 function App() {
   const location = useLocation();
-
-  useEffect(() => {
-    // Initialize GA4
-    ReactGA.initialize('G-96RYE2GGCX');
     
-    // Track initial pageview
-    ReactGA.send({ 
-      hitType: 'pageview',
-      page: window.location.pathname + window.location.search
-    });
-  }, []);
+    useEffect(() => {
+    ReactGA.initialize('G-96RYE2GGCX');
+    ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
+  }, [location]);
 
   useEffect(() => {
     // Track subsequent pageviews
