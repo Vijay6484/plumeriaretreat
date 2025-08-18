@@ -23,7 +23,7 @@ function App() {
    const location = useLocation();
 
   useEffect(() => {
-    initGA('G-XXXXXXXXXX'); // Replace with your ID
+    initGA('G-EYMVL73H8G'); // Replace with your ID
   }, []);
 
   useEffect(() => {
