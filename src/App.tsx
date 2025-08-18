@@ -23,7 +23,7 @@ function App() {
   const location = useLocation();
 
   useEffect(() => {
-    GA4.initialize('G-EYMVL73H8G'); // Your GA4 ID
+    GA4.initialize('G-96RYE2GGCX'); // Your GA4 ID
   }, []);
 
   useEffect(() => {
