@@ -20,14 +20,19 @@ import { Success, Failure, Cancel } from './pages/PaymentSuccesss';
 import ScrollToTop from '../src/utils/ScrollToTop';  // ✅ import it
 
 function App() {
-   const location = useLocation();
+  const location = useLocation();
 
   useEffect(() => {
-    initGA('G-EYMVL73H8G'); // Replace with your ID
+    GA4.initialize('G-EYMVL73H8G'); // Your GA4 ID
   }, []);
 
   useEffect(() => {
-    trackPage(location.pathname);
+    // Track all page views including homepage
+    if (location.pathname === '/') {
+      GA4.pageview('/', { title: 'Homepage' });
+    } else {
+      GA4.pageview(location.pathname);
+    }
   }, [location]);
   return (
     <Router>
