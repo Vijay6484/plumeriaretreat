@@ -1,7 +1,7 @@
 import React from 'react';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { GA4 } from 'react-ga4';
+import ReactGA from 'react-ga4';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
@@ -20,12 +20,6 @@ import { Success, Failure, Cancel } from './pages/PaymentSuccesss';
 import ScrollToTop from '../src/utils/ScrollToTop';
 
 function App() {
-  const location = useLocation();
-    
-    useEffect(() => {
-    ReactGA.initialize('G-EYMVL73H8G');
-    ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
-  }, [location]);
 
 
   return (
