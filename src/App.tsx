@@ -23,7 +23,7 @@ function App() {
   const location = useLocation();
     
     useEffect(() => {
-    ReactGA.initialize('G-96RYE2GGCX');
+    ReactGA.initialize('G-EYMVL73H8G');
     ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
   }, [location]);
 
