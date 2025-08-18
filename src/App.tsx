@@ -27,14 +27,6 @@ function App() {
     ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
   }, [location]);
 
-  useEffect(() => {
-    // Track subsequent pageviews
-    ReactGA.send({
-      hitType: 'pageview',
-      page: location.pathname + location.search
-    });
-  }, [location]);
-
 
   return (
     <Router>
