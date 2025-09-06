@@ -23,6 +23,7 @@ interface RawAccommodation {
   type: string;
   title: string;
   description: string;
+  available: boolean;
   price: string;
   capacity: number;
   features: string;
@@ -39,6 +40,7 @@ interface Accommodation {
   type: string;
   title: string;
   description: string;
+  available: boolean;
   price: number;
   capacity: number;
   features: string;
@@ -48,6 +50,7 @@ interface Accommodation {
   availableRooms: number;
   detailedInfo: string;
   packages?: Package[];
+
 }
 
 const API_BASE_URL = 'https://u.plumeriaretreat.com';
@@ -94,10 +97,15 @@ const Campsites: React.FC = () => {
           availableRooms: item.available_rooms,
           detailedInfo: item.detailed_info,
           packages: item.packages || [],
+          available: Boolean(item.available),
         };
       });
 
-      const unique = mapped.filter(
+      // ✅ Keep only available accommodations
+      const onlyAvailable = mapped.filter((item) => item.available === true);
+
+      // ✅ Also remove duplicates by id
+      const unique = onlyAvailable.filter(
         (item, index, self) => index === self.findIndex((t) => t.id === item.id)
       );
 
@@ -110,6 +118,7 @@ const Campsites: React.FC = () => {
       setLoading(false);
     }
   };
+
 
   const parseFeatures = (featuresValue: any): string[] => {
     if (!featuresValue) return [];
@@ -156,7 +165,7 @@ const Campsites: React.FC = () => {
   return (
     <div className="min-h-screen bg-baby-powder">
       <div className="h-[40vh] bg-brunswick-green relative overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center opacity-30"
           style={{ backgroundImage: "url('https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')" }}
         ></div>
@@ -187,8 +196,8 @@ const Campsites: React.FC = () => {
                   transition={{ delay: index * 0.2 }}
                 >
                   <Card className="h-full flex flex-col">
-                    <CardImage 
-                      src={accommodation.image} 
+                    <CardImage
+                      src={accommodation.image}
                       alt={accommodation.title}
                       className="h-48 sm:h-64"
                     />

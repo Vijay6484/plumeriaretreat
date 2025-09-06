@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DayPicker } from 'react-day-picker';
 import { format, addDays, isBefore, startOfDay, isSameDay } from 'date-fns';
-import { X } from 'lucide-react';
+import { X, Camera } from 'lucide-react';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -149,6 +149,7 @@ const PartyEffect: React.FC<{ show: boolean; onComplete: () => void }> = ({ show
 const CampsiteBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [accommodation, setAccommodation] = useState<Accommodation | null>(null);
   const [images, setImages] = useState<string[]>([]);
   const [checkInDate, setCheckInDate] = useState<Date | undefined>();
@@ -705,108 +706,108 @@ const CampsiteBooking: React.FC = () => {
   };
 
   // Handle booking submission - directly proceed to payment
-// Replace the API endpoints to use your actual backend URL
-const handleBooking = async () => {
-  if (!validateForm()) return;
-  setLoading(true);
-  
-  try {
-    const formatDate = (date: Date | undefined) => date ? format(date, 'yyyy-MM-dd') : undefined;
-    const bookingPayload = {
-      guest_name: guestInfo.name,
-      guest_email: guestInfo.email,
-      guest_phone: guestInfo.phone || null,
-      accommodation_id: id,
-      check_in: formatDate(checkInDate),
-      check_out: formatDate(checkOutDate),
-      adults: totalAdults,
-      children: totalChildren,
-      rooms: rooms,
-      food_veg: foodCounts.veg,
-      food_nonveg: foodCounts.nonveg,
-      food_jain: foodCounts.jain,
-      total_amount: totalAmount,
-      advance_amount: advanceAmount,
-      package_id: 0,
-      coupon_code: couponApplied ? coupon : null,
-    };
+  // Replace the API endpoints to use your actual backend URL
+  const handleBooking = async () => {
+    if (!validateForm()) return;
+    setLoading(true);
 
-    // Use the actual backend URL instead of localhost
-    const bookingResponse = await fetch(`https://adminplumeria-back.onrender.com/admin/bookings`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(bookingPayload),
-    });
+    try {
+      const formatDate = (date: Date | undefined) => date ? format(date, 'yyyy-MM-dd') : undefined;
+      const bookingPayload = {
+        guest_name: guestInfo.name,
+        guest_email: guestInfo.email,
+        guest_phone: guestInfo.phone || null,
+        accommodation_id: id,
+        check_in: formatDate(checkInDate),
+        check_out: formatDate(checkOutDate),
+        adults: totalAdults,
+        children: totalChildren,
+        rooms: rooms,
+        food_veg: foodCounts.veg,
+        food_nonveg: foodCounts.nonveg,
+        food_jain: foodCounts.jain,
+        total_amount: totalAmount,
+        advance_amount: advanceAmount,
+        package_id: 0,
+        coupon_code: couponApplied ? coupon : null,
+      };
 
-    const bookingData = await bookingResponse.json();
-    console.log('Booking response:', bookingData);
-    if (!bookingResponse.ok) {
-      const errorMsg = bookingData.error || bookingData.message || 'Failed to create booking';
-      throw new Error(errorMsg);
+      // Use the actual backend URL instead of localhost
+      const bookingResponse = await fetch(`https://adminplumeria-back.onrender.com/admin/bookings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingPayload),
+      });
+
+      const bookingData = await bookingResponse.json();
+      console.log('Booking response:', bookingData);
+      if (!bookingResponse.ok) {
+        const errorMsg = bookingData.error || bookingData.message || 'Failed to create booking';
+        throw new Error(errorMsg);
+      }
+
+      const bookingId = bookingData.data?.booking_id || bookingData.booking_id;
+      if (!bookingId) {
+        throw new Error('Booking ID not found in response');
+      }
+
+      // Store booking details for payment
+      setBookingDetails(bookingData.data || bookingData);
+
+      // Proceed to payment immediately after successful booking
+      const paymentPayload = {
+        amount: advanceAmount,
+        firstname: guestInfo.name,
+        email: guestInfo.email,
+        phone: guestInfo.phone || '',
+        productinfo: `Booking for ${accommodation?.name}`,
+        booking_id: bookingId,
+      };
+
+      const paymentResponse = await fetch(`https://adminplumeria-back.onrender.com/admin/bookings/payments/payu`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paymentPayload),
+      });
+
+      const paymentData = await paymentResponse.json();
+      console.log('Payment response:', paymentData);
+      if (!paymentResponse.ok) {
+        throw new Error(paymentData.error || paymentData.message || 'Failed to initiate payment');
+      }
+
+      if (!paymentData.payu_url || !paymentData.payment_data || typeof paymentData.payment_data !== 'object') {
+        console.error('Invalid payment data structure:', paymentData);
+        throw new Error('Invalid payment data received from server');
+      }
+
+      // Create and submit the payment form
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = paymentData.payu_url;
+
+      Object.entries(paymentData.payment_data).forEach(([key, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = String(value);
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
+
+    } catch (error: any) {
+      console.error('Booking/Payment error:', error);
+      let errorMessage = error.message || 'Something went wrong. Please try again.';
+      alert(errorMessage);
+      setLoading(false);
     }
-    
-    const bookingId = bookingData.data?.booking_id || bookingData.booking_id;
-    if (!bookingId) {
-      throw new Error('Booking ID not found in response');
-    }
-
-    // Store booking details for payment
-    setBookingDetails(bookingData.data || bookingData);
-    
-    // Proceed to payment immediately after successful booking
-    const paymentPayload = {
-      amount: advanceAmount,
-      firstname: guestInfo.name,
-      email: guestInfo.email,
-      phone: guestInfo.phone || '',
-      productinfo: `Booking for ${accommodation?.name}`,
-      booking_id: bookingId,
-    };
-
-    const paymentResponse = await fetch(`https://adminplumeria-back.onrender.com/admin/bookings/payments/payu`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(paymentPayload),
-    });
-
-    const paymentData = await paymentResponse.json();
-    console.log('Payment response:', paymentData);
-    if (!paymentResponse.ok) {
-      throw new Error(paymentData.error || paymentData.message || 'Failed to initiate payment');
-    }
-
-    if (!paymentData.payu_url || !paymentData.payment_data || typeof paymentData.payment_data !== 'object') {
-      console.error('Invalid payment data structure:', paymentData);
-      throw new Error('Invalid payment data received from server');
-    }
-
-    // Create and submit the payment form
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = paymentData.payu_url;
-
-    Object.entries(paymentData.payment_data).forEach(([key, value]) => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = String(value);
-      form.appendChild(input);
-    });
-
-    document.body.appendChild(form);
-    form.submit();
-
-  } catch (error: any) {
-    console.error('Booking/Payment error:', error);
-    let errorMessage = error.message || 'Something went wrong. Please try again.';
-    alert(errorMessage);
-    setLoading(false);
-  }
-};
+  };
 
   // Handle payment after successful booking
   // const handlePayment = async () => {
@@ -919,83 +920,43 @@ const handleBooking = async () => {
         onComplete={() => setShowPartyEffect(false)}
       />
 
-      <div className="relative h-[60vh] overflow-hidden">
-        {images.length > 0 ? (
-          <Slider {...sliderSettings} ref={sliderRef}>
-            {images.map((img, idx) => (
-              <div key={img} className="h-[60vh] flex items-center justify-center bg-black/40">
-                <img
-                  src={img}
-                  alt={`Campsite ${idx + 1}`}
-                  className="object-cover w-full h-[60vh] transition-transform duration-200 hover:scale-105 cursor-pointer"
-                  onClick={() => setFullscreenImgIdx(idx)}
-                  draggable={false}
-                />
-              </div>
-            ))}
-          </Slider>
-        ) : (
-          <div className="h-[60vh] bg-gray-200 flex items-center justify-center">
-            <div className="text-gray-500 text-center">
-              <div className="mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <p>No images available</p>
-            </div>
+      <div className="relative mt-16 animate-fade-in">
+        <div className="relative h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden shadow-xl">
+          <img
+            src={images[currentImageIndex] || (Array.isArray(accommodation.image) ? accommodation.image[0] : accommodation.image)}
+            alt={accommodation.name}
+            className="w-full h-full object-cover cursor-pointer"
+            onClick={() => setFullscreenImgIdx(currentImageIndex)}
+          />
+          <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs sm:text-sm backdrop-blur-sm">
+            {currentImageIndex + 1} / {images.length}
           </div>
-        )}
-        {fullscreenImgIdx !== null && (
-          <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
-            <button
-              className="absolute top-6 right-6 text-white text-3xl z-50"
-              onClick={() => setFullscreenImgIdx(null)}
-              aria-label="Close"
-            >
-              <X size={36} />
-            </button>
-            <button
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-white text-4xl z-50"
-              onClick={() => setFullscreenImgIdx((fullscreenImgIdx - 1 + images.length) % images.length)}
-              aria-label="Previous"
-            >
-              &#8592;
-            </button>
-            <img
-              src={images[fullscreenImgIdx]}
-              alt="Full screen"
-              className="max-h-[90vh] max-w-[95vw] rounded-lg shadow-lg"
-              draggable={false}
-            />
-            <button
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-4xl z-50"
-              onClick={() => setFullscreenImgIdx((fullscreenImgIdx + 1) % images.length)}
-              aria-label="Next"
-            >
-              &#8594;
-            </button>
-          </div>
-        )}
-        <div className="absolute inset-0 flex items-center pointer-events-none">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-white max-w-3xl"
-            >
-              <h1 className="text-4xl md:text-4xl font-bold mb-4">{accommodation?.name}</h1>
-              <div className="flex items-center mt-4 space-x-4">
-                <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm">
-                  {accommodation?.type}
-                </span>
-                <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm">
-                  Up to {accommodation?.capacity} guests
-                </span>
-              </div>
-            </motion.div>
-          </div>
+          <button
+            className="absolute bottom-4 right-4 bg-white text-gray-800 px-4 py-2 rounded-lg text-sm sm:text-base font-medium hover:bg-gray-100 transition-colors flex items-center space-x-2 shadow-md"
+            onClick={() => setFullscreenImgIdx(currentImageIndex)}
+          >
+            <Camera className="w-4 h-4" />
+            <span>View all photos</span>
+          </button>
         </div>
+        {images.length > 1 && (
+          <div className="flex space-x-2 sm:space-x-3 mt-4 overflow-x-auto pb-3">
+            {images.map((image, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border-2 transition-all ${index === currentImageIndex ? 'border-emerald-500 scale-105' : 'border-transparent hover:border-gray-300'
+                  }`}
+              >
+                <img
+                  src={image}
+                  alt={`View ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="container mx-auto px-4 py-16">

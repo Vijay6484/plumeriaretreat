@@ -89,7 +89,10 @@ const Campsites: React.FC = () => {
         package: item.package || undefined,
       }));
 
-      const unique = mapped.filter(
+      const onlyAvailable = mapped.filter((item) => item.available === true);
+
+    // ✅ Also remove duplicates by id
+      const unique = onlyAvailable.filter(
         (item, index, self) => index === self.findIndex((t) => t.id === item.id)
       );
       setAccommodations(unique);
