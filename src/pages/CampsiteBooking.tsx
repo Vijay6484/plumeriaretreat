@@ -920,44 +920,56 @@ const CampsiteBooking: React.FC = () => {
         onComplete={() => setShowPartyEffect(false)}
       />
 
-      <div className="relative mt-16 animate-fade-in">
-        <div className="relative h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden shadow-xl">
+     <div className="relative mt-16 animate-fade-in">
+  {/* Big image box */}
+  <div className="relative h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden shadow-xl mx-4 sm:mx-8">
+    <img
+      src={
+        images[currentImageIndex] ||
+        (Array.isArray(accommodation.image)
+          ? accommodation.image[0]
+          : accommodation.image)
+      }
+      alt={accommodation.name}
+      className="w-full h-full object-cover cursor-pointer"
+      onClick={() => setFullscreenImgIdx(currentImageIndex)}
+    />
+    <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs sm:text-sm backdrop-blur-sm">
+      {currentImageIndex + 1} / {images.length}
+    </div>
+    <button
+      className="absolute bottom-4 right-4 bg-white text-gray-800 px-4 py-2 rounded-lg text-sm sm:text-base font-medium hover:bg-gray-100 transition-colors flex items-center space-x-2 shadow-md"
+      onClick={() => setFullscreenImgIdx(currentImageIndex)}
+    >
+      <Camera className="w-4 h-4" />
+      <span>View all photos</span>
+    </button>
+  </div>
+
+  {/* Thumbnails list */}
+  {images.length > 1 && (
+    <div className="flex space-x-2 sm:space-x-3 mt-4 overflow-x-auto pb-3 mx-4 sm:mx-8">
+      {images.map((image, index) => (
+        <button
+          key={index}
+          onClick={() => setCurrentImageIndex(index)}
+          className={`flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border-2 transition-all ${
+            index === currentImageIndex
+              ? "border-emerald-500 scale-105"
+              : "border-transparent hover:border-gray-300"
+          }`}
+        >
           <img
-            src={images[currentImageIndex] || (Array.isArray(accommodation.image) ? accommodation.image[0] : accommodation.image)}
-            alt={accommodation.name}
-            className="w-full h-full object-cover cursor-pointer"
-            onClick={() => setFullscreenImgIdx(currentImageIndex)}
+            src={image}
+            alt={`View ${index + 1}`}
+            className="w-full h-full object-cover"
           />
-          <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs sm:text-sm backdrop-blur-sm">
-            {currentImageIndex + 1} / {images.length}
-          </div>
-          <button
-            className="absolute bottom-4 right-4 bg-white text-gray-800 px-4 py-2 rounded-lg text-sm sm:text-base font-medium hover:bg-gray-100 transition-colors flex items-center space-x-2 shadow-md"
-            onClick={() => setFullscreenImgIdx(currentImageIndex)}
-          >
-            <Camera className="w-4 h-4" />
-            <span>View all photos</span>
-          </button>
-        </div>
-        {images.length > 1 && (
-          <div className="flex space-x-2 sm:space-x-3 mt-4 overflow-x-auto pb-3">
-            {images.map((image, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImageIndex(index)}
-                className={`flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border-2 transition-all ${index === currentImageIndex ? 'border-emerald-500 scale-105' : 'border-transparent hover:border-gray-300'
-                  }`}
-              >
-                <img
-                  src={image}
-                  alt={`View ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+        </button>
+      ))}
+    </div>
+  )}
+</div>
+
 
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
