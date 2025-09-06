@@ -922,7 +922,7 @@ const CampsiteBooking: React.FC = () => {
 
      <div className="relative mt-16 animate-fade-in">
   {/* Big image box */}
-  <div className="relative h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden shadow-xl mx-4 sm:mx-8">
+  <div className="relative h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden shadow-xl mx-2 sm:mx-4">
     <img
       src={
         images[currentImageIndex] ||
@@ -948,7 +948,7 @@ const CampsiteBooking: React.FC = () => {
 
   {/* Thumbnails list */}
   {images.length > 1 && (
-    <div className="flex space-x-2 sm:space-x-3 mt-4 overflow-x-auto pb-3 mx-4 sm:mx-8">
+    <div className="flex space-x-2 sm:space-x-3 mt-4 overflow-x-auto pb-3 mx-2 sm:mx-4">
       {images.map((image, index) => (
         <button
           key={index}
