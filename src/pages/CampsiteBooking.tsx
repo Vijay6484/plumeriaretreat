@@ -976,7 +976,23 @@ const CampsiteBooking: React.FC = () => {
           <div className="lg:col-span-2 space-y-8">
             <Card>
               <CardContent>
-                <h2 className="text-3xl font-bold text-green-800 mb-6">Accommodation Details</h2>
+                <h2 className="text-3xl font-bold text-black-800 mb-6">{accommodation.name}</h2>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 sm:mb-6">
+                            <div>
+                              <h4 className="text-lg sm:text-xl font-bold text-green-800 mb-2 sm:mb-3">Accomodation Details</h4>
+                              {/* <div className="flex items-center space-x-2 text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base">
+                                <MapPin className="w-3 sm:w-4 h-3 sm:h-4" />
+                                <span className="capitalize">{accommodation.address}</span>
+                                <span className="mx-1 sm:mx-2">•</span>
+                                <span className="capitalize">{accommodation.type}</span>
+                              </div> */}
+                              
+                            </div>
+                            <div className="text-left sm:text-right">
+                              <div className="text-xl sm:text-2xl font-bold text-emerald-600">₹{accommodation.price.toLocaleString()}</div>
+                              <div className="text-xs sm:text-sm text-gray-500">per night</div>
+                            </div>
+                          </div>
                 <p className='m-2'>{packageDescription}</p>
                 {accommodation.detailedInfo && (
                   <div className="space-y-6">
