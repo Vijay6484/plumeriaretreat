@@ -18,6 +18,8 @@ import CampsiteBooking from './pages/CampsiteBooking';
 import StatusPage from './pages/PaymentSuccess';
 import { Success, Failure, Cancel } from './pages/PaymentSuccesss';
 import ScrollToTop from '../src/utils/ScrollToTop';
+import CallButton from './components/ui/CallButton';
+import WhatsAppButton from './components/ui/WhatsAppButton';
 
 function App() {
 
@@ -44,6 +46,8 @@ function App() {
           </Routes>
         </main>
         <Footer />
+        <WhatsAppButton />
+        <CallButton />
       </div>
     </Router>
   );

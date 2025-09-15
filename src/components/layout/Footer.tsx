@@ -20,15 +20,15 @@ const Footer: React.FC = () => {
               Experience the perfect lakeside getaway with our premium cottages, luxury tents and exciting activities.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-baby-powder hover:text-rose-taupe transition-colors">
+              <a href="https://www.facebook.com/share/19pYGAqJzH/" className="text-baby-powder hover:text-rose-taupe transition-colors">
                 <Facebook size={20} />
               </a>
-              <a href="#" className="text-baby-powder hover:text-rose-taupe transition-colors">
+              <a href="https://www.instagram.com/plumeriaretreatpawnalake?utm_source=qr&igsh=OGgzYWY0b3FzbWUw" className="text-baby-powder hover:text-rose-taupe transition-colors">
                 <Instagram size={20} />
               </a>
-              <a href="#" className="text-baby-powder hover:text-rose-taupe transition-colors">
+              {/* <a href="#" className="text-baby-powder hover:text-rose-taupe transition-colors">
                 <Twitter size={20} />
-              </a>
+              </a> */}
             </div>
           </div>
           
@@ -99,7 +99,7 @@ Maharashtra 410406</span>
               </li>
               <li className="flex items-center">
                 <Mail size={20} className="mr-2 flex-shrink-0" />
-                <span> campatpawna@gmail.com</span>
+                <span>booking@plumeriaretreat.com</span>
               </li>
             </ul>
           </div>
