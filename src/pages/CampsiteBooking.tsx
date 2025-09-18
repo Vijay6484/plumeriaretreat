@@ -809,63 +809,6 @@ const CampsiteBooking: React.FC = () => {
     }
   };
 
-  // Handle payment after successful booking
-  // const handlePayment = async () => {
-  //   if (!bookingDetails) return;
-
-  //   setLoading(true);
-  //   try {
-  //     const paymentPayload = {
-  //       amount: advanceAmount,
-  //       firstname: guestInfo.name,
-  //       email: guestInfo.email,
-  //       phone: guestInfo.phone || '',
-  //       productinfo: `Booking for ${accommodation?.name}`,
-  //       booking_id: bookingDetails.booking_id,
-  //     };
-
-  //     const paymentResponse = await fetch(`http://localhost:5000/admin/bookings/payments/payu`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(paymentPayload),
-  //     });
-
-  //     const paymentData = await paymentResponse.json();
-
-  //     if (!paymentResponse.ok) {
-  //       throw new Error(paymentData.error || paymentData.message || 'Failed to initiate payment');
-  //     }
-
-  //     if (!paymentData.payu_url || !paymentData.payment_data || typeof paymentData.payment_data !== 'object') {
-  //       console.error('Invalid payment data structure:', paymentData);
-  //       throw new Error('Invalid payment data received from server');
-  //     }
-
-  //     const form = document.createElement('form');
-  //     form.method = 'POST';
-  //     form.action = paymentData.payu_url;
-
-  //     Object.entries(paymentData.payment_data).forEach(([key, value]) => {
-  //       const input = document.createElement('input');
-  //       input.type = 'hidden';
-  //       input.name = key;
-  //       input.value = String(value);
-  //       form.appendChild(input);
-  //     });
-
-  //     document.body.appendChild(form);
-  //     form.submit();
-  //   } catch (error: any) {
-  //     console.error('Payment error:', error);
-  //     alert(error.message || 'Failed to initiate payment. Please try again.');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-
   const sliderSettings = {
     dots: true,
     infinite: true,
@@ -920,56 +863,54 @@ const CampsiteBooking: React.FC = () => {
         onComplete={() => setShowPartyEffect(false)}
       />
 
-     <div className="relative mt-16 animate-fade-in">
-  {/* Big image box */}
-  <div className="relative h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden shadow-xl mx-2 sm:mx-4">
-    <img
-      src={
-        images[currentImageIndex] ||
-        (Array.isArray(accommodation.image)
-          ? accommodation.image[0]
-          : accommodation.image)
-      }
-      alt={accommodation.name}
-      className="w-full h-full object-cover cursor-pointer"
-      onClick={() => setFullscreenImgIdx(currentImageIndex)}
-    />
-    <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs sm:text-sm backdrop-blur-sm">
-      {currentImageIndex + 1} / {images.length}
-    </div>
-    <button
-      className="absolute bottom-4 right-4 bg-white text-gray-800 px-4 py-2 rounded-lg text-sm sm:text-base font-medium hover:bg-gray-100 transition-colors flex items-center space-x-2 shadow-md"
-      onClick={() => setFullscreenImgIdx(currentImageIndex)}
-    >
-      <Camera className="w-4 h-4" />
-      <span>View all photos</span>
-    </button>
-  </div>
-
-  {/* Thumbnails list */}
-  {images.length > 1 && (
-    <div className="flex space-x-2 sm:space-x-3 mt-4 overflow-x-auto pb-3 mx-2 sm:mx-4">
-      {images.map((image, index) => (
-        <button
-          key={index}
-          onClick={() => setCurrentImageIndex(index)}
-          className={`flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border-2 transition-all ${
-            index === currentImageIndex
-              ? "border-emerald-500 scale-105"
-              : "border-transparent hover:border-gray-300"
-          }`}
-        >
+      <div className="relative mt-16 animate-fade-in">
+        {/* Big image box */}
+        <div className="relative h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden shadow-xl mx-2 sm:mx-4">
           <img
-            src={image}
-            alt={`View ${index + 1}`}
-            className="w-full h-full object-cover"
+            src={
+              images[currentImageIndex] ||
+              (Array.isArray(accommodation.image)
+                ? accommodation.image[0]
+                : accommodation.image)
+            }
+            alt={accommodation.name}
+            className="w-full h-full object-cover cursor-pointer"
+            onClick={() => setFullscreenImgIdx(currentImageIndex)}
           />
-        </button>
-      ))}
-    </div>
-  )}
-</div>
+          <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs sm:text-sm backdrop-blur-sm">
+            {currentImageIndex + 1} / {images.length}
+          </div>
+          <button
+            className="absolute bottom-4 right-4 bg-white text-gray-800 px-4 py-2 rounded-lg text-sm sm:text-base font-medium hover:bg-gray-100 transition-colors flex items-center space-x-2 shadow-md"
+            onClick={() => setFullscreenImgIdx(currentImageIndex)}
+          >
+            <Camera className="w-4 h-4" />
+            <span>View all photos</span>
+          </button>
+        </div>
 
+        {/* Thumbnails list */}
+        {images.length > 1 && (
+          <div className="flex space-x-2 sm:space-x-3 mt-4 overflow-x-auto pb-3 mx-2 sm:mx-4">
+            {images.map((image, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border-2 transition-all ${index === currentImageIndex
+                  ? "border-emerald-500 scale-105"
+                  : "border-transparent hover:border-gray-300"
+                  }`}
+              >
+                <img
+                  src={image}
+                  alt={`View ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -978,21 +919,14 @@ const CampsiteBooking: React.FC = () => {
               <CardContent>
                 <h2 className="text-3xl font-bold text-black-800 mb-6">{accommodation.name}</h2>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 sm:mb-6">
-                            <div>
-                              <h4 className="text-lg sm:text-xl font-bold text-green-800 mb-2 sm:mb-3">Accomodation Details</h4>
-                              {/* <div className="flex items-center space-x-2 text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base">
-                                <MapPin className="w-3 sm:w-4 h-3 sm:h-4" />
-                                <span className="capitalize">{accommodation.address}</span>
-                                <span className="mx-1 sm:mx-2">•</span>
-                                <span className="capitalize">{accommodation.type}</span>
-                              </div> */}
-                              
-                            </div>
-                            <div className="text-left sm:text-right">
-                              <div className="text-xl sm:text-2xl font-bold text-emerald-600">₹{accommodation.price.toLocaleString()}</div>
-                              <div className="text-xs sm:text-sm text-gray-500">per night</div>
-                            </div>
-                          </div>
+                  <div>
+                    <h4 className="text-lg sm:text-xl font-bold text-green-800 mb-2 sm:mb-3">Accomodation Details</h4>
+                  </div>
+                  <div className="text-left sm:text-right">
+                    <div className="text-xl sm:text-2xl font-bold text-emerald-600">₹{accommodation.price.toLocaleString()}</div>
+                    <div className="text-xs sm:text-sm text-gray-500">per night</div>
+                  </div>
+                </div>
                 <p className='m-2'>{packageDescription}</p>
                 {accommodation.detailedInfo && (
                   <div className="space-y-6">
@@ -1162,24 +1096,24 @@ const CampsiteBooking: React.FC = () => {
                                 partiallyBlocked,
                               }}
                               modifiersClassNames={{
-                                fullyBlocked: 'bg-red-100 text-gray-400 line-through cursor-not-allowed',
-                                partiallyBlocked: 'bg-yellow-100 relative partially-blocked',
+                                fullyBlocked: 'bg-red-500 text-white line-through cursor-not-allowed',
+                                partiallyBlocked: 'bg-yellow-400 text-gray-800',
                                 selected: 'bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:bg-blue-600',
                               }}
-                              className="mx-auto bg-white p-2 rounded-lg shadow-lg"
+                              className="mx-auto bg-white p-4 rounded-lg shadow-lg border border-gray-200"
                             />
-                            {/* Legend for date types */}
-                            <div className="flex flex-wrap gap-4 mt-4 text-sm">
+                            {/* Enhanced legend for date types */}
+                            <div className="flex flex-wrap gap-6 mt-6 text-sm justify-center">
                               <div className="flex items-center">
-                                <div className="w-4 h-4 bg-red-100 mr-2"></div>
+                                <div className="w-6 h-6 bg-red-500 mr-2 rounded"></div>
                                 <span>Fully Booked</span>
                               </div>
                               <div className="flex items-center">
-                                <div className="w-4 h-4 bg-yellow-100 mr-2 relative partially-blocked"></div>
+                                <div className="w-6 h-6 bg-yellow-400 mr-2 rounded"></div>
                                 <span>Limited Availability</span>
                               </div>
                               <div className="flex items-center">
-                                <div className="w-4 h-4 bg-white border border-gray-300 mr-2"></div>
+                                <div className="w-6 h-6 bg-white border border-gray-300 mr-2 rounded"></div>
                                 <span>Available</span>
                               </div>
                             </div>
@@ -1394,39 +1328,46 @@ const CampsiteBooking: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Available Offers
                       </label>
-                      <div className="flex overflow-x-auto space-x-2 mb-3 px-1 sm:flex-wrap sm:space-x-0 sm:gap-2 no-scrollbar">
+                      <div className="flex overflow-x-auto space-x-2 mb-3 px-1 no-scrollbar">
                         {(() => {
-                          // Find accommodation-specific coupon
-                          const accommodationCoupon = allAvailableCoupons.find(
+                          const accommodationCoupons = allAvailableCoupons.filter(
                             (coupon: Coupon) =>
                               coupon.accommodationType?.trim() === accommodation?.name?.trim()
                           );
-                          // Find 'all' coupon if no specific coupon exists
-                          const allCoupon = !accommodationCoupon
-                            ? allAvailableCoupons.find(
-                              (coupon: Coupon) =>
-                                coupon.accommodationType?.trim().toLowerCase() === 'all'
-                            )
-                            : null;
-                          // Create array with max 2 coupons (specific or all)
-                          const couponsToShow = [];
-                          if (accommodationCoupon) couponsToShow.push(accommodationCoupon);
-                          if (allCoupon) couponsToShow.push(allCoupon);
+
+                          const allCoupons = allAvailableCoupons.filter(
+                            (coupon: Coupon) =>
+                              coupon.accommodationType?.trim().toLowerCase() === "all"
+                          );
+
+                          const couponsToShow = [...accommodationCoupons];
+
+                          let i = 0;
+                          while (couponsToShow.length < 3 && i < allCoupons.length) {
+                            if (!couponsToShow.includes(allCoupons[i])) {
+                              couponsToShow.push(allCoupons[i]);
+                            }
+                            i++;
+                          }
+
                           return couponsToShow.map((coupon: Coupon) => (
                             <button
                               key={coupon.code}
                               onClick={() => handleCouponSelect(coupon)}
                               className="flex-shrink-0 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium hover:bg-green-200 transition-colors whitespace-nowrap"
                             >
-                              {coupon.code} - {coupon.discountType === 'percentage'
+                              {coupon.code} -{" "}
+                              {coupon.discountType === "percentage"
                                 ? `${coupon.discount}%`
-                                : `₹${coupon.discount}`} OFF
+                                : `₹${coupon.discount}`}{" "}
+                              OFF
                             </button>
                           ));
                         })()}
                       </div>
                     </div>
                   )}
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
                     <div className="flex gap-2">
