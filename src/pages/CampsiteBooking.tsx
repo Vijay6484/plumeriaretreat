@@ -312,9 +312,9 @@ const CampsiteBooking: React.FC = () => {
     additionalRoomsInfo.forEach(({ date, additionalRooms }) => {
       if (isBefore(date, today)) return;
 
-      // Calculate total available rooms for this date
+      // Calculate total available rooms for this date, but never exceed MAX_ROOMS
       const baseRooms = accommodation?.rooms || maxiRoom;
-      const totalRoomsForDay = baseRooms + additionalRooms;
+      const totalRoomsForDay = Math.min(baseRooms + additionalRooms, MAX_ROOMS);
 
       // If all rooms are booked (bookedRoom >= totalRoomsForDay)
       if (bookedRoom >= totalRoomsForDay) {
@@ -353,8 +353,8 @@ const CampsiteBooking: React.FC = () => {
     // Default to 0 if no info
     const extraRooms = additionalInfo ? additionalInfo.additionalRooms || 0 : 0;
 
-    // Total available rooms is base + extra - already booked
-    const totalRoomsForDay = baseRooms + extraRooms;
+    // Total available rooms is base + extra, but never exceed MAX_ROOMS
+    const totalRoomsForDay = Math.min(baseRooms + extraRooms, MAX_ROOMS);
     const availableRooms = totalRoomsForDay - bookedRoom;
 
     return Math.max(0, availableRooms);
@@ -993,7 +993,7 @@ const CampsiteBooking: React.FC = () => {
                               <div className="text-xs sm:text-sm text-gray-500">per night</div>
                             </div>
                           </div>
-                <p className='m-2'>{packageDescription}</p>
+                <p className='m-2'> <div dangerouslySetInnerHTML={{ __html: packageDescription }} /></p>
                 {accommodation.detailedInfo && (
                   <div className="space-y-6">
                     {(
@@ -1401,14 +1401,12 @@ const CampsiteBooking: React.FC = () => {
                             (coupon: Coupon) =>
                               coupon.accommodationType?.trim() === accommodation?.name?.trim()
                           );
-                          // Find 'all' coupon if no specific coupon exists
-                          const allCoupon = !accommodationCoupon
-                            ? allAvailableCoupons.find(
-                              (coupon: Coupon) =>
-                                coupon.accommodationType?.trim().toLowerCase() === 'all'
-                            )
-                            : null;
-                          // Create array with max 2 coupons (specific or all)
+                          // Find 'all' coupon
+                          const allCoupon = allAvailableCoupons.find(
+                            (coupon: Coupon) =>
+                              coupon.accommodationType?.trim().toLowerCase() === 'all'
+                          );
+                          // Create array with both coupons if they exist
                           const couponsToShow = [];
                           if (accommodationCoupon) couponsToShow.push(accommodationCoupon);
                           if (allCoupon) couponsToShow.push(allCoupon);
