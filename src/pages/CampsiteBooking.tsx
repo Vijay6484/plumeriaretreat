@@ -312,9 +312,9 @@ const CampsiteBooking: React.FC = () => {
     additionalRoomsInfo.forEach(({ date, additionalRooms }) => {
       if (isBefore(date, today)) return;
 
-      // Calculate total available rooms for this date, but never exceed MAX_ROOMS
+      // Calculate total available rooms for this date
       const baseRooms = accommodation?.rooms || maxiRoom;
-      const totalRoomsForDay = Math.min(baseRooms + additionalRooms, MAX_ROOMS);
+      const totalRoomsForDay = baseRooms + additionalRooms;
 
       // If all rooms are booked (bookedRoom >= totalRoomsForDay)
       if (bookedRoom >= totalRoomsForDay) {
@@ -353,8 +353,8 @@ const CampsiteBooking: React.FC = () => {
     // Default to 0 if no info
     const extraRooms = additionalInfo ? additionalInfo.additionalRooms || 0 : 0;
 
-    // Total available rooms is base + extra, but never exceed MAX_ROOMS
-    const totalRoomsForDay = Math.min(baseRooms + extraRooms, MAX_ROOMS);
+    // Total available rooms is base + extra - already booked
+    const totalRoomsForDay = baseRooms + extraRooms;
     const availableRooms = totalRoomsForDay - bookedRoom;
 
     return Math.max(0, availableRooms);
@@ -919,21 +919,14 @@ const CampsiteBooking: React.FC = () => {
               <CardContent>
                 <h2 className="text-3xl font-bold text-black-800 mb-6">{accommodation.name}</h2>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 sm:mb-6">
-                            <div>
-                              <h4 className="text-lg sm:text-xl font-bold text-green-800 mb-2 sm:mb-3">Accomodation Details</h4>
-                              {/* <div className="flex items-center space-x-2 text-gray-600 mb-2 sm:mb-3 text-sm sm:text-base">
-                                <MapPin className="w-3 sm:w-4 h-3 sm:h-4" />
-                                <span className="capitalize">{accommodation.address}</span>
-                                <span className="mx-1 sm:mx-2">•</span>
-                                <span className="capitalize">{accommodation.type}</span>
-                              </div> */}
-                              
-                            </div>
-                            <div className="text-left sm:text-right">
-                              <div className="text-xl sm:text-2xl font-bold text-emerald-600">₹{accommodation.price.toLocaleString()}</div>
-                              <div className="text-xs sm:text-sm text-gray-500">per night</div>
-                            </div>
-                          </div>
+                  <div>
+                    <h4 className="text-lg sm:text-xl font-bold text-green-800 mb-2 sm:mb-3">Accomodation Details</h4>
+                  </div>
+                  <div className="text-left sm:text-right">
+                    <div className="text-xl sm:text-2xl font-bold text-emerald-600">₹{accommodation.price.toLocaleString()}</div>
+                    <div className="text-xs sm:text-sm text-gray-500">per night</div>
+                  </div>
+                </div>
                 <p className='m-2'>{packageDescription}</p>
                 {accommodation.detailedInfo && (
                   <div className="space-y-6">
@@ -1341,17 +1334,22 @@ const CampsiteBooking: React.FC = () => {
                             (coupon: Coupon) =>
                               coupon.accommodationType?.trim() === accommodation?.name?.trim()
                           );
-                          // Find 'all' coupon if no specific coupon exists
-                          const allCoupon = !accommodationCoupon
-                            ? allAvailableCoupons.find(
-                              (coupon: Coupon) =>
-                                coupon.accommodationType?.trim().toLowerCase() === 'all'
-                            )
-                            : null;
-                          // Create array with max 2 coupons (specific or all)
-                          const couponsToShow = [];
-                          if (accommodationCoupon) couponsToShow.push(accommodationCoupon);
-                          if (allCoupon) couponsToShow.push(allCoupon);
+
+                          const allCoupons = allAvailableCoupons.filter(
+                            (coupon: Coupon) =>
+                              coupon.accommodationType?.trim().toLowerCase() === "all"
+                          );
+
+                          const couponsToShow = [...accommodationCoupons];
+
+                          let i = 0;
+                          while (couponsToShow.length < 3 && i < allCoupons.length) {
+                            if (!couponsToShow.includes(allCoupons[i])) {
+                              couponsToShow.push(allCoupons[i]);
+                            }
+                            i++;
+                          }
+
                           return couponsToShow.map((coupon: Coupon) => (
                             <button
                               key={coupon.code}
