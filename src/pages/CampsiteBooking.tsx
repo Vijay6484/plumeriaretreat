@@ -927,7 +927,7 @@ const CampsiteBooking: React.FC = () => {
                     <div className="text-xs sm:text-sm text-gray-500">per night</div>
                   </div>
                 </div>
-                <p className='m-2'>{packageDescription}</p>
+                <p className='m-2'> <div dangerouslySetInnerHTML={{ __html:packageDescription }} /></p>
                 {accommodation.detailedInfo && (
                   <div className="space-y-6">
                     {(
