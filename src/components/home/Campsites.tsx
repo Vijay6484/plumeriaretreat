@@ -112,35 +112,35 @@ const Campsites: React.FC = () => {
     }
   }, [fetchAccommodations]);
 
-  const outerSliderSettings = {
-    dots: true,
-    infinite: accommodations.length >= 3,
-    speed: 500,
-    slidesToShow: Math.min(accommodations.length, 3),
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 4000,
-    arrows: true,
-    responsive: [
-      {
-        breakpoint: 1280,
-        settings: {
-          slidesToShow: Math.min(accommodations.length, 2),
-          slidesToScroll: 1,
-          arrows: true
-        }
-      },
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          arrows: false,
-          dots: true
-        }
-      }
-    ]
-  };
+  // const outerSliderSettings = {
+  //   dots: true,
+  //   infinite: accommodations.length >= 3,
+  //   speed: 500,
+  //   slidesToShow: Math.min(accommodations.length, 3),
+  //   slidesToScroll: 1,
+  //   autoplay: true,
+  //   autoplaySpeed: 4000,
+  //   arrows: true,
+  //   responsive: [
+  //     {
+  //       breakpoint: 1280,
+  //       settings: {
+  //         slidesToShow: Math.min(accommodations.length, 2),
+  //         slidesToScroll: 1,
+  //         arrows: true
+  //       }
+  //     },
+  //     {
+  //       breakpoint: 768,
+  //       settings: {
+  //         slidesToShow: 1,
+  //         slidesToScroll: 1,
+  //         arrows: false,
+  //         dots: true
+  //       }
+  //     }
+  //   ]
+  // };
 
   if (loading) {
     return (
@@ -175,8 +175,7 @@ const Campsites: React.FC = () => {
         transition={{ delay: index * 0.1 }}
         className="h-full"
       >
-        <Card className="h-full flex flex-col shadow-md hover:shadow-lg transition-shadow duration-300" 
-          style={{ minHeight: '500px', maxWidth: '100%', margin: '0 auto' }}>
+        <Card className="h-full flex flex-col shadow-md hover:shadow-lg transition-shadow duration-300" >
           
           {/* Image Slider */}
           {accommodation.images.length > 0 ? (
@@ -190,7 +189,7 @@ const Campsites: React.FC = () => {
                 autoplay={true}
                 autoplaySpeed={4000}
                 arrows={false}
-                className="h-full w-full"
+                className=""
               >
                 {accommodation.images.map((img: string, idx: number) => (
                   <div key={idx} className="h-full">
@@ -340,15 +339,10 @@ const Campsites: React.FC = () => {
           </div>
         ) : (
           <div className="relative">
-            {accommodations.length >= 3 ? (
-              <Slider {...outerSliderSettings} className="campsites-slider pb-2">
+           <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-8">
                 {accommodations.map((a, i) => renderCard(a, i))}
-              </Slider>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {accommodations.map((a, i) => renderCard(a, i))}
-              </div>
-            )}
+                </div>
+
           </div>
         )}
       </div>

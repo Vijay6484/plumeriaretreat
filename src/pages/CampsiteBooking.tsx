@@ -253,18 +253,25 @@ const CampsiteBooking: React.FC = () => {
     });
   };
   const handleRoomGuestChange = (roomIdx: number, type: 'adults' | 'children', value: number) => {
-    setRoomGuests(prev => {
-      const updated = [...prev];
-      const otherType = type === 'adults' ? 'children' : 'adults';
-      const otherValue = updated[roomIdx][otherType];
-      if (value + otherValue > maxPeoplePerRoom) {
-        updated[roomIdx][type] = maxPeoplePerRoom - otherValue;
-      } else {
-        updated[roomIdx][type] = value;
-      }
-      return updated;
-    });
-  };
+  setRoomGuests(prev => {
+    const updated = [...prev];
+    const otherType = type === 'adults' ? 'children' : 'adults';
+    const otherValue = updated[roomIdx][otherType];
+
+    // Enforce a minimum of 2 adults
+    let validatedValue = value;
+    if (type === 'adults' && value < 2) {
+      validatedValue = 2;
+    }
+
+    if (validatedValue + otherValue > maxPeoplePerRoom) {
+      updated[roomIdx][type] = maxPeoplePerRoom - otherValue;
+    } else {
+      updated[roomIdx][type] = validatedValue;
+    }
+    return updated;
+  });
+};
   const handleFoodCount = (type: 'veg' | 'nonveg' | 'jain', delta: number) => {
     setFoodCounts(prev => {
       const newValue = Math.max(0, prev[type] + delta);
@@ -761,10 +768,11 @@ const CampsiteBooking: React.FC = () => {
 
           {/* ===== LEFT COLUMN (INFORMATION) ===== */}
           <div className="lg:col-span-2 space-y-8">
-            
+            <br />
             {/* Image Gallery */}
             <div className="relative animate-fade-in">
               <div className="relative h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden shadow-xl">
+               
                 <img
                   src={images[currentImageIndex] || (Array.isArray(accommodation.image) ? accommodation.image[0] : accommodation.image)}
                   alt={accommodation.name}
@@ -851,50 +859,15 @@ const CampsiteBooking: React.FC = () => {
                   </div>
               </div>
 
-              <div className="mt-6 relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 border-2 border-transparent bg-clip-padding">
-                <div className="relative p-6">
-                  <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                    Need Help? 🤝
-                  </h3>
-                  <p className="text-gray-600 mb-6 text-sm">
-                    Our friendly support team is here to assist you with your booking
-                  </p>
+              
 
-                  <div className="space-y-4">
-                    <a href="tel:+919226869678" className="flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                      <Phone className="mr-3" size={20} />
-                      <div className="text-left"><div className="font-semibold">Call Now</div><div className="text-sm opacity-90">+91 9226869678</div></div>
-                    </a>
-                    <a href="https://wa.me/919226869678" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center bg-gradient-to-r from-green-400 to-green-500 text-white py-3 px-4 rounded-xl hover:from-green-500 hover:to-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                       <MessageCircle className="mr-3" size={20} />
-                       <div className="text-left"><div className="font-semibold">WhatsApp</div><div className="text-sm opacity-90">Quick Support</div></div>
-                    </a>
-                    <a href="mailto:campatpawna@gmail.com" className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                      <Mail className="mr-3" size={20} />
-                      <div className="text-left"><div className="font-semibold">Email Us</div><div className="text-sm opacity-90">campatpawna@gmail.com</div></div>
-                    </a>
-                  </div>
-
-                  <div className="mt-6 p-4 bg-white/50 backdrop-blur-sm rounded-xl border border-white/20">
-                    <div className="flex items-start">
-                      <MapPin className="text-gray-600 mr-3 mt-1 flex-shrink-0" size={18} />
-                      <div>
-                        <div className="font-semibold text-gray-800 mb-1">Visit Us</div>
-                        <div className="text-sm text-gray-600">At- Bramhanoli fangne post, tal, pawnanagar,<br/>maval, Maharashtra 410406</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-lg overflow-hidden shadow-lg">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6103.946344270747!2d73.49323289387719!3d18.66382967533796!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2a9180b52a2fd%3A0xa5d86c10d8d9846d!2sPlumeria%20Retreat%20%7C%20Pawna%20Lakeside%20Cottages!5e1!3m2!1sen!2sin!4v1749631888045!5m2!1sen!2sin" width="100%" height="350" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="Plumeria Retreat Location" className="rounded-lg"></iframe>
-              </div>
+             
             </div>
           </div>
 
           {/* ===== RIGHT COLUMN (BOOKING FORM) ===== */}
           <div className="lg:col-span-1">
+            <br />
             <div className="sticky top-24">
               <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                 <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 sm:p-8">
@@ -903,23 +876,8 @@ const CampsiteBooking: React.FC = () => {
                 </div>
 
                 <div className="p-6 sm:p-8 space-y-6">
-                  {/* Guest Info */}
-                  <div className="space-y-4">
-                    <div>
-                      <input type="text" required value={guestInfo.name} onChange={(e) => setGuestInfo(prev => ({ ...prev, name: e.target.value }))} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'}`} placeholder="Full Name" ref={nameRef} />
-                      {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-                    </div>
-                    <div>
-                      <input type="email" required value={guestInfo.email} onChange={(e) => setGuestInfo(prev => ({ ...prev, email: e.target.value }))} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.email ? 'border-red-500' : 'border-gray-300'}`} placeholder="Email Address" ref={emailRef} />
-                      {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-                    </div>
-                    <div>
-                      <input type="tel" value={guestInfo.phone} onChange={(e) => setGuestInfo(prev => ({ ...prev, phone: e.target.value }))} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.phone ? 'border-red-500' : 'border-gray-300'}`} placeholder="Phone Number" ref={phoneRef} />
-                      {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-                    </div>
-                  </div>
 
-                  {/* Date Selection */}
+                   {/* Date Selection */}
                   <div>
                     <button type="button" ref={dateRef} className={`w-full p-3 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-500 ${errors.dates ? 'border-red-500' : 'border-gray-300'}`} onClick={() => setShowCalendar(!showCalendar)}>
                       {checkInDate ? `${format(checkInDate, 'dd MMM yyyy')} (Check-in)` : 'Select your stay date'}
@@ -936,7 +894,8 @@ const CampsiteBooking: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  
+
+                            
                   {/* Rooms & Guests */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Rooms</label>
@@ -944,7 +903,8 @@ const CampsiteBooking: React.FC = () => {
                       <Button type="button" onClick={() => handleRoomsChange(Math.max(1, rooms - 1))} disabled={rooms <= 1} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">-</Button>
                       <span className="font-bold text-lg">{rooms}</span>
                       <Button type="button" onClick={() => handleRoomsChange(Math.min(availableRoomsForSelectedDate, rooms + 1))} disabled={rooms >= availableRoomsForSelectedDate} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">+</Button>
-                      <span className="text-xs text-gray-500">{availableRoomsForSelectedDate - rooms} rooms remaining</span>
+                     <span className="text-xs text-gray-500">{Math.max(0, availableRoomsForSelectedDate - rooms)} rooms remaining</span>
+
                     </div>
                     {rooms > 0 && (
                       <div className="border rounded-lg p-3 bg-gray-50">
@@ -963,6 +923,28 @@ const CampsiteBooking: React.FC = () => {
                         ))}
                       </div>
                     )}
+                  </div>
+                    <div className="mt-2 text-sm">
+                          <span className="font-medium">Total:</span> {totalAdults} Adults, {totalChildren} Children
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          Adult rate: ₹{currentAdultRate.toLocaleString()} / night, Child rate: ₹{currentChildRate.toLocaleString()} / night
+                        </div>
+
+                   {/* Guest Info */}
+                  <div className="space-y-4">
+                    <div>
+                      <input type="text" required value={guestInfo.name} onChange={(e) => setGuestInfo(prev => ({ ...prev, name: e.target.value }))} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'}`} placeholder="Full Name" ref={nameRef} />
+                      {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                    </div>
+                    <div>
+                      <input type="email" required value={guestInfo.email} onChange={(e) => setGuestInfo(prev => ({ ...prev, email: e.target.value }))} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.email ? 'border-red-500' : 'border-gray-300'}`} placeholder="Email Address" ref={emailRef} />
+                      {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                    </div>
+                    <div>
+                      <input type="tel" value={guestInfo.phone} onChange={(e) => setGuestInfo(prev => ({ ...prev, phone: e.target.value }))} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.phone ? 'border-red-500' : 'border-gray-300'}`} placeholder="Phone Number" ref={phoneRef} />
+                      {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                    </div>
                   </div>
 
                   {/* Food Preferences */}
@@ -1075,11 +1057,55 @@ const CampsiteBooking: React.FC = () => {
                   <p className="text-xs text-gray-500 text-center">You won't be charged the full amount yet. Secure your booking now!</p>
                 </div>
               </div>
+
+              <div className="mt-6 relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 border-2 border-transparent bg-clip-padding flex flex-col">
+                <div className="relative p-6">
+                  <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    Need Help? 🤝
+                  </h3>
+                  <p className="text-gray-600 mb-6 text-sm">
+                    Our friendly support team is here to assist you with your booking
+                  </p>
+
+                  <div className="space-y-4">
+                    <a href="tel:+919226869678" className="flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                      <Phone className="mr-3" size={20} />
+                      <div className="text-left"><div className="font-semibold">Call Now</div><div className="text-sm opacity-90">+91 9226869678</div></div>
+                    </a>
+                    <a href="https://wa.me/919226869678" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center bg-gradient-to-r from-green-400 to-green-500 text-white py-3 px-4 rounded-xl hover:from-green-500 hover:to-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                       <MessageCircle className="mr-3" size={20} />
+                       <div className="text-left"><div className="font-semibold">WhatsApp</div><div className="text-sm opacity-90">Quick Support</div></div>
+                    </a>
+                    <a href="mailto:campatpawna@gmail.com" className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                      <Mail className="mr-3" size={20} />
+                      <div className="text-left"><div className="font-semibold">Email Us</div><div className="text-sm opacity-90">campatpawna@gmail.com</div></div>
+                    </a>
+                  </div>
+
+                  <div className="mt-6 p-4 bg-white/50 backdrop-blur-sm rounded-xl border border-white/20">
+                    <div className="flex items-start">
+                      <MapPin className="text-gray-600 mr-3 mt-1 flex-shrink-0" size={18} />
+                      <div>
+                        <div className="font-semibold text-gray-800 mb-1">Visit Us</div>
+                        <div className="text-sm text-gray-600">At- Bramhanoli fangne post, tal, pawnanagar,<br/>maval, Maharashtra 410406</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+ <br />
+ <div className="rounded-lg overflow-hidden shadow-lg">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6103.946344270747!2d73.49323289387719!3d18.66382967533796!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2a9180b52a2fd%3A0xa5d86c10d8d9846d!2sPlumeria%20Retreat%20%7C%20Pawna%20Lakeside%20Cottages!5e1!3m2!1sen!2sin!4v1749631888045!5m2!1sen!2sin" width="100%" height="350" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="Plumeria Retreat Location" className="rounded-lg"></iframe>
+              </div>
+
+
+              
             </div>
           </div>
 
         </div>
       </div>
+     
     </div>
   );
 };
