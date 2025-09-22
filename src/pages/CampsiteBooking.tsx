@@ -815,7 +815,10 @@ const CampsiteBooking: React.FC = () => {
                     </h1>
                     <div className="flex flex-wrap items-center space-x-2 text-gray-600 text-sm sm:text-base mb-3">
                       <MapPin className="w-4 h-4" />
-                      <span className="capitalize">{accommodation.address}</span>
+                      {/* <span className="capitalize">{accommodation.address}</span> */}
+                        <span className="capitalize">Pawana Lake Lonavala</span>
+                      
+
                       <span className="mx-2 hidden sm:inline">•</span>
                       <span className="capitalize">{accommodation.type}</span>
                     </div>
