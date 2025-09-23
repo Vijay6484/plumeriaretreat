@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { motion } from 'framer-motion';
 import { DayPicker } from 'react-day-picker';
 import { format, addDays, isBefore, startOfDay, isSameDay } from 'date-fns';
@@ -22,6 +23,12 @@ interface GuestInfo {
   email: string;
   phone: string;
 }
+interface City {
+  id: number;
+  name: string;
+  country: string;
+}
+
 interface RoomGuest {
   adults: number;
   children: number;
@@ -41,6 +48,7 @@ interface Accommodation {
   price: number;
   type: string;
   address: string;
+  city_id: number;
   adult_price: number;
   child_price: number;
   capacity: number;
@@ -130,6 +138,7 @@ const CampsiteBooking: React.FC = () => {
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [accommodation, setAccommodation] = useState<Accommodation | null>(null);
+ const [cities, setCities] = useState<City[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const [checkInDate, setCheckInDate] = useState<Date | undefined>();
   const [rooms, setRooms] = useState(1);
@@ -403,6 +412,18 @@ const CampsiteBooking: React.FC = () => {
         } else {
           navigate('/campsites');
         }
+        const fetchCities = async () => {
+         try {
+             const citiesRes = await axios.get(`${API_BASE_URL}/admin/properties/cities`);
+              setCities(citiesRes.data);
+              console.log('Fetched cities:', citiesRes.data);
+             } catch (error) {
+           console.error('Error fetching cities:', error);
+          
+  }
+};
+
+
       } catch (err) {
         console.error('Accommodation fetch failed', err);
         navigate('/campsites');
@@ -815,10 +836,7 @@ const CampsiteBooking: React.FC = () => {
                     </h1>
                     <div className="flex flex-wrap items-center space-x-2 text-gray-600 text-sm sm:text-base mb-3">
                       <MapPin className="w-4 h-4" />
-                      {/* <span className="capitalize">{accommodation.address}</span> */}
-                        <span className="capitalize">Pawana Lake Lonavala</span>
-                      
-
+                      <span className="capitalize">Pawna lake lonavala</span>
                       <span className="mx-2 hidden sm:inline">•</span>
                       <span className="capitalize">{accommodation.type}</span>
                     </div>
@@ -1079,9 +1097,9 @@ const CampsiteBooking: React.FC = () => {
                        <MessageCircle className="mr-3" size={20} />
                        <div className="text-left"><div className="font-semibold">WhatsApp</div><div className="text-sm opacity-90">Quick Support</div></div>
                     </a>
-                    <a href="mailto:campatpawna@gmail.com" className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                    <a href="mailto:booking@plumeriaretreat.com" className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                       <Mail className="mr-3" size={20} />
-                      <div className="text-left"><div className="font-semibold">Email Us</div><div className="text-sm opacity-90">campatpawna@gmail.com</div></div>
+                      <div className="text-left"><div className="font-semibold">Email Us</div><div className="text-sm opacity-90">booking@plumeriaretreat.com</div></div>
                     </a>
                   </div>
 
