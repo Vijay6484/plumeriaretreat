@@ -58,52 +58,58 @@ const Campsites: React.FC = () => {
     return [String(value)];
   };
 
-  const fetchAccommodations = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/admin/properties/accommodations`);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+ const fetchAccommodations = useCallback(async () => {
+  try {
+    setLoading(true);
+    const response = await fetch(`${API_BASE_URL}/admin/properties/accommodations`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-      const responseData = await response.json();
-      console.log('Fetched accommodations:', responseData);
+    const responseData = await response.json();
+    console.log('Fetched accommodations:', responseData);
 
-      const data = responseData.data || [];
+    const data = responseData.data || [];
 
-      const mapped: Accommodation[] = data.map((item: any) => ({
-        id: item.id || 0,
-        name: item.name || '',
-        type: item.type || '',
-        description: item.description || '',
-        price: parseFloat(item.price) || 0,
-        capacity: item.capacity || 0,
-        rooms: item.rooms || 0,
-        available: Boolean(item.available),
-        features: parseStringToArray(item.features),
-        images: item.package?.images?.length > 0
-          ? parseStringToArray(item.package.images)
-          : parseStringToArray(item.images),
-        amenity_ids: parseStringToArray(item.amenity_ids),
-        address: item.address || '',
-        latitude: parseFloat(item.latitude) || 0,
-        longitude: parseFloat(item.longitude) || 0,
-        package: item.package || undefined,
-      }));
+    const mapped: Accommodation[] = data.map((item: any) => ({
+      id: item.id || 0,
+      name: item.name || '',
+      type: item.type || '',
+      description: item.description || '',
+      price: parseFloat(item.price) || 0,
+      capacity: item.capacity || 0,
+      rooms: item.rooms || 0,
+      available: Boolean(item.available),
+      features: parseStringToArray(item.features),
+      images: item.package?.images?.length > 0
+        ? parseStringToArray(item.package.images)
+        : parseStringToArray(item.images),
+      amenity_ids: parseStringToArray(item.amenity_ids),
+      address: item.address || '',
+      latitude: parseFloat(item.latitude) || 0,
+      longitude: parseFloat(item.longitude) || 0,
+      package: item.package || undefined,
+    }));
 
-      const onlyAvailable = mapped.filter((item) => item.available === true);
+    // ✅ Only available items
+    const onlyAvailable = mapped.filter((item) => item.available === true);
 
-    // ✅ Also remove duplicates by id
-      const unique = onlyAvailable.filter(
-        (item, index, self) => index === self.findIndex((t) => t.id === item.id)
-      );
-      setAccommodations(unique);
-      setError(null);
-    } catch (err) {
-      console.error('Fetch error:', err);
-      setError('Failed to load accommodations. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    // ✅ Remove duplicates
+    const unique = onlyAvailable.filter(
+      (item, index, self) => index === self.findIndex((t) => t.id === item.id)
+    );
+
+    // ✅ Sort by id (ascending)
+    const sorted = [...unique].sort((a, b) => a.id - b.id);
+
+    setAccommodations(sorted);
+    setError(null);
+  } catch (err) {
+    console.error('Fetch error:', err);
+    setError('Failed to load accommodations. Please try again later.');
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
 
   useEffect(() => {
     if (!hasFetchedRef.current) {
