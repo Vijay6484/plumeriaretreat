@@ -177,6 +177,7 @@ const CampsiteBooking: React.FC = () => {
   const [currentAdultRate, setCurrentAdultRate] = useState<number>(0);
   const [currentChildRate, setCurrentChildRate] = useState<number>(0);
   const [bookingDetails, setBookingDetails] = useState<any>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
@@ -525,6 +526,54 @@ const CampsiteBooking: React.FC = () => {
   useEffect(() => {
     setAdvanceAmount(minAdvance);
   }, [totalAmount]);
+
+  useEffect(() => {
+    if (!couponApplied || !appliedCoupon) {
+      setDiscount(0);
+      return;
+    }
+
+    const subtotal = (() => {
+      if (!accommodation || !checkInDate) return 0;
+      const nights = 1;
+      const adultsTotal = totalAdults * currentAdultRate * nights;
+      const childrenTotal = totalChildren * currentChildRate * nights;
+      return adultsTotal + childrenTotal;
+    })();
+
+    if (subtotal < parseFloat(appliedCoupon.minAmount)) {
+      setDiscount(0);
+      setCouponApplied(false);
+      setAppliedCoupon(null);
+      setCoupon('');
+      return;
+    }
+
+    let calculatedDiscount = 0;
+    if (appliedCoupon.discountType === 'fixed') {
+      calculatedDiscount = parseFloat(appliedCoupon.discount);
+    } else if (appliedCoupon.discountType === 'percentage') {
+      const percent = parseFloat(appliedCoupon.discount);
+      calculatedDiscount = (subtotal * percent) / 100;
+      if (appliedCoupon.maxDiscount) {
+        const maxAllowed = parseFloat(appliedCoupon.maxDiscount);
+        calculatedDiscount = Math.min(calculatedDiscount, maxAllowed);
+      }
+    }
+
+    const finalDiscount = Math.min(calculatedDiscount, subtotal);
+    setDiscount(finalDiscount);
+  }, [
+    totalAdults,
+    totalChildren,
+    currentAdultRate,
+    currentChildRate,
+    couponApplied,
+    appliedCoupon,
+    accommodation,
+    checkInDate,
+  ]);
+
   const handleApplyCoupon = async () => {
     const code = coupon.trim().toUpperCase();
     try {
@@ -554,24 +603,8 @@ const CampsiteBooking: React.FC = () => {
         alert(`Minimum amount for this coupon is ₹${couponData.minAmount}`);
         return;
       }
-      let appliedDiscount = 0;
-      if (couponData.discountType === 'fixed') {
-        appliedDiscount = parseFloat(couponData.discount);
-        if (appliedDiscount > subtotal) {
-          alert('Coupon discount cannot exceed total amount');
-          return;
-        }
-      } else if (couponData.discountType === 'percentage') {
-        const percent = parseFloat(couponData.discount);
-        appliedDiscount = (subtotal * percent) / 100;
-        if (couponData.maxDiscount !== null && couponData.maxDiscount !== undefined) {
-          const maxAllowed = parseFloat(couponData.maxDiscount);
-          if (appliedDiscount > maxAllowed) {
-            appliedDiscount = maxAllowed;
-          }
-        }
-      }
-      setDiscount(appliedDiscount);
+
+      setAppliedCoupon(couponData);
       setCoupon(code);
       setCouponApplied(true);
       setShowPartyEffect(true);
@@ -579,6 +612,7 @@ const CampsiteBooking: React.FC = () => {
       console.error(error);
       setDiscount(0);
       setCouponApplied(false);
+      setAppliedCoupon(null);
       alert(error.message || 'Failed to apply coupon');
     }
   };
@@ -1026,7 +1060,7 @@ const CampsiteBooking: React.FC = () => {
                       <input 
                         type="text" 
                         value={coupon} 
-                        onChange={e => { setCoupon(e.target.value); setCouponApplied(false); setDiscount(0); }} 
+                        onChange={e => { setCoupon(e.target.value); setCouponApplied(false); setDiscount(0); setAppliedCoupon(null); }} 
                         className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent" 
                         placeholder="Enter coupon code" 
                         disabled={couponApplied} 
@@ -1063,7 +1097,7 @@ const CampsiteBooking: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span>Advance to Pay:</span>
-                        <span className="font-medium">{formatCurrency(advanceAmount)} ({((advanceAmount/totalAmount)*100).toFixed(0)}%)</span>
+                        <span className="font-medium">{formatCurrency(advanceAmount)} ({totalAmount > 0 ? ((advanceAmount/totalAmount)*100).toFixed(0) : 0}%)</span>
                       </div>
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>Pay at property:</span>
