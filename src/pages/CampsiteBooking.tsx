@@ -138,10 +138,10 @@ const CampsiteBooking: React.FC = () => {
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [accommodation, setAccommodation] = useState<Accommodation | null>(null);
- const [cities, setCities] = useState<City[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const [checkInDate, setCheckInDate] = useState<Date | undefined>();
-  const [rooms, setRooms] = useState(1);
+  const [rooms, setRooms] = useState(0);
   const [fullyBlocked, setFullyBlocked] = useState<Date[]>([]);
   const [partiallyBlocked, setPartiallyBlocked] = useState<Date[]>([]);
   const [roomGuests, setRoomGuests] = useState<RoomGuest[]>([
@@ -178,6 +178,7 @@ const CampsiteBooking: React.FC = () => {
   const [currentChildRate, setCurrentChildRate] = useState<number>(0);
   const [bookingDetails, setBookingDetails] = useState<any>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [couponError, setCouponError] = useState<string>(''); // New state for coupon error message
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
@@ -263,25 +264,25 @@ const CampsiteBooking: React.FC = () => {
     });
   };
   const handleRoomGuestChange = (roomIdx: number, type: 'adults' | 'children', value: number) => {
-  setRoomGuests(prev => {
-    const updated = [...prev];
-    const otherType = type === 'adults' ? 'children' : 'adults';
-    const otherValue = updated[roomIdx][otherType];
+    setRoomGuests(prev => {
+      const updated = [...prev];
+      const otherType = type === 'adults' ? 'children' : 'adults';
+      const otherValue = updated[roomIdx][otherType];
 
-    // Enforce a minimum of 2 adults
-    let validatedValue = value;
-    if (type === 'adults' && value < 2) {
-      validatedValue = 2;
-    }
+      // Enforce a minimum of 2 adults
+      let validatedValue = value;
+      if (type === 'adults' && value < 2) {
+        validatedValue = 2;
+      }
 
-    if (validatedValue + otherValue > maxPeoplePerRoom) {
-      updated[roomIdx][type] = maxPeoplePerRoom - otherValue;
-    } else {
-      updated[roomIdx][type] = validatedValue;
-    }
-    return updated;
-  });
-};
+      if (validatedValue + otherValue > maxPeoplePerRoom) {
+        updated[roomIdx][type] = maxPeoplePerRoom - otherValue;
+      } else {
+        updated[roomIdx][type] = validatedValue;
+      }
+      return updated;
+    });
+  };
   const handleFoodCount = (type: 'veg' | 'nonveg' | 'jain', delta: number) => {
     setFoodCounts(prev => {
       const newValue = Math.max(0, prev[type] + delta);
@@ -414,15 +415,15 @@ const CampsiteBooking: React.FC = () => {
           navigate('/campsites');
         }
         const fetchCities = async () => {
-         try {
-             const citiesRes = await axios.get(`${API_BASE_URL}/admin/properties/cities`);
-              setCities(citiesRes.data);
-              console.log('Fetched cities:', citiesRes.data);
-             } catch (error) {
-           console.error('Error fetching cities:', error);
-          
-  }
-};
+          try {
+            const citiesRes = await axios.get(`${API_BASE_URL}/admin/properties/cities`);
+            setCities(citiesRes.data);
+            console.log('Fetched cities:', citiesRes.data);
+          } catch (error) {
+            console.error('Error fetching cities:', error);
+
+          }
+        };
 
 
       } catch (err) {
@@ -546,6 +547,7 @@ const CampsiteBooking: React.FC = () => {
       setCouponApplied(false);
       setAppliedCoupon(null);
       setCoupon('');
+      setCouponError(`Minimum amount for this coupon is ₹${appliedCoupon.minAmount}`);
       return;
     }
 
@@ -574,24 +576,52 @@ const CampsiteBooking: React.FC = () => {
     checkInDate,
   ]);
 
+  // Updated handleApplyCoupon function with proper validation
   const handleApplyCoupon = async () => {
     const code = coupon.trim().toUpperCase();
+    setCouponError(''); // Clear previous errors
+
+    if (!code) {
+      setCouponError('Please enter a coupon code');
+      return;
+    }
+
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/coupons?search=${code}`);
-      const result = await res.json();
-      if (!res.ok || !result.success || !result.data || result.data.length === 0) {
-        throw new Error('Invalid coupon code');
-      }
-      const couponData = result.data[0];
-      if (couponData.code.toUpperCase() !== code) {
-        throw new Error('Invalid coupon code');
-      }
-      const now = new Date();
-      const expiryDate = new Date(couponData.expiryDate);
-      if (expiryDate < now) {
-        alert('Coupon has expired');
+      // Check if coupon exists in available coupons
+      const foundCoupon = allAvailableCoupons.find(
+        (c: Coupon) => c.code.toUpperCase() === code
+      );
+
+      if (!foundCoupon) {
+        setCouponError('Invalid coupon code');
         return;
       }
+
+      // Check if coupon is active
+      if (foundCoupon.active !== 1) {
+        setCouponError('This coupon is no longer active');
+        return;
+      }
+
+      // Check expiry date
+      const now = new Date();
+      const expiryDate = new Date(foundCoupon.expiryDate);
+      if (expiryDate < now) {
+        setCouponError('This coupon has expired');
+        return;
+      }
+
+      // Check if coupon is applicable for this accommodation
+      const couponAccommodationType = foundCoupon.accommodationType?.trim() || '';
+      const currentAccommodationName = accommodation?.name?.trim() || '';
+
+      if (couponAccommodationType.toLowerCase() !== 'all' &&
+        couponAccommodationType !== currentAccommodationName) {
+        setCouponError('This coupon is not valid for this accommodation');
+        return;
+      }
+
+      // Check minimum amount requirement
       const subtotal = (() => {
         if (!accommodation || !checkInDate) return 0;
         const nights = 1;
@@ -599,26 +629,33 @@ const CampsiteBooking: React.FC = () => {
         const childrenTotal = totalChildren * currentChildRate * nights;
         return adultsTotal + childrenTotal;
       })();
-      if (subtotal < parseFloat(couponData.minAmount)) {
-        alert(`Minimum amount for this coupon is ₹${couponData.minAmount}`);
+
+      if (subtotal < parseFloat(foundCoupon.minAmount)) {
+        setCouponError(`Minimum amount for this coupon is ₹${foundCoupon.minAmount}`);
         return;
       }
 
-      setAppliedCoupon(couponData);
+      // All validations passed - apply the coupon
+      setAppliedCoupon(foundCoupon);
       setCoupon(code);
       setCouponApplied(true);
       setShowPartyEffect(true);
+      setCouponError(''); // Clear any previous errors
+
     } catch (error: any) {
-      console.error(error);
+      console.error('Coupon application error:', error);
+      setCouponError(error.message || 'Failed to apply coupon');
       setDiscount(0);
       setCouponApplied(false);
       setAppliedCoupon(null);
-      alert(error.message || 'Failed to apply coupon');
     }
   };
+
   const handleCouponSelect = (selectedCoupon: Coupon) => {
     setCoupon(selectedCoupon.code);
+    setCouponError(''); // Clear errors when selecting from available coupons
   };
+
   const handleActivityToggle = (activityName: string) => {
     setSelectedActivities(prev => ({
       ...prev,
@@ -827,7 +864,7 @@ const CampsiteBooking: React.FC = () => {
             {/* Image Gallery */}
             <div className="relative animate-fade-in">
               <div className="relative h-64 sm:h-80 lg:h-96 rounded-2xl overflow-hidden shadow-xl">
-               
+
                 <img
                   src={images[currentImageIndex] || (Array.isArray(accommodation.image) ? accommodation.image[0] : accommodation.image)}
                   alt={accommodation.name}
@@ -886,7 +923,7 @@ const CampsiteBooking: React.FC = () => {
                   dangerouslySetInnerHTML={{ __html: packageDescription }}
                 />
               </div>
-              
+
               {accommodation.features && (
                 <div>
                   <h3 className="text-xl font-semibold mb-4 text-gray-900">What's Included</h3>
@@ -902,21 +939,19 @@ const CampsiteBooking: React.FC = () => {
               )}
 
               <div>
-                  <h3 className="text-xl font-semibold mb-4 text-gray-900">Things to Carry</h3>
-                  <div className="bg-orange-50 p-4 rounded-lg border border-orange-100">
-                    <ol className="list-decimal list-inside space-y-2 text-orange-800">
-                      <li>Always good to carry extra pair of clothes</li>
-                      <li>Winter and warm clothes as it will be cold night</li>
-                      <li>Toothbrush and paste (toiletries)</li>
-                      <li>Any other things you feel necessary</li>
-                      <li>Personal medicine if any</li>
-                    </ol>
-                  </div>
+                <h3 className="text-xl font-semibold mb-4 text-gray-900">Things to Carry</h3>
+                <div className="bg-orange-50 p-4 rounded-lg border border-orange-100">
+                  <ol className="list-decimal list-inside space-y-2 text-orange-800">
+                    <li>Always good to carry extra pair of clothes</li>
+                    <li>Winter and warm clothes as it will be cold night</li>
+                    <li>Toothbrush and paste (toiletries)</li>
+                    <li>Any other things you feel necessary</li>
+                    <li>Personal medicine if any</li>
+                  </ol>
+                </div>
               </div>
 
-              
 
-             
             </div>
           </div>
 
@@ -932,7 +967,7 @@ const CampsiteBooking: React.FC = () => {
 
                 <div className="p-6 sm:p-8 space-y-6">
 
-                   {/* Date Selection */}
+                  {/* Date Selection */}
                   <div>
                     <button type="button" ref={dateRef} className={`w-full p-3 border rounded-lg bg-white text-left focus:ring-2 focus:ring-green-500 ${errors.dates ? 'border-red-500' : 'border-gray-300'}`} onClick={() => setShowCalendar(!showCalendar)}>
                       {checkInDate ? `${format(checkInDate, 'dd MMM yyyy')} (Check-in)` : 'Select your stay date'}
@@ -950,7 +985,7 @@ const CampsiteBooking: React.FC = () => {
                     )}
                   </div>
 
-                            
+
                   {/* Rooms & Guests */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Rooms</label>
@@ -958,7 +993,7 @@ const CampsiteBooking: React.FC = () => {
                       <Button type="button" onClick={() => handleRoomsChange(Math.max(1, rooms - 1))} disabled={rooms <= 1} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">-</Button>
                       <span className="font-bold text-lg">{rooms}</span>
                       <Button type="button" onClick={() => handleRoomsChange(Math.min(availableRoomsForSelectedDate, rooms + 1))} disabled={rooms >= availableRoomsForSelectedDate} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">+</Button>
-                     <span className="text-xs text-gray-500">{Math.max(0, availableRoomsForSelectedDate - rooms)} rooms remaining</span>
+                      <span className="text-xs text-gray-500">{Math.max(0, availableRoomsForSelectedDate - rooms)} rooms remaining</span>
 
                     </div>
                     {rooms > 0 && (
@@ -979,14 +1014,14 @@ const CampsiteBooking: React.FC = () => {
                       </div>
                     )}
                   </div>
-                    <div className="mt-2 text-sm">
-                          <span className="font-medium">Total:</span> {totalAdults} Adults, {totalChildren} Children
-                        </div>
-                        <div className="text-xs text-gray-600">
-                          Adult rate: ₹{currentAdultRate.toLocaleString()} / night, Child rate: ₹{currentChildRate.toLocaleString()} / night
-                        </div>
+                  <div className="mt-2 text-sm">
+                    <span className="font-medium">Total:</span> {totalAdults} Adults, {totalChildren} Children
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    Adult rate: ₹{currentAdultRate.toLocaleString()} / night, Child rate: ₹{currentChildRate.toLocaleString()} / night
+                  </div>
 
-                   {/* Guest Info */}
+                  {/* Guest Info */}
                   <div className="space-y-4">
                     <div>
                       <input type="text" required value={guestInfo.name} onChange={(e) => setGuestInfo(prev => ({ ...prev, name: e.target.value }))} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'}`} placeholder="Full Name" ref={nameRef} />
@@ -1025,7 +1060,7 @@ const CampsiteBooking: React.FC = () => {
                   </div>
 
                   {/* Coupon */}
-                   <div>
+                  <div>
                     {allAvailableCoupons.length > 0 && (
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1054,26 +1089,36 @@ const CampsiteBooking: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
                     <div className="flex gap-2">
-                      <input 
-                        type="text" 
-                        value={coupon} 
-                        onChange={e => { setCoupon(e.target.value); setCouponApplied(false); setDiscount(0); setAppliedCoupon(null); }} 
-                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent" 
-                        placeholder="Enter coupon code" 
-                        disabled={couponApplied} 
+                      <input
+                        type="text"
+                        value={coupon}
+                        onChange={e => {
+                          setCoupon(e.target.value);
+                          setCouponApplied(false);
+                          setDiscount(0);
+                          setAppliedCoupon(null);
+                          setCouponError(''); // Clear error when user types
+                        }}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Enter coupon code"
+                        disabled={couponApplied}
                       />
-                      <Button 
-                        type="button" 
-                        onClick={handleApplyCoupon} 
-                        disabled={couponApplied || !coupon} 
+                      <Button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={couponApplied || !coupon}
                         className="bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 disabled:opacity-50"
                       >
                         {couponApplied ? 'Applied' : 'Apply'}
                       </Button>
                     </div>
+                    {/* Display coupon error message */}
+                    {couponError && (
+                      <p className="text-red-500 text-sm mt-2">{couponError}</p>
+                    )}
                     {couponApplied && discount > 0 && (
                       <p className="text-green-700 text-sm mt-2">
                         Coupon applied! You saved {formatCurrency(discount)}.
@@ -1081,7 +1126,7 @@ const CampsiteBooking: React.FC = () => {
                     )}
                   </div>
 
-                  
+
                   {/* Booking Summary */}
                   <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
                     <h4 className="font-semibold text-gray-900 mb-3 text-base">Booking Summary</h4>
@@ -1097,7 +1142,7 @@ const CampsiteBooking: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span>Advance to Pay:</span>
-                        <span className="font-medium">{formatCurrency(advanceAmount)} ({totalAmount > 0 ? ((advanceAmount/totalAmount)*100).toFixed(0) : 0}%)</span>
+                        <span className="font-medium">{formatCurrency(advanceAmount)} ({totalAmount > 0 ? ((advanceAmount / totalAmount) * 100).toFixed(0) : 0}%)</span>
                       </div>
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>Pay at property:</span>
@@ -1128,8 +1173,8 @@ const CampsiteBooking: React.FC = () => {
                       <div className="text-left"><div className="font-semibold">Call Now</div><div className="text-sm opacity-90">+91 9226869678</div></div>
                     </a>
                     <a href="https://wa.me/919226869678" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center bg-gradient-to-r from-green-400 to-green-500 text-white py-3 px-4 rounded-xl hover:from-green-500 hover:to-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                       <MessageCircle className="mr-3" size={20} />
-                       <div className="text-left"><div className="font-semibold">WhatsApp</div><div className="text-sm opacity-90">Quick Support</div></div>
+                      <MessageCircle className="mr-3" size={20} />
+                      <div className="text-left"><div className="font-semibold">WhatsApp</div><div className="text-sm opacity-90">Quick Support</div></div>
                     </a>
                     <a href="mailto:booking@plumeriaretreat.com" className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                       <Mail className="mr-3" size={20} />
@@ -1142,25 +1187,25 @@ const CampsiteBooking: React.FC = () => {
                       <MapPin className="text-gray-600 mr-3 mt-1 flex-shrink-0" size={18} />
                       <div>
                         <div className="font-semibold text-gray-800 mb-1">Visit Us</div>
-                        <div className="text-sm text-gray-600">At- Bramhanoli fangne post, tal, pawnanagar,<br/>maval, Maharashtra 410406</div>
+                        <div className="text-sm text-gray-600">At- Bramhanoli fangne post, tal, pawnanagar,<br />maval, Maharashtra 410406</div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
- <br />
- <div className="rounded-lg overflow-hidden shadow-lg">
+              <br />
+              <div className="rounded-lg overflow-hidden shadow-lg">
                 <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6103.946344270747!2d73.49323289387719!3d18.66382967533796!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2a9180b52a2fd%3A0xa5d86c10d8d9846d!2sPlumeria%20Retreat%20%7C%20Pawna%20Lakeside%20Cottages!5e1!3m2!1sen!2sin!4v1749631888045!5m2!1sen!2sin" width="100%" height="350" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="Plumeria Retreat Location" className="rounded-lg"></iframe>
               </div>
 
 
-              
+
             </div>
           </div>
 
         </div>
       </div>
-     
+
     </div>
   );
 };
