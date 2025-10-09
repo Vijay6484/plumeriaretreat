@@ -9,18 +9,23 @@
 @tailwind utilities;
 
 :root {
-  --color-brunswick-green: #065143;
-  --color-rose-taupe: #7E5555;
-  --color-mardi-gras: #8C2578;
-  --color-baby-powder: #FDFFFC;
-  --color-black: #040403;
+  --color-primary: #1E40AF;
+  --color-primary-dark: #1E3A8A;
+  --color-secondary: #0891B2;
+  --color-accent: #F59E0B;
+  --color-neutral-light: #F8FAFC;
+  --color-neutral-dark: #0F172A;
+  --color-brunswick-green: #1E40AF;
+  --color-rose-taupe: #0891B2;
+  --color-mardi-gras: #F59E0B;
+  --color-baby-powder: #F8FAFC;
+  --color-black: #0F172A;
 }
 
-/* ======== FIX FOR HORIZONTAL SCROLLING ======== */
 html, body {
   width: 100%;
-  overflow-x: hidden; /* Prevent horizontal overflow */
-  position: relative; /* Contain positioned elements */
+  overflow-x: hidden;
+  position: relative;
 }
 
 html {
@@ -28,12 +33,11 @@ html {
 }
 
 body {
-  font-family: 'Open Sans', sans-serif;
-  background-color: var(--color-baby-powder);
-  color: var(--color-black);
+  font-family: 'Inter', 'Open Sans', sans-serif;
+  background-color: var(--color-neutral-light);
+  color: var(--color-neutral-dark);
 }
 
-/* Prevent media elements from causing overflow */
 img,
 video,
 iframe,
@@ -44,7 +48,6 @@ svg {
   height: auto;
 }
 
-/* Prevent long words/URLs from overflowing */
 p, h1, h2, h3, h4, h5, h6 {
   overflow-wrap: break-word;
 }
@@ -55,54 +58,53 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 p {
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .gradient-bg {
-  background: linear-gradient(to bottom, rgba(6, 81, 67, 0.9), rgba(126, 85, 85, 0.9));
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.9), rgba(8, 145, 178, 0.9));
 }
 
 .text-shadow {
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .slick-arrow:before {
-  color: #295C3D !important; /* Brunswick Green */
+  color: #1E40AF !important;
 }
 
 /* Calendar Styles */
 .rdp {
   --rdp-cell-size: 40px;
-  --rdp-accent-color: var(--color-brunswick-green);
-  --rdp-background-color: var(--color-brunswick-green);
-  --rdp-accent-color-dark: var(--color-brunswick-green);
-  --rdp-background-color-dark: var(--color-brunswick-green);
+  --rdp-accent-color: var(--color-primary);
+  --rdp-background-color: var(--color-primary);
+  --rdp-accent-color-dark: var(--color-primary);
+  --rdp-background-color-dark: var(--color-primary);
   --rdp-outline: 2px solid var(--rdp-accent-color);
   --rdp-outline-selected: 2px solid var(--rdp-accent-color);
   margin: 0;
 }
 
 .rdp-day_selected:not([disabled]) {
-  background-color: var(--color-brunswick-green);
-  color: var(--color-baby-powder);
+  background-color: var(--color-primary);
+  color: var(--color-neutral-light);
 }
 
 .rdp-day_selected:hover:not([disabled]) {
-  background-color: var(--color-brunswick-green);
+  background-color: var(--color-primary);
   opacity: 0.8;
 }
 
 .rdp-day_range_start:not([disabled]),
 .rdp-day_range_end:not([disabled]) {
-  background-color: var(--color-brunswick-green) !important;
-  color: var(--color-baby-powder) !important;
+  background-color: var(--color-primary) !important;
+  color: var(--color-neutral-light) !important;
 }
 
 .rdp-day_range_middle {
-  background-color: rgba(6, 81, 67, 0.1) !important;
+  background-color: rgba(30, 64, 175, 0.1) !important;
 }
 
-/* Stacked Cards Styles */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -110,7 +112,6 @@ p {
   overflow: hidden;
 }
 
-/* Nearby Locations Swiper Styles */
 .nearby-locations-swiper {
   padding: 4rem 0 6rem 0 !important;
   overflow: visible !important;
@@ -129,7 +130,7 @@ p {
 }
 
 .nearby-slide-card {
-  filter: drop-shadow(0px 8px 24px rgba(6, 81, 67, 0.15));
+  filter: drop-shadow(0px 8px 24px rgba(30, 64, 175, 0.15));
 }
 
 .swiper-navigation-controls {
@@ -142,7 +143,7 @@ p {
 }
 
 .slider-arrow {
-  background: var(--color-baby-powder);
+  background: var(--color-neutral-light);
   width: 3.5rem;
   height: 3.5rem;
   border-radius: 50%;
@@ -152,13 +153,13 @@ p {
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  filter: drop-shadow(0px 8px 24px rgba(6, 81, 67, 0.1));
-  color: var(--color-brunswick-green);
+  filter: drop-shadow(0px 8px 24px rgba(30, 64, 175, 0.1));
+  color: var(--color-primary);
 }
 
 .slider-arrow:hover {
-  background: var(--color-brunswick-green);
-  color: var(--color-baby-powder);
+  background: var(--color-primary);
+  color: var(--color-neutral-light);
   transform: scale(1.1);
 }
 
@@ -167,7 +168,6 @@ p {
   cursor: not-allowed;
 }
 
-/* Swiper Pagination Customization */
 .nearby-locations-swiper .swiper-pagination {
   position: relative !important;
   margin-top: 2rem;
@@ -176,53 +176,51 @@ p {
 .nearby-locations-swiper .swiper-pagination-bullet {
   width: 12px;
   height: 12px;
-  background: rgba(6, 81, 67, 0.3);
+  background: rgba(30, 64, 175, 0.3);
   opacity: 1;
   transition: all 0.3s ease;
 }
 
 .nearby-locations-swiper .swiper-pagination-bullet-active {
-  background: var(--color-brunswick-green);
+  background: var(--color-primary);
   transform: scale(1.2);
 }
 
-/* Coverflow Effect Enhancements */
 .nearby-locations-swiper .swiper-slide-shadow-left,
 .nearby-locations-swiper .swiper-slide-shadow-right {
-  background-image: linear-gradient(to right, rgba(6, 81, 67, 0.5), transparent);
+  background-image: linear-gradient(to right, rgba(30, 64, 175, 0.5), transparent);
 }
 
 .nearby-locations-swiper .swiper-slide-active .nearby-slide-card {
   transform: scale(1.05);
-  filter: drop-shadow(0px 12px 32px rgba(6, 81, 67, 0.25));
+  filter: drop-shadow(0px 12px 32px rgba(30, 64, 175, 0.25));
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-brunswick-green text-baby-powder py-2 px-6 rounded-md font-medium transition-all duration-300 hover:bg-brunswick-green/90 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-brunswick-green/50;
+    @apply bg-primary text-neutral-light py-2 px-6 rounded-lg font-medium transition-all duration-300 hover:bg-primary-dark hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/50;
   }
-  
+
   .btn-secondary {
-    @apply bg-rose-taupe text-baby-powder py-2 px-6 rounded-md font-medium transition-all duration-300 hover:bg-rose-taupe/90 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-rose-taupe/50;
+    @apply bg-secondary text-neutral-light py-2 px-6 rounded-lg font-medium transition-all duration-300 hover:bg-secondary/90 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-secondary/50;
   }
-  
+
   .btn-accent {
-    @apply bg-mardi-gras text-baby-powder py-2 px-6 rounded-md font-medium transition-all duration-300 hover:bg-mardi-gras/90 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-mardi-gras/50;
+    @apply bg-accent text-neutral-dark py-2 px-6 rounded-lg font-medium transition-all duration-300 hover:bg-accent/90 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-accent/50;
   }
-  
+
   .card {
-    @apply bg-baby-powder rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-lg hover:translate-y-[-4px];
+    @apply bg-neutral-light rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
   }
-  
+
   .section-padding {
     @apply py-16 md:py-24;
   }
-  
+
   .container-custom {
-    @apply container mx-auto px-4 sm:px-6 lg:px-8 max-w-full; /* Ensure containers don't cause overflow */
+    @apply container mx-auto px-4 sm:px-6 lg:px-8 max-w-full;
   }
-  
-  /* New utility for full-width containers */
+
   .full-bleed {
     width: 100vw;
     position: relative;

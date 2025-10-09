@@ -1,36 +1,26 @@
 import React from 'react';
-import plumeriaLogo from './plumeria-removebg-preview.png'; // Adjust the path as necessary
+import { Home } from 'lucide-react';
+
 interface LogoProps {
   color?: string;
   size?: number;
   bgColor?: string;
-  scale?: number; // Optional scale prop
+  scale?: number;
 }
 
-const Logo: React.FC<LogoProps> = ({ color = 'currentColor', size = 32, bgColor, scale = 1.5 }) => {
-  // console.log("logo file", plumeriaLogo);
+const Logo: React.FC<LogoProps> = ({ color = 'currentColor', size = 32, bgColor, scale = 1 }) => {
   return (
     <span
-      className="inline-flex items-center justify-center rounded"
+      className="inline-flex items-center gap-2 font-bold text-2xl"
       style={{
         backgroundColor: bgColor || 'transparent',
-        height: size,
-        width: 'auto',
-        padding: 2,
-        transform: `scale(${scale})`, // Zoom out the logo
-        transformOrigin: 'center',
+        color: color,
+        transform: `scale(${scale})`,
+        transformOrigin: 'left center',
       }}
     >
-      <img 
-        src={plumeriaLogo} // Adjust the path as necessary
-        // src="/home/shubham/Project_Paid/Plumeria_2/plumeriaretreat/public/plumeria-removebg-preview.png"
-        alt="Plumeria Retreat"
-        style={{
-          height: size,
-          width: 'auto',
-          display: 'block',
-        }}
-      />
+      <Home size={size} strokeWidth={2.5} />
+      <span style={{ color }}>Serene Stays</span>
     </span>
   );
 };

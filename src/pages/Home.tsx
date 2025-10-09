@@ -5,14 +5,12 @@ import Campsites from '../components/home/Campsites';
 import GalleryPreview from '../components/home/GalleryPreview';
 import WeatherWidget from '../components/home/WeatherWidget';
 import CallToAction from '../components/home/CallToAction';
-import NearbyLocations from '../components/home/NearbyLocations';
 import WhatsAppButton from '../components/ui/WhatsAppButton';
 
 const Home: React.FC = () => {
   useEffect(() => {
-    document.title = 'Plumeria Retreat - Lakeside Camping & Cottages';
-    
-    // Handle scroll to section if hash is present in URL
+    document.title = 'Serene Stays - Premium Lakeside Getaways';
+
     if (window.location.hash) {
       const sectionId = window.location.hash.substring(1);
       const element = document.getElementById(sectionId);
@@ -21,7 +19,7 @@ const Home: React.FC = () => {
       }
     }
   }, []);
-  
+
   return (
     <div className="relative">
       <section id="home">
@@ -35,7 +33,6 @@ const Home: React.FC = () => {
       <section id="gallery">
         <GalleryPreview />
       </section>
-      <NearbyLocations />
       <WhatsAppButton />
     </div>
   );
