@@ -17,7 +17,6 @@ import 'react-day-picker/dist/style.css';
 const API_BASE_URL = "https://a.plumeriaretreat.com";
 const BACKEND_URL = 'https://u.plumeriaretreat.com';
 
-// Interfaces (GuestInfo, RoomGuest, etc.) remain unchanged...
 interface GuestInfo {
   name: string;
   email: string;
@@ -29,9 +28,11 @@ interface City {
   country: string;
 }
 
+// --- VILLA LOGIC: Updated RoomGuest interface ---
 interface RoomGuest {
   adults: number;
   children: number;
+  extraGuests?: number;
 }
 interface FoodCounts {
   veg: number;
@@ -42,6 +43,7 @@ interface Activity {
   name: string;
   price: number;
 }
+// --- VILLA LOGIC: Updated Accommodation interface ---
 interface Accommodation {
   id: number;
   name: string;
@@ -59,6 +61,9 @@ interface Accommodation {
   };
   image: string | string[];
   rooms: number;
+  // Villa-specific fields
+  MaxPersonVilla?: number;
+  RatePersonVilla?: number;
 }
 interface Coupon {
   id: number;
@@ -133,20 +138,22 @@ const PartyEffect: React.FC<{ show: boolean; onComplete: () => void }> = ({ show
 };
 
 const CampsiteBooking: React.FC = () => {
-  // All state variables and hooks (useState, useEffect, etc.) remain unchanged...
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [accommodation, setAccommodation] = useState<Accommodation | null>(null);
+
+  // --- VILLA LOGIC: Added isVilla trigger and property capacity ---
+  const isVilla = accommodation?.type.toLowerCase() === 'villa';
+  const totalPropertyCapacity = accommodation?.MaxPersonVilla || accommodation?.capacity || 99;
+
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [cities, setCities] = useState<City[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const [checkInDate, setCheckInDate] = useState<Date | undefined>();
   const [rooms, setRooms] = useState(0);
   const [fullyBlocked, setFullyBlocked] = useState<Date[]>([]);
   const [partiallyBlocked, setPartiallyBlocked] = useState<Date[]>([]);
-  const [roomGuests, setRoomGuests] = useState<RoomGuest[]>([
-    { adults: 2, children: 0 }
-  ]);
+  const [roomGuests, setRoomGuests] = useState<RoomGuest[]>([]);
   const [guestInfo, setGuestInfo] = useState<GuestInfo>({
     name: '',
     email: '',
@@ -178,18 +185,35 @@ const CampsiteBooking: React.FC = () => {
   const [currentChildRate, setCurrentChildRate] = useState<number>(0);
   const [bookingDetails, setBookingDetails] = useState<any>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
-  const [couponError, setCouponError] = useState<string>(''); // New state for coupon error message
+  const [couponError, setCouponError] = useState<string>('');
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLButtonElement>(null);
   const foodRef = useRef<HTMLDivElement>(null);
 
-  // All functions and logic (handleBooking, validateForm, etc.) remain unchanged...
   const totalAdults = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.adults, 0);
   const totalChildren = roomGuests.slice(0, rooms).reduce((sum, r) => sum + r.children, 0);
   const totalGuests = totalAdults + totalChildren;
+
+  // --- VILLA LOGIC: Calculate total guests including extra guests for villas ---
+  const totalExtraGuests = isVilla ? roomGuests.reduce((sum, villa) => sum + (villa.extraGuests || 0), 0) : 0;
+  const finalTotalGuests = totalGuests + totalExtraGuests;
+
   const checkOutDate = checkInDate ? addDays(checkInDate, 1) : undefined;
+  
+  useEffect(() => {
+    if (accommodation) {
+        if (isVilla) {
+            setRooms(1);
+            setRoomGuests([{ adults: 2, children: 0, extraGuests: 0 }]);
+        } else {
+            setRooms(0);
+            setRoomGuests([]);
+        }
+    }
+  }, [accommodation, isVilla]);
+
   const refreshAvailability = useCallback(async () => {
     if (id) {
       try {
@@ -263,26 +287,52 @@ const CampsiteBooking: React.FC = () => {
       return prev;
     });
   };
+
+  // --- VILLA LOGIC: Updated handleRoomGuestChange to handle both scenarios ---
   const handleRoomGuestChange = (roomIdx: number, type: 'adults' | 'children', value: number) => {
     setRoomGuests(prev => {
       const updated = [...prev];
-      const otherType = type === 'adults' ? 'children' : 'adults';
-      const otherValue = updated[roomIdx][otherType];
+      const currentRoom = updated[roomIdx];
+      let newValue = Math.max(0, value);
 
-      // Enforce a minimum of 2 adults
-      let validatedValue = value;
-      if (type === 'adults' && value < 2) {
-        validatedValue = 2;
-      }
+      if (isVilla) {
+          if (type === 'children') return prev; // No children for villas
+          
+          newValue = Math.max(1, Math.min(newValue, totalPropertyCapacity));
+          updated[roomIdx] = { ...currentRoom, [type]: newValue };
 
-      if (validatedValue + otherValue > maxPeoplePerRoom) {
-        updated[roomIdx][type] = maxPeoplePerRoom - otherValue;
+          if (updated[roomIdx].adults < totalPropertyCapacity) {
+              updated[roomIdx].extraGuests = 0;
+          }
       } else {
-        updated[roomIdx][type] = validatedValue;
+          // Standard room logic
+          const otherType = type === 'adults' ? 'children' : 'adults';
+          const otherValue = currentRoom[otherType];
+          
+          if (newValue + otherValue > maxPeoplePerRoom) {
+              newValue = maxPeoplePerRoom - otherValue;
+          }
+          
+          updated[roomIdx][type] = newValue;
       }
+
+      setFoodCounts({ veg: 0, nonveg: 0, jain: 0 });
       return updated;
     });
   };
+
+  // --- VILLA LOGIC: Added handler for extra guests ---
+  const handleExtraGuestChange = (index: number, delta: number) => {
+    setRoomGuests(prev => {
+        const newGuests = [...prev];
+        const currentExtra = newGuests[index].extraGuests || 0;
+        const newExtraCount = Math.max(0, Math.min(5, currentExtra + delta));
+
+        newGuests[index] = { ...newGuests[index], extraGuests: newExtraCount };
+        return newGuests;
+    });
+  };
+
   const handleFoodCount = (type: 'veg' | 'nonveg' | 'jain', delta: number) => {
     setFoodCounts(prev => {
       const newValue = Math.max(0, prev[type] + delta);
@@ -505,9 +555,22 @@ const CampsiteBooking: React.FC = () => {
     setShowCalendar(false);
     setErrors(prev => ({ ...prev, dates: '' }));
   };
+
+  // --- VILLA LOGIC: Updated total calculation ---
   const calculateTotal = () => {
     if (!accommodation || !checkInDate) return 0;
     const nights = 1;
+
+    if (isVilla) {
+        const baseRate = accommodation.price || 0;
+        const extraPersonCharge = accommodation.RatePersonVilla || 0;
+        const extraGuests = roomGuests[0]?.extraGuests || 0;
+        const extraGuestsCost = extraGuests * extraPersonCharge;
+        const nightlyRate = baseRate + extraGuestsCost;
+        const subtotal = nightlyRate * nights;
+        return subtotal - discount;
+    }
+
     const adultsTotal = totalAdults * currentAdultRate * nights;
     const childrenTotal = totalChildren * currentChildRate * nights;
     let activityCost = 0;
@@ -521,6 +584,7 @@ const CampsiteBooking: React.FC = () => {
     const subtotal = adultsTotal + childrenTotal + activityCost;
     return subtotal - discount;
   };
+  
   const totalAmount = calculateTotal();
   const minAdvance = Math.round(totalAmount * PARTIAL_PAYMENT_MIN_PERCENT);
   const [advanceAmount, setAdvanceAmount] = useState<number>(minAdvance);
@@ -537,6 +601,15 @@ const CampsiteBooking: React.FC = () => {
     const subtotal = (() => {
       if (!accommodation || !checkInDate) return 0;
       const nights = 1;
+      
+      if (isVilla) {
+          const baseRate = accommodation.price || 0;
+          const extraPersonCharge = accommodation.RatePersonVilla || 0;
+          const extraGuests = roomGuests[0]?.extraGuests || 0;
+          const extraGuestsCost = extraGuests * extraPersonCharge;
+          return (baseRate + extraGuestsCost) * nights;
+      }
+
       const adultsTotal = totalAdults * currentAdultRate * nights;
       const childrenTotal = totalChildren * currentChildRate * nights;
       return adultsTotal + childrenTotal;
@@ -574,12 +647,13 @@ const CampsiteBooking: React.FC = () => {
     appliedCoupon,
     accommodation,
     checkInDate,
+    isVilla,
+    roomGuests
   ]);
 
-  // Updated handleApplyCoupon function with proper validation
   const handleApplyCoupon = async () => {
     const code = coupon.trim().toUpperCase();
-    setCouponError(''); // Clear previous errors
+    setCouponError(''); 
 
     if (!code) {
       setCouponError('Please enter a coupon code');
@@ -587,7 +661,6 @@ const CampsiteBooking: React.FC = () => {
     }
 
     try {
-      // Check if coupon exists in available coupons
       const foundCoupon = allAvailableCoupons.find(
         (c: Coupon) => c.code.toUpperCase() === code
       );
@@ -597,13 +670,11 @@ const CampsiteBooking: React.FC = () => {
         return;
       }
 
-      // Check if coupon is active
       if (foundCoupon.active !== 1) {
         setCouponError('This coupon is no longer active');
         return;
       }
 
-      // Check expiry date
       const now = new Date();
       const expiryDate = new Date(foundCoupon.expiryDate);
       if (expiryDate < now) {
@@ -611,7 +682,6 @@ const CampsiteBooking: React.FC = () => {
         return;
       }
 
-      // Check if coupon is applicable for this accommodation
       const couponAccommodationType = foundCoupon.accommodationType?.trim() || '';
       const currentAccommodationName = accommodation?.name?.trim() || '';
 
@@ -621,10 +691,14 @@ const CampsiteBooking: React.FC = () => {
         return;
       }
 
-      // Check minimum amount requirement
       const subtotal = (() => {
         if (!accommodation || !checkInDate) return 0;
         const nights = 1;
+        if (isVilla) {
+            const baseRate = accommodation.price || 0;
+            const extraGuestsCost = (roomGuests[0]?.extraGuests || 0) * (accommodation.RatePersonVilla || 0);
+            return (baseRate + extraGuestsCost) * nights;
+        }
         const adultsTotal = totalAdults * currentAdultRate * nights;
         const childrenTotal = totalChildren * currentChildRate * nights;
         return adultsTotal + childrenTotal;
@@ -635,12 +709,11 @@ const CampsiteBooking: React.FC = () => {
         return;
       }
 
-      // All validations passed - apply the coupon
       setAppliedCoupon(foundCoupon);
       setCoupon(code);
       setCouponApplied(true);
       setShowPartyEffect(true);
-      setCouponError(''); // Clear any previous errors
+      setCouponError(''); 
 
     } catch (error: any) {
       console.error('Coupon application error:', error);
@@ -653,7 +726,7 @@ const CampsiteBooking: React.FC = () => {
 
   const handleCouponSelect = (selectedCoupon: Coupon) => {
     setCoupon(selectedCoupon.code);
-    setCouponError(''); // Clear errors when selecting from available coupons
+    setCouponError(''); 
   };
 
   const handleActivityToggle = (activityName: string) => {
@@ -694,6 +767,8 @@ const CampsiteBooking: React.FC = () => {
       }
     }
   };
+
+  // --- VILLA LOGIC: Updated validation ---
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
     if (!guestInfo.name) newErrors.name = 'Name is required';
@@ -702,9 +777,20 @@ const CampsiteBooking: React.FC = () => {
     if (!guestInfo.phone) newErrors.phone = 'Phone is required';
     else if (!/^\d{10}$/.test(guestInfo.phone)) newErrors.phone = 'Phone must be 10 digits';
     if (!checkInDate) newErrors.dates = 'Please select a date';
-    if ((foodCounts.veg + foodCounts.nonveg + foodCounts.jain) !== totalGuests) {
-      newErrors.food = 'Food preferences must match total guests';
+
+    if (isVilla) {
+        if (finalTotalGuests < 1) {
+            newErrors.guests = "At least one guest is required for the villa.";
+        }
+    } else {
+        if (rooms === 0) {
+            newErrors.rooms = "Please select at least one room.";
+        }
+        if ((foodCounts.veg + foodCounts.nonveg + foodCounts.jain) !== totalGuests) {
+            newErrors.food = 'Food preferences must match total guests';
+        }
     }
+
     if (checkInDate && isDateDisabled(checkInDate)) {
       newErrors.dates = 'Your selected date is not available. Please choose different date.';
     }
@@ -719,6 +805,8 @@ const CampsiteBooking: React.FC = () => {
     }
     return true;
   };
+
+  // --- VILLA LOGIC: Updated booking payload ---
   const handleBooking = async () => {
     if (!validateForm()) return;
     setLoading(true);
@@ -731,16 +819,20 @@ const CampsiteBooking: React.FC = () => {
         accommodation_id: id,
         check_in: formatDate(checkInDate),
         check_out: formatDate(checkOutDate),
-        adults: totalAdults,
-        children: totalChildren,
+        adults: isVilla ? finalTotalGuests : totalAdults,
+        children: isVilla ? 0 : totalChildren,
         rooms: rooms,
-        food_veg: foodCounts.veg,
-        food_nonveg: foodCounts.nonveg,
-        food_jain: foodCounts.jain,
+        food_veg: isVilla ? finalTotalGuests : foodCounts.veg,
+        food_nonveg: isVilla ? 0 : foodCounts.nonveg,
+        food_jain: isVilla ? 0 : foodCounts.jain,
         total_amount: totalAmount,
         advance_amount: advanceAmount,
         package_id: 0,
         coupon_code: couponApplied ? coupon : null,
+        RatePersonVilla: isVilla ? accommodation?.RatePersonVilla || 0 : undefined,
+        ExtraPersonVilla: isVilla ? roomGuests[0]?.extraGuests || 0 : undefined,
+        type: isVilla ? 'villa' : 'cottage',
+        
       };
       const bookingResponse = await fetch(`https://adminplumeria-back.onrender.com/admin/bookings`, {
         method: 'POST',
@@ -916,7 +1008,10 @@ const CampsiteBooking: React.FC = () => {
                     <div className="text-2xl sm:text-3xl font-bold text-emerald-600">
                       ₹{accommodation.price.toLocaleString()}
                     </div>
-                    <div className="text-xs sm:text-sm text-gray-500">per night</div>
+                    {/* --- VILLA LOGIC: DYNAMIC PRICE LABEL --- */}
+                    <div className="text-xs sm:text-sm text-gray-500">
+                        {isVilla ? `per night (up to ${totalPropertyCapacity} guests)` : "per night"}
+                    </div>
                   </div>
                 </div>
                 <div className="prose prose-sm sm:prose-base max-w-none text-gray-700"
@@ -986,39 +1081,73 @@ const CampsiteBooking: React.FC = () => {
                   </div>
 
 
-                  {/* Rooms & Guests */}
+                  {/* --- VILLA LOGIC: Conditional UI for Rooms/Guests --- */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Rooms</label>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Button type="button" onClick={() => handleRoomsChange(Math.max(1, rooms - 1))} disabled={rooms <= 1} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">-</Button>
-                      <span className="font-bold text-lg">{rooms}</span>
-                      <Button type="button" onClick={() => handleRoomsChange(Math.min(availableRoomsForSelectedDate, rooms + 1))} disabled={rooms >= availableRoomsForSelectedDate} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">+</Button>
-                      <span className="text-xs text-gray-500">{Math.max(0, availableRoomsForSelectedDate - rooms)} rooms remaining</span>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {isVilla ? 'Guests' : 'Rooms'}
+                    </label>
 
-                    </div>
-                    {rooms > 0 && (
-                      <div className="border rounded-lg p-3 bg-gray-50">
-                        {roomGuests.slice(0, rooms).map((room, idx) => (
-                          <div key={`room-${idx}`} className="flex flex-col gap-2 mb-2 border-b pb-2 last:border-0">
-                            <span className="w-16 font-medium text-sm">Room {idx + 1}</span>
-                            <div className="flex items-center gap-4">
-                              <select value={room.adults} onChange={e => handleRoomGuestChange(idx, 'adults', Number(e.target.value))} className="border rounded px-2 py-1 text-sm flex-1">
-                                {[...Array(maxPeoplePerRoom + 1).keys()].map(n => n + room.children <= maxPeoplePerRoom && (<option key={`adults-${n}`} value={n}>{n} Adults</option>))}
-                              </select>
-                              <select value={room.children} onChange={e => handleRoomGuestChange(idx, 'children', Number(e.target.value))} className="border rounded px-2 py-1 text-sm flex-1">
-                                {[...Array(maxPeoplePerRoom + 1).keys()].map(n => n + room.adults <= maxPeoplePerRoom && (<option key={`children-${n}`} value={n}>{n} Children</option>))}
-                              </select>
+                    {isVilla ? (
+                        // VILLA GUEST SELECTOR
+                        <div className="border rounded-lg p-3 bg-gray-50">
+                            {roomGuests.length > 0 && roomGuests[0] && (
+                                <>
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium text-sm text-gray-600">Standard Guests</span>
+                                        <div className="flex items-center gap-3">
+                                            <Button onClick={() => handleRoomGuestChange(0, 'adults', roomGuests[0].adults - 1)} disabled={roomGuests[0].adults <= 1} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">-</Button>
+                                            <span className="font-bold text-lg w-8 text-center">{roomGuests[0].adults}</span>
+                                            <Button onClick={() => handleRoomGuestChange(0, 'adults', roomGuests[0].adults + 1)} disabled={roomGuests[0].adults >= totalPropertyCapacity} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">+</Button>
+                                        </div>
+                                    </div>
+                                    {roomGuests[0].adults >= totalPropertyCapacity && (
+                                        <div className="mt-4 pt-4 border-t">
+                                            <div className="flex items-center justify-between">
+                                                <span className="font-medium text-sm text-gray-600">Extra Guests</span>
+                                                <div className="flex items-center gap-3">
+                                                    <Button onClick={() => handleExtraGuestChange(0, -1)} disabled={(roomGuests[0].extraGuests || 0) <= 0} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">-</Button>
+                                                    <span className="font-bold text-lg w-8 text-center">{roomGuests[0].extraGuests || 0}</span>
+                                                    <Button onClick={() => handleExtraGuestChange(0, 1)} disabled={(roomGuests[0].extraGuests || 0) >= 5} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">+</Button>
+                                                </div>
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-1 text-right">Charge: ₹{accommodation.RatePersonVilla?.toLocaleString() || 0} per extra guest</p>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    ) : (
+                        // CAMPSITE ROOM SELECTOR (Existing Logic)
+                        <>
+                            <div className="flex items-center gap-2 mb-2">
+                                <Button type="button" onClick={() => handleRoomsChange(Math.max(0, rooms - 1))} disabled={rooms <= 0} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">-</Button>
+                                <span className="font-bold text-lg">{rooms}</span>
+                                <Button type="button" onClick={() => handleRoomsChange(Math.min(availableRoomsForSelectedDate, rooms + 1))} disabled={rooms >= availableRoomsForSelectedDate} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">+</Button>
+                                <span className="text-xs text-gray-500">{Math.max(0, availableRoomsForSelectedDate - rooms)} rooms remaining</span>
                             </div>
-                          </div>
-                        ))}
-                      </div>
+                            {rooms > 0 && (
+                                <div className="border rounded-lg p-3 bg-gray-50">
+                                    {roomGuests.slice(0, rooms).map((room, idx) => (
+                                        <div key={`room-${idx}`} className="flex flex-col gap-2 mb-2 border-b pb-2 last:border-0">
+                                            <span className="w-16 font-medium text-sm">Room {idx + 1}</span>
+                                            <div className="flex items-center gap-4">
+                                                <select value={room.adults} onChange={e => handleRoomGuestChange(idx, 'adults', Number(e.target.value))} className="border rounded px-2 py-1 text-sm flex-1">
+                                                    {[...Array(maxPeoplePerRoom + 1).keys()].slice(1).map(n => n + room.children <= maxPeoplePerRoom && (<option key={`adults-${n}`} value={n}>{n} Adults</option>))}
+                                                </select>
+                                                <select value={room.children} onChange={e => handleRoomGuestChange(idx, 'children', Number(e.target.value))} className="border rounded px-2 py-1 text-sm flex-1">
+                                                    {[...Array(maxPeoplePerRoom + 1).keys()].map(n => n + room.adults <= maxPeoplePerRoom && (<option key={`children-${n}`} value={n}>{n} Children</option>))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </>
                     )}
-                  </div>
-                  <div className="mt-2 text-sm">
-                    <span className="font-medium">Total:</span> {totalAdults} Adults, {totalChildren} Children
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    Adult rate: ₹{currentAdultRate.toLocaleString()} / night, Child rate: ₹{currentChildRate.toLocaleString()} / night
+                     <div className="mt-2 text-sm">
+                        <span className="font-medium">Total:</span>{" "}
+                        {isVilla ? `${finalTotalGuests} Guests` : `${totalGuests} Guests in ${rooms} Room(s)`}
+                    </div>
                   </div>
 
                   {/* Guest Info */}
@@ -1037,27 +1166,29 @@ const CampsiteBooking: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Food Preferences */}
-                  <div ref={foodRef}>
-                    <h3 className="text-base font-semibold mb-2">Food Preferences</h3>
-                    <div className="space-y-3 bg-gray-50 p-4 rounded-lg border">
-                      {(['veg', 'nonveg', 'jain'] as const).map(type => (
-                        <div key={type} className="flex items-center gap-4">
-                          <span className="w-24 capitalize text-sm">{type === 'nonveg' ? 'Non-Veg' : type}</span>
-                          <Button type="button" onClick={() => handleFoodCount(type, -1)} disabled={foodCounts[type] <= 0} className="rounded-full bg-gray-200 text-lg w-8 h-8 flex items-center justify-center disabled:opacity-50">-</Button>
-                          <span className="w-6 text-center font-medium">{foodCounts[type]}</span>
-                          <Button type="button" onClick={() => handleFoodCount(type, 1)} disabled={(foodCounts.veg + foodCounts.nonveg + foodCounts.jain) >= totalGuests} className="rounded-full bg-gray-200 text-lg w-8 h-8 flex items-center justify-center disabled:opacity-50">+</Button>
+                  {/* --- VILLA LOGIC: Hide Food Preferences for Villas --- */}
+                  {!isVilla && (
+                    <div ref={foodRef}>
+                        <h3 className="text-base font-semibold mb-2">Food Preferences</h3>
+                        <div className="space-y-3 bg-gray-50 p-4 rounded-lg border">
+                        {(['veg', 'nonveg', 'jain'] as const).map(type => (
+                            <div key={type} className="flex items-center gap-4">
+                            <span className="w-24 capitalize text-sm">{type === 'nonveg' ? 'Non-Veg' : type}</span>
+                            <Button type="button" onClick={() => handleFoodCount(type, -1)} disabled={foodCounts[type] <= 0} className="rounded-full bg-gray-200 text-lg w-8 h-8 flex items-center justify-center disabled:opacity-50">-</Button>
+                            <span className="w-6 text-center font-medium">{foodCounts[type]}</span>
+                            <Button type="button" onClick={() => handleFoodCount(type, 1)} disabled={(foodCounts.veg + foodCounts.nonveg + foodCounts.jain) >= totalGuests} className="rounded-full bg-gray-200 text-lg w-8 h-8 flex items-center justify-center disabled:opacity-50">+</Button>
+                            </div>
+                        ))}
+                        <div className="text-xs text-gray-500 mt-2">
+                            Total food count: {foodCounts.veg + foodCounts.nonveg + foodCounts.jain} / {totalGuests}
+                            {foodCounts.veg + foodCounts.nonveg + foodCounts.jain !== totalGuests && (
+                            <span className="text-red-600 ml-2">Must match total guests!</span>
+                            )}
                         </div>
-                      ))}
-                      <div className="text-xs text-gray-500 mt-2">
-                        Total food count: {foodCounts.veg + foodCounts.nonveg + foodCounts.jain} / {totalGuests}
-                        {foodCounts.veg + foodCounts.nonveg + foodCounts.jain !== totalGuests && (
-                          <span className="text-red-600 ml-2">Must match total guests!</span>
-                        )}
-                      </div>
-                      {errors.food && <p className="text-red-500 text-sm mt-2">{errors.food}</p>}
+                        {errors.food && <p className="text-red-500 text-sm mt-2">{errors.food}</p>}
+                        </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Coupon */}
                   <div>
@@ -1132,8 +1263,28 @@ const CampsiteBooking: React.FC = () => {
                     <h4 className="font-semibold text-gray-900 mb-3 text-base">Booking Summary</h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between"><span>Check-in:</span><span className="font-medium">{checkInDate ? format(checkInDate, 'dd MMM yyyy') : 'N/A'}</span></div>
-                      <div className="flex justify-between"><span>Guests:</span><span className="font-medium">{totalAdults} Adults, {totalChildren} Children</span></div>
-                      <div className="flex justify-between"><span>Rooms:</span><span className="font-medium">{rooms}</span></div>
+                      
+                      {/* --- VILLA LOGIC: DYNAMIC BOOKING SUMMARY --- */}
+                      {isVilla ? (
+                          <>
+                            <div className="flex justify-between">
+                                <span>Base rate per night:</span>
+                                <span>₹{(accommodation.price || 0).toLocaleString()}</span>
+                            </div>
+                            {totalExtraGuests > 0 && (
+                                <div className="flex justify-between">
+                                    <span>Extra person charges:</span>
+                                    <span>₹{(accommodation.RatePersonVilla || 0).toLocaleString()} x {totalExtraGuests}</span>
+                                </div>
+                            )}
+                          </>
+                      ) : (
+                          <>
+                            <div className="flex justify-between"><span>Guests:</span><span className="font-medium">{totalAdults} Adults, {totalChildren} Children</span></div>
+                            <div className="flex justify-between"><span>Rooms:</span><span className="font-medium">{rooms}</span></div>
+                          </>
+                      )}
+
                       <div className="border-t pt-2 mt-2 flex justify-between"><span>Subtotal:</span><span className="font-medium">{formatCurrency(totalAmount + discount)}</span></div>
                       {discount > 0 && (<div className="flex justify-between text-green-600"><span>Discount:</span><span className="font-medium">-{formatCurrency(discount)}</span></div>)}
                       <div className="border-t pt-2 mt-2 flex justify-between font-semibold text-lg">
