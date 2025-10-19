@@ -887,6 +887,7 @@ const CampsiteBooking: React.FC = () => {
         form.appendChild(input);
       });
       document.body.appendChild(form);
+      
       form.submit();
     } catch (error: any) {
       console.error('Booking/Payment error:', error);
@@ -1099,6 +1100,8 @@ const CampsiteBooking: React.FC = () => {
                                             <span className="font-bold text-lg w-8 text-center">{roomGuests[0].adults}</span>
                                             <Button onClick={() => handleRoomGuestChange(0, 'adults', roomGuests[0].adults + 1)} disabled={roomGuests[0].adults >= totalPropertyCapacity} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">+</Button>
                                         </div>
+                                       
+                                  
                                     </div>
                                     {roomGuests[0].adults >= totalPropertyCapacity && (
                                         <div className="mt-4 pt-4 border-t">
@@ -1125,6 +1128,7 @@ const CampsiteBooking: React.FC = () => {
                                 <Button type="button" onClick={() => handleRoomsChange(Math.min(availableRoomsForSelectedDate, rooms + 1))} disabled={rooms >= availableRoomsForSelectedDate} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">+</Button>
                                 <span className="text-xs text-gray-500">{Math.max(0, availableRoomsForSelectedDate - rooms)} rooms remaining</span>
                             </div>
+                            
                             {rooms > 0 && (
                                 <div className="border rounded-lg p-3 bg-gray-50">
                                     {roomGuests.slice(0, rooms).map((room, idx) => (
@@ -1140,14 +1144,18 @@ const CampsiteBooking: React.FC = () => {
                                             </div>
                                         </div>
                                     ))}
+                                    
                                 </div>
+                                
                             )}
                         </>
                     )}
                      <div className="mt-2 text-sm">
                         <span className="font-medium">Total:</span>{" "}
-                        {isVilla ? `${finalTotalGuests} Guests` : `${totalGuests} Guests in ${rooms} Room(s)`}
+                        {isVilla ? `${finalTotalGuests} Guests` : `${totalGuests} Guests in ${rooms} Room(s)`} <br />
+                         <span className="font-medium" >Check-in: 3:00 PM | Check-out: 11:00 AM</span>
                     </div>
+                  
                   </div>
 
                   {/* Guest Info */}
