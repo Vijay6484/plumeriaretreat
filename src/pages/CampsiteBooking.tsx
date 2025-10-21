@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { motion } from 'framer-motion';
+import { motion, number } from 'framer-motion';
 import { DayPicker } from 'react-day-picker';
 import { format, addDays, isBefore, startOfDay, isSameDay } from 'date-fns';
 import { X, Camera, MapPin, CheckCircle, CreditCard, Activity, Clock, Phone, Mail, MessageCircle } from 'lucide-react';
@@ -63,7 +63,7 @@ interface Accommodation {
   rooms: number;
   // Villa-specific fields
   MaxPersonVilla?: number;
-  RatePersonVilla?: number;
+  RatePerPerson?: number;
 }
 interface Coupon {
   id: number;
@@ -562,14 +562,23 @@ const CampsiteBooking: React.FC = () => {
     const nights = 1;
 
     if (isVilla) {
-        const baseRate = accommodation.price || 0;
-        const extraPersonCharge = accommodation.RatePersonVilla || 0;
-        const extraGuests = roomGuests[0]?.extraGuests || 0;
-        const extraGuestsCost = extraGuests * extraPersonCharge;
-        const nightlyRate = baseRate + extraGuestsCost;
-        const subtotal = nightlyRate * nights;
-        return subtotal - discount;
-    }
+      const baseRate =Number( accommodation.price ) || 0;
+      const extraPersonCharge =Number( accommodation.RatePerPerson) || 0;
+      const extraGuests = roomGuests[0]?.extraGuests || 0;
+      const extraGuestsCost = extraGuests * extraPersonCharge;
+      const nightlyRate = baseRate + extraGuestsCost;
+      
+      // === CORRECTED LINE ===
+      let subtotal = baseRate + (totalExtraGuests * extraPersonCharge) ; 
+      console.log("Villa Subtotal Calculation:--",subtotal);
+      console.log("Base Rate:", baseRate);
+      console.log("Extra Guests:", totalExtraGuests);
+      console.log("Extra Person Charge:", extraPersonCharge);
+      console.log("subtotal:", subtotal);
+      console.log("nightrate:", nightlyRate );
+      
+      return subtotal - discount;
+  }
 
     const adultsTotal = totalAdults * currentAdultRate * nights;
     const childrenTotal = totalChildren * currentChildRate * nights;
@@ -604,7 +613,7 @@ const CampsiteBooking: React.FC = () => {
       
       if (isVilla) {
           const baseRate = accommodation.price || 0;
-          const extraPersonCharge = accommodation.RatePersonVilla || 0;
+          const extraPersonCharge = accommodation.RatePerPerson || 0;
           const extraGuests = roomGuests[0]?.extraGuests || 0;
           const extraGuestsCost = extraGuests * extraPersonCharge;
           return (baseRate + extraGuestsCost) * nights;
@@ -696,7 +705,7 @@ const CampsiteBooking: React.FC = () => {
         const nights = 1;
         if (isVilla) {
             const baseRate = accommodation.price || 0;
-            const extraGuestsCost = (roomGuests[0]?.extraGuests || 0) * (accommodation.RatePersonVilla || 0);
+            const extraGuestsCost = (roomGuests[0]?.extraGuests || 0) * (accommodation.RatePerPerson || 0);
             return (baseRate + extraGuestsCost) * nights;
         }
         const adultsTotal = totalAdults * currentAdultRate * nights;
@@ -829,7 +838,7 @@ const CampsiteBooking: React.FC = () => {
         advance_amount: advanceAmount,
         package_id: 0,
         coupon_code: couponApplied ? coupon : null,
-        RatePersonVilla: isVilla ? accommodation?.RatePersonVilla || 0 : undefined,
+        RatePersonVilla: isVilla ? accommodation?.RatePerPerson || 0 : undefined,
         ExtraPersonVilla: isVilla ? roomGuests[0]?.extraGuests || 0 : undefined,
         type: isVilla ? 'villa' : 'cottage',
         
@@ -1113,7 +1122,7 @@ const CampsiteBooking: React.FC = () => {
                                                     <Button onClick={() => handleExtraGuestChange(0, 1)} disabled={(roomGuests[0].extraGuests || 0) >= 5} className="px-3 py-1 bg-green-700 text-white rounded-lg disabled:bg-gray-300">+</Button>
                                                 </div>
                                             </div>
-                                            <p className="text-xs text-gray-500 mt-1 text-right">Charge: ₹{accommodation.RatePersonVilla?.toLocaleString() || 0} per extra guest</p>
+                                            <p className="text-xs text-gray-500 mt-1 text-right">Charge: ₹{accommodation.RatePerPerson?.toLocaleString() || 0} per extra guest</p>
                                         </div>
                                     )}
                                 </>
@@ -1282,7 +1291,7 @@ const CampsiteBooking: React.FC = () => {
                             {totalExtraGuests > 0 && (
                                 <div className="flex justify-between">
                                     <span>Extra person charges:</span>
-                                    <span>₹{(accommodation.RatePersonVilla || 0).toLocaleString()} x {totalExtraGuests}</span>
+                                    <span>₹{(accommodation.RatePerPerson || 0).toLocaleString()} x {totalExtraGuests}</span>
                                 </div>
                             )}
                           </>

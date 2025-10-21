@@ -41,7 +41,13 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
     latitude: string,
     longitude: string,
     ownerEmail:string,
-    bookedDate:string
+    ownerPhone:string,
+    ownerName:string,
+    bookedDate:string,
+    RatePersonVilla?:number,
+    ExtraPersonVilla?:number,
+    type?:string
+
   ) => {
     const html = `<!DOCTYPE html
   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -274,7 +280,7 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
                           </td>
                           <td class="fluid-img logoimg"
                             style="font-size:0pt; line-height:0pt; text-align:right;background:#ffffff;padding-right: 6px;">
-                            <img src="https://www.pawanaicamping.com/uploads/system/logo_new_color.png" width="auto"
+                            <img src="https://plumeriaretreat.com/assets/plumeria-removebg-preview-CWtMayYt.png" width="auto"
                               height="55" mc:edit="image_2" style="max-height:55px;" border="0" alt="Logo" />
                           </td>
                         </tr>
@@ -396,16 +402,19 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
                                     </tr>
                                     <tr>
                                       <td valign="top"
-                                        style="border: 1px solid #dddddd;text-align: left;padding: 6px 7px 8px;color: #000000;font-family: Lato, Arial,sans-serif;font-size: 13px;line-height: 15px;">
+ style="border: 1px solid #dddddd;text-align: left;padding: 6px 7px 8px;color: #000000;font-family: Lato, Arial,sans-serif;font-size: 13px;line-height: 15px;">
                                         <p style="padding-bottom: 5px;margin: 0px;">Mobile: <b>${mobile}</b></p>
                                         <p style="padding-bottom: 5px;margin: 0px;">Check In: <b>${BookingDate}</b></p>
                                         <p style="padding-bottom: 5px;margin: 0px;">Check Out: <b>${CheckoutDate}</b></p>
                                         <p style="padding-bottom: 5px;margin: 0px;">Total Room: <b>${totalPerson}</b></p>
                                         <p style="padding-bottom: 5px;margin: 0px;">Adult: <b>${adult}</b></p>
-                                        <p style="padding-bottom: 5px;margin: 0px;">Child: <b>${child}</b></p>
+                                        
+                                        ${type !== 'Villa' ? `
+                                          <p style="padding-bottom: 5px;margin: 0px;">Child: <b>${child}</b></p>
                                         <p style="padding-bottom: 5px;margin: 0px;">Veg Count: <b>${vegCount}</b></p>
                                         <p style="padding-bottom: 5px;margin: 0px;">Non Veg Count: <b>${nonvegCount}</b></p>
                                         <p style="padding-bottom: 5px;margin: 0px;">Jain Count: <b>${joinCount}</b></p>
+                                        ` : ''}
                                       </td>
                                       <td
                                         style="border: 1px solid #dddddd;text-align: left;padding: 6px 7px 8px;color: #000000;font-family: Lato, Arial,sans-serif;font-size: 14px;line-height: 16px;">
@@ -524,8 +533,8 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
                                               style="color:#000000; font-family:Lato, Arial,sans-serif; font-size:14px; line-height:22px;">
                                               <div mc:edit="text_3">
                                                 <span><b>Email- </b></span><span><a
-                                                    href="mailto: booking@pawanaicamping.com"
-                                                    style="color: #164e6f;"><b>booking@pawanaicamping.com</b></a></span>
+                                                    href="mailto: booking@plumeriaretreat.com"
+                                                    style="color: #164e6f;"><b>booking@plumeriaretreat.com</b></a></span>
                                               </div>
                                             </td>
                                           </tr>
@@ -534,7 +543,7 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
                                               style="color:#000000; font-family:Lato, Arial,sans-serif; font-size:14px; line-height:22px;">
                                               <div mc:edit="text_3">
                                                 <span><b>Contact Number- </b></span>
-                                                <span>Babu</span>- <span>9923366051</span>
+                                                <span>${ownerName}</span>- <span>${ownerPhone}</span>
                                               </div>
                                             </td>
                                           </tr>
@@ -651,7 +660,7 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
           const res = await fetch(`https://a.plumeriaretreat.com/admin/bookings/details/${id}`);
           if (!res.ok) throw new Error('Booking not found');
 
-          const { booking, accommodation ,ownerEmail,bookedDate} = await res.json();
+          const { booking, accommodation ,ownerEmail,ownerPhone,ownerName,bookedDate} = await res.json();
 
           // Call downloadPdf
           downloadPdf(
@@ -674,7 +683,10 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
             accommodation.address,
             accommodation.latitude,
             accommodation.longitude,
+            accommodation.type,
             ownerEmail,
+            ownerPhone,
+            ownerName,
             bookedDate
             
           );
