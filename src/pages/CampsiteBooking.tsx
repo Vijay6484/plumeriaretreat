@@ -401,16 +401,27 @@ const CampsiteBooking: React.FC = () => {
       fetchTotalRoom(checkInDate);
     }
   }, [checkInDate]);
+
+  // ========== MODIFIED SECTION 1 ==========
+  // This useEffect will now ONLY run if it's NOT a villa
   useEffect(() => {
-    if (checkInDate) {
-      const available = calculateAvailableRoomsForDate(checkInDate);
-      setAvailableRoomsForSelectedDate(available);
-      if (rooms > available) {
-        setRooms(available);
+    if (!isVilla) { 
+      if (checkInDate) {
+        const available = calculateAvailableRoomsForDate(checkInDate);
+        setAvailableRoomsForSelectedDate(available);
+        if (rooms > available) {
+          setRooms(available);
+        }
       }
     }
-  }, [checkInDate, bookedRoom, additionalRoomsInfo, calculateAvailableRoomsForDate]);
+  }, [checkInDate, bookedRoom, additionalRoomsInfo, calculateAvailableRoomsForDate, isVilla]); // Added isVilla to dependency array
+  // ========== END MODIFIED SECTION 1 ==========
+
+  // ========== MODIFIED SECTION 2 ==========
+  // This function now skips validation for villas
   const validateRoomAvailability = () => {
+    if (isVilla) return true; // <-- ADDED THIS LINE
+
     if (!checkInDate) return true;
     const availableRooms = calculateAvailableRoomsForDate(checkInDate);
     if (availableRooms < rooms) {
@@ -422,6 +433,8 @@ const CampsiteBooking: React.FC = () => {
     }
     return true;
   };
+  // ========== END MODIFIED SECTION 2 ==========
+
   useEffect(() => {
     const fetchAccommodation = async () => {
       try {
