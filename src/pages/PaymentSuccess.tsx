@@ -44,8 +44,6 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
     ownerPhone:string,
     ownerName:string,
     bookedDate:string,
-    RatePersonVilla?:number,
-    ExtraPersonVilla?:number,
     type?:string
 
   ) => {
@@ -261,7 +259,7 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
                               <tr>
                                 <td class="h2 pb25 mainhead"
                                   style="color:#444444; font-family:Lato, Arial ,sans-serif; font-size:22px; font-weight:bold; line-height:24px;padding-bottom:8px;">
-                                  <div mc:edit="text_2"> online Booking PDF ${accommodationName} </div>
+                                  <div mc:edit="text_2">${accommodationName} </div>
                                 </td>
                               </tr>
                               <tr>
@@ -683,11 +681,11 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
             accommodation.address,
             accommodation.latitude,
             accommodation.longitude,
-            accommodation.type,
             ownerEmail,
             ownerPhone,
             ownerName,
-            bookedDate
+            bookedDate,
+            accommodation.type
             
           );
         } catch (error) {
