@@ -1,7 +1,5 @@
 import React from 'react';
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import ReactGA from 'react-ga4';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
@@ -20,9 +18,13 @@ import { Success, Failure, Cancel } from './pages/PaymentSuccesss';
 import ScrollToTop from '../src/utils/ScrollToTop';
 import CallButton from './components/ui/CallButton';
 import WhatsAppButton from './components/ui/WhatsAppButton';
+import { initGA } from './utils/analytics';
 
 function App() {
-
+  // Initialize Google Analytics on app load
+  useEffect(() => {
+    initGA('G-96RYE2GGCX');
+  }, []);
 
   return (
     <Router>

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Shield, Users, TreePine, MapPin, Phone, Mail, Star, Award, Leaf, Mountain } from 'lucide-react';
 import Card, { CardContent } from '../components/ui/Card';
+import { trackPageView } from '../utils/analytics';
 
 const About: React.FC = () => {
   const handleBookNow = () => {
@@ -10,6 +11,9 @@ const About: React.FC = () => {
 
   useEffect(() => {
     document.title = 'About Us - Plumeria Retreat';
+    
+    // Track page view for Google Analytics
+    trackPageView('/about', 'About Us');
   }, []);
 
   const values = [

@@ -7,10 +7,14 @@ import WeatherWidget from '../components/home/WeatherWidget';
 import CallToAction from '../components/home/CallToAction';
 import NearbyLocations from '../components/home/NearbyLocations';
 import WhatsAppButton from '../components/ui/WhatsAppButton';
+import { trackPageView } from '../utils/analytics';
 
 const Home: React.FC = () => {
   useEffect(() => {
     document.title = 'Plumeria Retreat - Lakeside Camping & Cottages';
+    
+    // Track page view for Google Analytics
+    trackPageView('/', 'Home');
     
     // Handle scroll to section if hash is present in URL
     if (window.location.hash) {

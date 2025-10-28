@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import './Gallery.css';
+import { trackPageView } from '../utils/analytics';
 
 interface GalleryImage {
   id: number;
@@ -23,6 +24,10 @@ const Gallery: React.FC = () => {
 
   useEffect(() => {
     document.title = 'Gallery - Plumeria Retreat';
+    
+    // Track page view for Google Analytics
+    trackPageView('/gallery', 'Gallery');
+    
     const fetchImages = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/all-images`);

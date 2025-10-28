@@ -13,6 +13,7 @@ import { MAX_ROOMS, MAX_PEOPLE_PER_ROOM, PARTIAL_PAYMENT_MIN_PERCENT } from '../
 import { formatCurrency } from '../utils/helpers';
 import Button from '../components/ui/Button';
 import 'react-day-picker/dist/style.css';
+import { trackPageView } from '../utils/analytics';
 
 const API_BASE_URL = "https://a.plumeriaretreat.com";
 const BACKEND_URL = 'https://u.plumeriaretreat.com';
@@ -496,6 +497,15 @@ const CampsiteBooking: React.FC = () => {
     };
     if (id) fetchAccommodation();
   }, [id, navigate]);
+
+  // Track page view for Google Analytics
+  useEffect(() => {
+    const pageTitle = accommodation 
+      ? `Booking - ${accommodation.name}` 
+      : `Booking - Campsite ${id || ''}`;
+    trackPageView(`/campsites/${id || ''}`, pageTitle);
+  }, [id, accommodation]);
+
   const fetchAdditionalRooms = useCallback(async () => {
     if (!id) return;
     try {
