@@ -868,6 +868,7 @@ const CampsiteBooking: React.FC = () => {
         type: isVilla ? 'villa' : 'cottage',
         
       };
+      console.log('Booking payload:', bookingPayload);
       const bookingResponse = await fetch(`https://a.plumeriaretreat.com/admin/bookings`, {
         method: 'POST',
         headers: {
@@ -1184,11 +1185,46 @@ const CampsiteBooking: React.FC = () => {
                             )}
                         </>
                     )}
-                     <div className="mt-2 text-sm">
-                        <span className="font-medium">Total:</span>{" "}
-                        {isVilla ? `${finalTotalGuests} Guests` : `${totalGuests} Guests in ${rooms} Room(s)`} <br />
-                         <span className="font-medium" >Check-in: 3:00 PM | Check-out: 11:00 AM</span>
-                    </div>
+                   <div className="mt-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 p-4 text-sm text-white shadow-lg">
+  <ul className="space-y-2">
+    
+    <li className="flex items-center justify-between">
+      <span className="font-medium text-green-100">Pricing</span>
+      <span className="font-medium">
+        Adult: {currentAdultRate} | Child: {currentChildRate}
+      </span>
+    </li>
+
+    <li className="flex items-center justify-between">
+      <span className="font-medium text-green-100">Guests</span>
+      <span className="text-right">
+        {isVilla
+          ? `${finalTotalGuests} Guests`
+          : `${totalGuests} Guests in ${rooms} Room(s)`}
+      </span>
+    </li>
+
+    {/* Divider */}
+    <li className="pt-2 !mt-3 border-t border-white/20"></li>
+
+    <li className="flex items-center justify-between">
+      <span className="font-medium text-green-100">Check-in</span>
+      <div className="text-right">
+        <span>{checkInDate ? format(checkInDate, 'dd MMM yyyy') : 'N/A'}</span>
+        <span className="font-medium ml-3">{isVilla ? '2:00 PM' : '3:00 PM'}</span>
+      </div>
+    </li>
+    
+    <li className="flex items-center justify-between">
+      <span className="font-medium text-green-100">Check-out</span>
+       <div className="text-right">
+        <span>{checkOutDate ? format(checkOutDate, 'dd MMM yyyy') : 'N/A'}</span>
+        <span className="font-medium ml-3">11:00 AM</span>
+      </div>
+    </li>
+
+  </ul>
+</div>
                   
                   </div>
 

@@ -173,6 +173,7 @@ const Campsites: React.FC = () => {
   }
 
   const renderCard = (accommodation: Accommodation, index: number) => (
+    
     <div key={accommodation.id} className="px-2 sm:px-4 mb-8 w-full">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -223,9 +224,9 @@ const Campsites: React.FC = () => {
                 <span className="text-xs font-semibold px-2 py-1 bg-brunswick-green text-white rounded-full">
                   {accommodation.type}
                 </span>
-                <span className="text-xs font-semibold px-2 py-1 bg-brunswick-green/10 text-brunswick-green rounded-full">
+                {/* <span className="text-xs font-semibold px-2 py-1 bg-brunswick-green/10 text-brunswick-green rounded-full">
                   {accommodation.capacity} max guests
-                </span>
+                </span> */}
               </div>
 
               <CardTitle className="text-lg sm:text-xl font-bold mb-2">{accommodation.name}</CardTitle>
@@ -304,11 +305,11 @@ const Campsites: React.FC = () => {
               <div>
                 <p className="font-bold text-brunswick-green">
                   {formatCurrency(accommodation.price)}
-                  <span className="text-gray-500 font-normal text-sm"> / night</span>
+                   {(accommodation.type || '').toLowerCase() === 'Villa' ? ' / Day' : ' / Person'}
                 </p>
-                {accommodation.package?.pricing && (
+                {/* {accommodation.package?.pricing && (
                   <p className="text-xs text-gray-500">Max {accommodation.package.pricing.maxGuests} guests</p>
-                )}
+                )} */}
               </div>
               <Button variant="primary" size="sm" className="whitespace-nowrap">
                 <Link to={`/campsites/${accommodation.id}`} className="block w-full h-full">
