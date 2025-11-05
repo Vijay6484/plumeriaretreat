@@ -1272,9 +1272,6 @@ const CampsiteBooking: React.FC = () => {
                   <div>
                     {allAvailableCoupons.length > 0 && (
                       <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Available Offers
-                        </label>
                         <div className="flex overflow-x-auto space-x-2 pb-2">
                           {(() => {
                             const accommodationCoupons = allAvailableCoupons.filter(
@@ -1295,7 +1292,11 @@ const CampsiteBooking: React.FC = () => {
                               </button>
                             ));
                           })()}
-                        </div>
+                        </div> 
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Available Offers
+                        </label>
+                        
                       </div>
                     )}
 
