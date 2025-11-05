@@ -1426,7 +1426,7 @@ const CampsiteBooking: React.FC = () => {
               <p>{accommodation.latitude}</p>
               <p>{accommodation.longitude}</p>
               <div className="rounded-lg overflow-hidden shadow-lg">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d632.9834204029241!2d${accommodation.longitude}!3d${accommodation.latitude}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1sen!2sin!4v${Date.now()}!5m2!1sen!2sin" width="100%" height="350" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="Plumeria Retreat Location" className="rounded-lg"></iframe>
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4665.931396674238!2d73.4925939760178!3d18.664212882457445!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2a9180b52a2fd%3A0xa5d86c10d8d9846d!2sPlumeria%20Retreat%20%7C%20Pawna%20Lakeside%20Cottages!5e1!3m2!1sen!2sin!4v1762352695251!5m2!1sen!2sin" width="100%" height="350" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="Plumeria Retreat Location" className="rounded-lg"></iframe>
               </div>
 
 

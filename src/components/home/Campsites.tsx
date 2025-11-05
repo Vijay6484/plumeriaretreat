@@ -141,6 +141,7 @@ const Campsites: React.FC = () => {
         if (!res.ok) return;
         const json = await res.json();
         const coupons: any[] = json.data || [];
+        console.log(coupons);
 
         if (mounted) {
           // store raw coupons for per-accommodation lookup
@@ -177,6 +178,7 @@ const Campsites: React.FC = () => {
       }
     };
     fetchCoupons();
+    
     return () => { mounted = false; };
   }, []);
 
@@ -184,25 +186,49 @@ const Campsites: React.FC = () => {
   const getBestCouponForAccommodation = useCallback((accom: Accommodation): Coupon | null => {
     if (!couponsList || couponsList.length === 0) return null;
     const now = new Date();
+    
     const candidates = couponsList
-      .filter((c: any) => Number(c.active) === 1)
-      .filter((c: any) => {
+      .filter((c: any) => Number(c.active) === 1) // Must be active
+      .filter((c: any) => { // Must not be expired
         const exp = c.expiryDate || c.expiry_date;
         if (!exp) return true;
         return new Date(exp) >= now;
       })
-      .filter((c: any) => {
+      .filter((c: any) => { // This is the updated logic block
         const accomId = c.accommodation_id || c.accommodationId || c.accommodation?.id;
-        const accomType = c.accommodationType || c.accommodation_type;
-        if (accomId != null) return Number(accomId) === accom.id;
-        if (accomType) return (accomType || '').toString().toLowerCase() === (accom.type || '').toLowerCase();
-        // global coupon (no accommodation constraint)
+        
+        // Get the value from the coupon, convert to lowercase, and trim whitespace
+        const couponAccomType = (c.accommodationType || c.accommodation_type || '').toString().toLowerCase().trim();
+        
+        // Get the accommodation's name, convert to lowercase, and trim whitespace
+        const currentAccomName = (accom.name || '').toLowerCase().trim();
+
+        // 1. Specific ID match (highest priority)
+        if (accomId != null) {
+          return Number(accomId) === accom.id;
+        }
+
+        // 2. Type/Name match
+        if (couponAccomType) {
+          // 2a. Check for "all" type
+          if (couponAccomType === 'all') {
+            return true; // This coupon applies to all types
+          }
+          // 2b. Check for specific name match
+          // *** THIS IS THE NEW LOGIC: Match coupon's type field against accommodation's name ***
+          return couponAccomType === currentAccomName;
+        }
+        
+        // 3. Global coupon (no accomId and no accommodationType specified)
         return true;
       });
 
     if (candidates.length === 0) return null;
+    
+    // Pick the best discount (percentage preferred, then highest amount)
     const pct = candidates.filter((c: any) => (c.discountType || c.discount_type || '').toString().toLowerCase() === 'percentage');
     const pick = (pct.length ? pct : candidates).sort((a:any,b:any) => Number(b.discount) - Number(a.discount))[0];
+
     return {
       id: pick.id || 0,
       code: pick.code || pick.coupon_code || '',
@@ -320,39 +346,48 @@ const Campsites: React.FC = () => {
                   </div>
                 )}
 
-                <div className="mb-4 border border-green-300 bg-green-50 text-green-700 px-3 py-2 rounded-lg">
-                  <p className="text-sm font-medium flex items-center justify-center">
-                    <svg
-                      className="mr-1"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 195.803 195.803"
-                      fill="currentColor"
-                      style={{ fontWeight: 'bold', strokeWidth: '2' }}
-                    >
-                      {/* svg content */}
-                      <g>...</g>
-                    </svg>
-
-                    {localPromo ? (
-                      <span className="font-bold">
-                        {localPromo.discountType === 'percentage'
-                          ? `Get ${localPromo.discount}% OFF!`
-                          : `Get ${formatCurrency(Number(localPromo.discount) || 0)} OFF!`}
-                        &nbsp;Just enter code <strong>{localPromo.code}</strong> at checkout
-                      </span>
-                    ) : promoCoupon ? (
-                      <span className="font-bold">
-                        {promoCoupon.discountType === 'percentage'
-                          ? `Get ${promoCoupon.discount}% OFF!`
-                          : `Get ${formatCurrency(Number(promoCoupon.discount) || 0)} OFF!`}
-                        &nbsp;Just enter code <strong>{promoCoupon.code}</strong> at checkout
-                      </span>
-                    ) : (
-                      <span className="font-bold">Reserve for exciting offers!</span>
-                    )}
-                  </p>
-                </div>
+              {/* === Compact Split Coupon Design === */}
+{localPromo ? (
+  <div className="mb-4 rounded-md border border-green-300 flex overflow-hidden shadow-sm">
+    {/* Left Side: The Discount Amount */}
+    <div className="flex flex-col items-center justify-center bg-green-900 text-white px-3 py-1 flex-shrink-0">
+      <span className="text-xs font-medium">GET</span>
+      <span className="text-xl font-bold leading-tight">
+        {localPromo.discountType === 'percentage'
+          ? `${localPromo.discount}%`
+          : `${formatCurrency(Number(localPromo.discount) || 0)}`
+        }
+      </span>
+      <span className="text-xs font-medium">OFF</span>
+    </div>
+    
+    {/* Right Side: The Code */}
+    <div className="flex-1 bg-green-50 p-2 flex flex-col justify-center items-center">
+      <span className="block text-xs text-green-700 font-semibold uppercase">Use Code:</span>
+      <div className="mt-1 inline-block bg-white border-2 border-dashed border-green-400 px-2 py-0.5 rounded-md">
+        <strong className="text-base font-mono text-green-900 tracking-wider">
+          {localPromo.code}
+        </strong>
+      </div>
+    </div>
+  </div>
+) : (
+  // --- Compact Fallback Design ---
+  <div className="mb-4 border-2 border-dashed border-gray-300 bg-gray-50 text-gray-700 px-3 py-2 rounded-lg">
+    <p className="text-sm font-medium flex items-center justify-center">
+      {/* Embedded Gift Icon (Slightly smaller) */}
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+        <rect x="3" y="8" width="18" height="4" rx="1"/>
+        <path d="M12 8v13"/>
+        <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/>
+        <path d="M7.5 8a2.5 2.5 0 0 1 0-5A2.5 2.5 0 0 1 10 8"/>
+        <path d="M16.5 8a2.5 2.5 0 0 0 0-5A2.5 2.5 0 0 0 14 8"/>
+      </svg>
+      <span className="font-semibold">Reserve for exciting offers!</span>
+    </p>
+  </div>
+)}
+{/* === END OF Compact Design === */}
 
                 <p className={`text-sm mb-2 ${accommodation.available ? 'text-brunswick-green' : 'text-rose-taupe'}`}>
                   {accommodation.available ? `${accommodation.rooms} Room Available` : 'Currently Unavailable'}
