@@ -135,13 +135,13 @@ Maharashtra 410406</span>
             <div className="flex items-center mt-4 md:mt-0">
               <span className="mr-2">Powered by</span>
               <a 
-                href="https://digitaldiaries.in.net" 
+                href="https://digitaldiariess.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center hover:text-rose-taupe transition-colors"
               >
                 <img 
-                  src="https://digitaldiaries.in.net/black_logo.png" 
+                  src="https://digitaldiariess.com/black_logo.png" 
                   alt="Digital Diaries" 
                   className="h-6 mr-2 rounded"
                   onError={(e) => {
