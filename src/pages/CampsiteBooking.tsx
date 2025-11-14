@@ -978,7 +978,19 @@ const CampsiteBooking: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [fullscreenImgIdx, images]);
+useEffect(() => {
+  const fetchCities = async () => {
+    try {
+      const citiesRes = await axios.get(`${API_BASE_URL}/admin/properties/cities`);
+      setCities(citiesRes.data);
+      console.log('Fetched cities:', citiesRes.data);
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+    }
+  };
 
+  fetchCities(); // Call the function
+}, []);
 
   if (!accommodation) {
     return (
@@ -1048,7 +1060,7 @@ const CampsiteBooking: React.FC = () => {
                     </h1>
                     <div className="flex flex-wrap items-center space-x-2 text-gray-600 text-sm sm:text-base mb-3">
                       <MapPin className="w-4 h-4" />
-                      <span className="capitalize">Pawna lake lonavala</span>
+                     {cities.find(c => c.id === accommodation.city_id)?.name || accommodation.city_id}
                       <span className="mx-2 hidden sm:inline">•</span>
                       <span className="capitalize">{accommodation.type}</span>
                     </div>
@@ -1204,9 +1216,9 @@ const CampsiteBooking: React.FC = () => {
                         <li className="flex items-center justify-between">
                           <span className="font-medium text-green-100">Pricing</span>
                           <span className="font-medium">
-                            Adult: {currentAdultRate}
+                           
                             {!isVilla && (
-                              <> | Child: {currentChildRate}</>
+                              <>  Adult: {currentAdultRate} | Child: {currentChildRate}</>
                             )}
                           </span>
                         </li>
@@ -1459,11 +1471,24 @@ const CampsiteBooking: React.FC = () => {
                 </div>
               </div>
               <br />
-              <p>{accommodation.latitude}</p>
-              <p>{accommodation.longitude}</p>
-              <div className="rounded-lg overflow-hidden shadow-lg">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4665.931396674238!2d73.4925939760178!3d18.664212882457445!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2a9180b52a2fd%3A0xa5d86c10d8d9846d!2sPlumeria%20Retreat%20%7C%20Pawna%20Lakeside%20Cottages!5e1!3m2!1sen!2sin!4v1762352695251!5m2!1sen!2sin" width="100%" height="350" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="Plumeria Retreat Location" className="rounded-lg"></iframe>
-              </div>
+             
+              {accommodation?.latitude && accommodation?.longitude ? (
+  <div className="rounded-lg overflow-hidden shadow-lg">
+    <iframe
+      src={`https://maps.google.com/maps?q=${accommodation.latitude},${accommodation.longitude}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+      width="100%"
+      height="350"
+      style={{ border: 0 }}
+      allowFullScreen
+      loading="lazy"
+      referrerPolicy="no-referrer-when-downgrade"
+      title={`${accommodation.name} Location`}
+      className="rounded-lg"
+    ></iframe>
+  </div>
+) : (
+  <p className="text-sm text-gray-500 text-center">Map location not available.</p>
+)}
 
 
 
