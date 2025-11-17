@@ -44,7 +44,10 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
     ownerPhone:string,
     ownerName:string,
     bookedDate:string,
-    type?:string
+    type?:string,
+    coupon?:string,
+    discount?:number,
+    full_amount?:number
 
   ) => {
     const html = `<!DOCTYPE html
@@ -421,6 +424,12 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
                                             <td valign="top" style="width: 100%;padding-right: 8px;">
                                               <p style="padding-top: 5px;padding-bottom: 10px;margin: 0px;">
                                                 <b>TARRIF</b></p>
+                                                <p style="padding-bottom: 10px;margin: 0px;">Total Amount: <b
+                                                  style="float:right;">${full_amount}</b></p>
+                                                  <p style="padding-bottom: 10px;margin: 0px;">Discount: <b
+                                                  style="float:right;">${discount}</b></p>
+                                                  <p style="padding-bottom: 10px;margin: 0px;">Coupon Code: <b
+                                                  style="float:right;">${coupon}</b></p>
                                               <p style="padding-bottom: 10px;margin: 0px;">Total Amount: <b
                                                   style="float:right;">${totalPrice}</b></p>
                                               <p style="padding-bottom: 10px;margin: 0px;">Advance Amount: <b
@@ -685,7 +694,10 @@ const formatDate = (dateValue: string | number | Date | null | undefined): strin
             ownerPhone,
             ownerName,
             bookedDate,
-            accommodation.type
+            accommodation.type,
+            booking.coupon_code,
+            booking.discount_amount,
+            booking.full_amount
             
           );
         } catch (error) {

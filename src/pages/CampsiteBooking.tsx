@@ -859,6 +859,11 @@ const CampsiteBooking: React.FC = () => {
     setLoading(true);
     try {
       const formatDate = (date: Date | undefined) => date ? format(date, 'yyyy-MM-dd') : undefined;
+
+      // --- NEW CALCULATION ---
+      // Calculate the pre-discount price
+      const fullAmount = totalAmount + discount;
+
       const bookingPayload = {
         guest_name: guestInfo.name,
         guest_email: guestInfo.email,
@@ -872,7 +877,9 @@ const CampsiteBooking: React.FC = () => {
         food_veg: isVilla ? finalTotalGuests : foodCounts.veg,
         food_nonveg: isVilla ? 0 : foodCounts.nonveg,
         food_jain: isVilla ? 0 : foodCounts.jain,
-        total_amount: totalAmount,
+
+        // Existing fields
+        total_amount: totalAmount, // This is the amount AFTER discount
         advance_amount: advanceAmount,
         package_id: 0,
         coupon_code: couponApplied ? coupon : null,
@@ -880,6 +887,10 @@ const CampsiteBooking: React.FC = () => {
         ExtraPersonVilla: isVilla ? roomGuests[0]?.extraGuests || 0 : undefined,
         type: isVilla ? 'villa' : 'cottage',
 
+        // --- ADD THESE NEW FIELDS ---
+        full_amount: fullAmount,               // Price before discount
+        discount: discount,                    // Discount amount
+        coupon: couponApplied ? coupon : null, // Ensure key matches backend expectation (e.g. 'coupon' vs 'coupon_code')
       };
       console.log('Booking payload:', bookingPayload);
       const bookingResponse = await fetch(`https://a.plumeriaretreat.com/admin/bookings`, {
@@ -978,19 +989,19 @@ const CampsiteBooking: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [fullscreenImgIdx, images]);
-useEffect(() => {
-  const fetchCities = async () => {
-    try {
-      const citiesRes = await axios.get(`${API_BASE_URL}/admin/properties/cities`);
-      setCities(citiesRes.data);
-      console.log('Fetched cities:', citiesRes.data);
-    } catch (error) {
-      console.error('Error fetching cities:', error);
-    }
-  };
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const citiesRes = await axios.get(`${API_BASE_URL}/admin/properties/cities`);
+        setCities(citiesRes.data);
+        console.log('Fetched cities:', citiesRes.data);
+      } catch (error) {
+        console.error('Error fetching cities:', error);
+      }
+    };
 
-  fetchCities(); // Call the function
-}, []);
+    fetchCities(); // Call the function
+  }, []);
 
   if (!accommodation) {
     return (
@@ -1060,7 +1071,7 @@ useEffect(() => {
                     </h1>
                     <div className="flex flex-wrap items-center space-x-2 text-gray-600 text-sm sm:text-base mb-3">
                       <MapPin className="w-4 h-4" />
-                     {cities.find(c => c.id === accommodation.city_id)?.name || accommodation.city_id}
+                      {cities.find(c => c.id === accommodation.city_id)?.name || accommodation.city_id}
                       <span className="mx-2 hidden sm:inline">•</span>
                       <span className="capitalize">{accommodation.type}</span>
                     </div>
@@ -1216,7 +1227,7 @@ useEffect(() => {
                         <li className="flex items-center justify-between">
                           <span className="font-medium text-green-100">Pricing</span>
                           <span className="font-medium">
-                           
+
                             {!isVilla && (
                               <>  Adult: {currentAdultRate} | Child: {currentChildRate}</>
                             )}
@@ -1471,24 +1482,24 @@ useEffect(() => {
                 </div>
               </div>
               <br />
-             
+
               {accommodation?.latitude && accommodation?.longitude ? (
-  <div className="rounded-lg overflow-hidden shadow-lg">
-    <iframe
-      src={`https://maps.google.com/maps?q=${accommodation.latitude},${accommodation.longitude}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-      width="100%"
-      height="350"
-      style={{ border: 0 }}
-      allowFullScreen
-      loading="lazy"
-      referrerPolicy="no-referrer-when-downgrade"
-      title={`${accommodation.name} Location`}
-      className="rounded-lg"
-    ></iframe>
-  </div>
-) : (
-  <p className="text-sm text-gray-500 text-center">Map location not available.</p>
-)}
+                <div className="rounded-lg overflow-hidden shadow-lg">
+                  <iframe
+                    src={`https://maps.google.com/maps?q=${accommodation.latitude},${accommodation.longitude}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                    width="100%"
+                    height="350"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title={`${accommodation.name} Location`}
+                    className="rounded-lg"
+                  ></iframe>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 text-center">Map location not available.</p>
+              )}
 
 
 
