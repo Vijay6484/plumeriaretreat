@@ -29,42 +29,52 @@ const Hero: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-hero-pattern bg-cover bg-center flex items-center">
-      <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-brunswick-green/60"></div>
+  <div className="absolute inset-0 w-full h-full bg-gradient-to-b from-black/80 via-black/0 to-black/90"></div>
+
+
       
       <div className="container-custom relative z-10 text-baby-powder">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-3xl"
-        >
-          <h1 className="text-4xl md:text-6xl font-bold font-montserrat mb-4 text-shadow">
-            Your Lakeside Escape Awaits!
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 text-shadow">
-            Tents, cottages & campfires under the stars. Experience nature's beauty with modern comforts.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button 
-              variant="secondary" 
-              size="lg"
-              onClick={() => handleScrollToSection('campsites')}
-            >
-              Explore Campsites
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg"
-              as={Link}
-              to="/gallery"
-              className="!text-baby-powder !border-baby-powder !bg-transparent !hover:bg-white/10 !hover:text-baby-powder !hover:border-baby-powder"
-            >
-              View Gallery
-            </Button>
-          </div>
-        </motion.div>
+       <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.8 }}
+  className="max-w-3xl text-center mx-auto flex flex-col items-center"
+>
+  <h1 className="uppercase text-3xl md:text-6xl font-bold font-montserrat mb-4 text-shadow">
+    Plumeria Retreat
+  </h1>
+
+  <h4 className="text-xl md:text-3xl font-bold font-montserrat mb-3 text-shadow">
+    Pawna lake side cottages
+  </h4>
+
+  {/* <p className="text-xl md:text-2xl mb-8 text-shadow">
+    Tents, cottages & campfires under the stars. Experience nature's beauty with modern comforts.
+  </p> */}
+
+  {/* <div className="flex flex-col sm:flex-row gap-4 justify-center">
+    <Button 
+      variant="secondary" 
+      size="lg"
+      onClick={() => handleScrollToSection('campsites')}
+    >
+      Explore Campsites
+    </Button>
+
+    <Button 
+      variant="outline" 
+      size="lg"
+      as={Link}
+      to="/gallery"
+      className="!text-baby-powder !border-baby-powder !bg-transparent !hover:bg-white/10 !hover:text-baby-powder !hover:border-baby-powder"
+    >
+      View Gallery
+    </Button>
+  </div> */}
+</motion.div>
+
       </div>
+      
       
       <div className="absolute bottom-10 left-0 right-0 flex justify-center">
         <motion.div
