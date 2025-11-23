@@ -44,7 +44,7 @@ const Hero: React.FC = () => {
     Plumeria Retreat
   </h1>
 
-  <h4 className="text-xl md:text-3xl font-bold font-montserrat mb-3 text-shadow">
+  <h4 className="text-xl md:text-3xl  font-montserrat mb-3 text-shadow">
     Pawna lake side cottages
   </h4>
 
