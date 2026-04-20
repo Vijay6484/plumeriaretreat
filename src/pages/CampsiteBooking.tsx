@@ -4,7 +4,7 @@ import axios from 'axios';
 import { motion, number } from 'framer-motion';
 import { DayPicker } from 'react-day-picker';
 import { format, addDays, isBefore, startOfDay, isSameDay } from 'date-fns';
-import { X, Camera, MapPin, CheckCircle, CreditCard, Activity, Clock, Phone, Mail, MessageCircle } from 'lucide-react';
+import { X, Camera, MapPin, CheckCircle, CreditCard, Activity, Clock, Phone, Mail, MessageCircle, Users } from 'lucide-react';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -169,6 +169,8 @@ const CampsiteBooking: React.FC = () => {
   const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
   const [foodChoice, setFoodChoice] = useState<'veg' | 'nonveg' | 'jain'>('veg');
   const [foodCounts, setFoodCounts] = useState<FoodCounts>({ veg: 0, nonveg: 0, jain: 0 });
+  const [mealPlans, setMealPlans] = useState<any[]>([]);
+  const [selectedMealPlan, setSelectedMealPlan] = useState<any>(null);
   const [showCalendar, setShowCalendar] = useState(false);
   const [fullscreenImgIdx, setFullscreenImgIdx] = useState<number | null>(null);
   const [showPartyEffect, setShowPartyEffect] = useState(false);
@@ -460,6 +462,37 @@ const CampsiteBooking: React.FC = () => {
             console.error('Failed to parse images:', e);
           }
           setImages(accommodationImages);
+
+          // Fetch meal plan dynamically from admin backend endpoint
+          let fetchedMealPlans: any[] = [];
+          try {
+            const mpRes = await fetch(`${API_BASE_URL}/admin/properties/accommodations/${id}`);
+            if (mpRes.ok) {
+              const mpData = await mpRes.json();
+              if (mpData && mpData.basicInfo && mpData.basicInfo.mealPlans) {
+                 fetchedMealPlans = mpData.basicInfo.mealPlans;
+              }
+            }
+          } catch (err) {
+            console.error('Failed to fetch specific meal plans from admin backend:', err);
+          }
+
+          let availableMeals: any[] = fetchedMealPlans.length > 0 ? fetchedMealPlans.filter((m: any) => m.enabled !== false) : [];
+          
+          if (availableMeals.length === 0 && data.meal_plans) {
+            try {
+              const mp = typeof data.meal_plans === 'string' ? JSON.parse(data.meal_plans) : data.meal_plans;
+              if (Array.isArray(mp)) availableMeals = mp.filter(m => m.enabled !== false);
+            } catch(e) {}
+          }
+
+          if (availableMeals.length === 0) {
+            availableMeals = [{ plan: 'EP', enabled: true, price: 0 }];
+          }
+          
+          setMealPlans(availableMeals);
+          setSelectedMealPlan(availableMeals[0]);
+
           const parsed: Accommodation = {
             ...data,
             image: data.image,
@@ -598,7 +631,8 @@ const CampsiteBooking: React.FC = () => {
       const nightlyRate = baseRate + extraGuestsCost;
 
       // === CORRECTED LINE ===
-      let subtotal = baseRate + (totalExtraGuests * extraPersonCharge);
+      const mealCharge = selectedMealPlan && selectedMealPlan.plan !== 'EP' ? selectedMealPlan.price * finalTotalGuests : 0;
+      let subtotal = baseRate + (totalExtraGuests * extraPersonCharge) + mealCharge;
       console.log("Villa Subtotal Calculation:--", subtotal);
       console.log("Base Rate:", baseRate);
       console.log("Extra Guests:", totalExtraGuests);
@@ -619,7 +653,8 @@ const CampsiteBooking: React.FC = () => {
         }
       });
     }
-    const subtotal = adultsTotal + childrenTotal + activityCost;
+    const mealCharge = selectedMealPlan && selectedMealPlan.plan !== 'EP' ? selectedMealPlan.price * totalGuests : 0;
+    const subtotal = adultsTotal + childrenTotal + activityCost + mealCharge;
     return subtotal - discount;
   };
 
@@ -649,12 +684,14 @@ const CampsiteBooking: React.FC = () => {
           : (accommodation.RatePerPerson || 0);
         const extraGuests = roomGuests[0]?.extraGuests || 0;
         const extraGuestsCost = extraGuests * extraPersonCharge;
-        return (baseRate + extraGuestsCost) * nights;
+        const mealCharge = selectedMealPlan && selectedMealPlan.plan !== 'EP' ? selectedMealPlan.price * finalTotalGuests : 0;
+        return ((baseRate + extraGuestsCost) * nights) + mealCharge;
       }
 
       const adultsTotal = totalAdults * currentAdultRate * nights;
       const childrenTotal = totalChildren * currentChildRate * nights;
-      return adultsTotal + childrenTotal;
+      const mealCharge = selectedMealPlan && selectedMealPlan.plan !== 'EP' ? selectedMealPlan.price * totalGuests : 0;
+      return adultsTotal + childrenTotal + mealCharge;
     })();
 
     if (subtotal < parseFloat(appliedCoupon.minAmount)) {
@@ -690,7 +727,10 @@ const CampsiteBooking: React.FC = () => {
     accommodation,
     checkInDate,
     isVilla,
-    roomGuests
+    roomGuests,
+    selectedMealPlan,
+    totalGuests,
+    finalTotalGuests
   ]);
 
   const handleApplyCoupon = async () => {
@@ -891,6 +931,8 @@ const CampsiteBooking: React.FC = () => {
         full_amount: fullAmount,               // Price before discount
         discount: discount,                    // Discount amount
         coupon: couponApplied ? coupon : null, // Ensure key matches backend expectation (e.g. 'coupon' vs 'coupon_code')
+        meal_plan: selectedMealPlan ? selectedMealPlan.plan : null,
+        meal_plan_price: selectedMealPlan ? selectedMealPlan.price : 0,
       };
       console.log('Booking payload:', bookingPayload);
       const bookingResponse = await fetch(`https://a.plumeriaretreat.com/admin/bookings`, {
@@ -1074,6 +1116,11 @@ const CampsiteBooking: React.FC = () => {
                       {cities.find(c => c.id === accommodation.city_id)?.name || accommodation.city_id}
                       <span className="mx-2 hidden sm:inline">•</span>
                       <span className="capitalize">{accommodation.type}</span>
+                      <span className="mx-2 hidden sm:inline">•</span>
+                      <span className="capitalize flex items-center">
+                        <Users className="w-4 h-4 mr-1 text-brunswick-green inline" />
+                        Up to {isVilla ? totalPropertyCapacity : accommodation.capacity} Guests
+                      </span>
                     </div>
                   </div>
                   <div className="text-right mt-2 sm:mt-0">
@@ -1282,6 +1329,32 @@ const CampsiteBooking: React.FC = () => {
                       {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                     </div>
                   </div>
+
+                  {/* Meal Plan Selection */}
+                  {mealPlans.length > 0 && (
+                    <div className="space-y-3 mb-6">
+                      <h3 className="text-base font-semibold text-gray-900">Meal Plan</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {mealPlans.map((mp, index) => (
+                           <div 
+                             key={mp.plan} 
+                             onClick={() => setSelectedMealPlan(mp)}
+                             className={`cursor-pointer border rounded-lg p-3 flex flex-col items-start gap-1 transition-colors ${selectedMealPlan?.plan === mp.plan ? 'border-green-500 bg-green-50 ring-1 ring-green-500' : 'border-gray-200 hover:border-green-300'}`}
+                           >
+                             <div className="font-semibold text-sm text-gray-800">{mp.plan} Plan</div>
+                             <div className="text-xs text-gray-500">
+                               {mp.plan === 'EP' && 'Room Only'}
+                               {mp.plan === 'CP' && 'Room + Breakfast'}
+                               {mp.plan === 'MAP' && 'Room + Breakfast + Dinner'}
+                             </div>
+                             <div className="font-medium text-sm text-green-700 mt-1">
+                               {mp.price === 0 ? 'Included' : `₹${mp.price} / person`}
+                             </div>
+                           </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* --- VILLA LOGIC: Hide Food Preferences for Villas --- */}
                   {!isVilla && (

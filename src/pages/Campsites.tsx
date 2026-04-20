@@ -1,39 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '../utils/helpers';
-import Card, { CardImage, CardContent, CardTitle } from '../components/ui/Card';
-import Button from '../components/ui/Button';
-
-interface Package {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  duration: string;
-  maxGuests: number;
-  imageUrl: string;
-  includes: string;
-  active: boolean;
-  detailedInfo: string;
-}
-
-interface RawAccommodation {
-  id: number;
-  type: string;
-  title: string;
-  description: string;
-  available: boolean;
-  price: string;
-  capacity: number;
-  features: string;
-  image: string;
-  has_ac: number;
-  has_attached_bath: number;
-  available_rooms: number;
-  detailed_info: string;
-  packages?: Package[];
-}
+import { 
+  Users, Wind, Bath, ArrowRight, BedDouble, 
+  Star, Info, Ticket, Sparkles 
+} from 'lucide-react';
 
 interface Accommodation {
   id: number;
@@ -43,14 +15,13 @@ interface Accommodation {
   available: boolean;
   price: number;
   capacity: number;
+  rooms: number;
   features: string;
   image: string;
   hasAC: boolean;
   hasAttachedBath: boolean;
   availableRooms: number;
   detailedInfo: string;
-  packages?: Package[];
-
 }
 
 const API_BASE_URL = 'https://u.plumeriaretreat.com';
@@ -61,7 +32,7 @@ const Campsites: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    document.title = 'Campsites - Plumeria Retreat';
+    document.title = 'Luxury Stays | Plumeria Retreat';
     fetchAccommodations();
   }, []);
 
@@ -70,196 +41,162 @@ const Campsites: React.FC = () => {
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/api/accommodations`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
 
-      const data: RawAccommodation[] = await response.json();
-      console.log('Fetched accommodations:', data);
-
-      const mapped: Accommodation[] = data.map((item) => {
+      const mapped: Accommodation[] = data.map((item: any) => {
         let imageUrl = '';
         try {
           const parsed = JSON.parse(item.image);
           if (Array.isArray(parsed)) imageUrl = parsed[0];
-        } catch {
-          imageUrl = item.image;
-        }
+        } catch { imageUrl = item.image; }
 
         return {
           id: item.id,
-          type: item.type,
+          type: item.type || 'Standard',
           title: item.title,
           description: item.description,
           price: parseFloat(item.price),
           capacity: item.capacity,
+          rooms: item.rooms || 1,
           features: item.features,
           image: imageUrl,
           hasAC: item.has_ac === 1,
           hasAttachedBath: item.has_attached_bath === 1,
           availableRooms: item.available_rooms,
           detailedInfo: item.detailed_info,
-          packages: item.packages || [],
           available: Boolean(item.available),
         };
       });
 
-      // ✅ Keep only available accommodations
-      const onlyAvailable = mapped.filter((item) => item.available === true);
-
-      // ✅ Also remove duplicates by id
-      const unique = onlyAvailable.filter(
-        (item, index, self) => index === self.findIndex((t) => t.id === item.id)
-      );
-
-      setAccommodations(unique);
-      setError(null);
+      setAccommodations(mapped.filter(item => item.available));
     } catch (err) {
-      console.error('Error fetching accommodations:', err);
-      setError('Failed to load accommodations. Please try again later.');
+      setError('Failed to load accommodations.');
     } finally {
       setLoading(false);
     }
   };
 
-
   const parseFeatures = (featuresValue: any): string[] => {
     if (!featuresValue) return [];
     if (Array.isArray(featuresValue)) return featuresValue;
-    if (typeof featuresValue === 'string') {
-      try {
-        if (featuresValue.startsWith('[')) {
-          return JSON.parse(featuresValue);
-        }
-        return featuresValue.split(',').map(f => f.trim());
-      } catch {
-        return featuresValue.split(',').map(f => f.trim());
-      }
-    }
-    return [];
+    return String(featuresValue).split(',').map(f => f.trim());
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-baby-powder flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-brunswick-green mx-auto mb-4"></div>
-          <p className="text-brunswick-green text-lg">Loading accommodations...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-baby-powder flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">!</div>
-          <h2 className="text-2xl font-bold text-brunswick-green mb-2">Oops! Something went wrong</h2>
-          <p className="text-black/70 mb-4">{error}</p>
-          <Button variant="primary" onClick={fetchAccommodations}>
-            Try Again
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-baby-powder">
-      <div className="h-[40vh] bg-brunswick-green relative overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-30"
-          style={{ backgroundImage: "url('https://images.pexels.com/photos/2662816/pexels-photo-2662816.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')" }}
-        ></div>
-        <div className="container-custom h-full flex items-center relative z-10">
-          <div className="text-baby-powder">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Our Accommodations</h1>
-            <p className="text-xl opacity-90">Find your perfect stay at Plumeria Retreat</p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-[#F8FAFC] py-16 px-4 md:px-8">
+      {/* Header Section */}
+      <div className="max-w-7xl mx-auto mb-16 text-center">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4">Discover Your Perfect Stay</h1>
+        <p className="text-slate-500 max-w-2xl mx-auto">Luxury camping and premium rooms designed for ultimate comfort.</p>
       </div>
 
-      <div className="container-custom py-16">
-        {accommodations.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-brunswick-green text-lg">No accommodations available at the moment.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {accommodations.map((accommodation, index) => {
-              const features = parseFeatures(accommodation.features);
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {accommodations.map((item, idx) => {
+          const features = parseFeatures(item.features);
+          
+          return (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              className="bg-white rounded-[32px] overflow-hidden shadow-sm border border-slate-100 flex flex-col h-full"
+            >
+              {/* Image Container */}
+              <div className="relative h-64 overflow-hidden">
+                <img 
+                  src={item.image} 
+                  alt={item.title} 
+                  className="w-full h-full object-cover" 
+                />
+                <div className="absolute top-4 left-4">
+                  <span className="bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-wider">
+                    {item.type}
+                  </span>
+                </div>
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                  <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                  <span className="text-xs font-bold text-slate-700">4.8</span>
+                </div>
+              </div>
 
-              return (
-                <motion.div
-                  key={accommodation.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.2 }}
-                >
-                  <Card className="h-full flex flex-col">
-                    <CardImage
-                      src={accommodation.image}
-                      alt={accommodation.title}
-                      className="h-48 sm:h-64"
-                    />
-                    <CardContent className="flex-1 flex flex-col">
-                      <div className="flex-1">
-                        <div className="flex items-center mb-2">
-                          <span className="text-xs font-semibold px-2 py-1 bg-brunswick-green text-baby-powder rounded-full mr-2">
-                            {accommodation.type}
-                          </span>
-                          <span className="text-xs font-semibold px-2 py-1 bg-brunswick-green/10 text-brunswick-green rounded-full">
-                            Up to {accommodation.capacity} people
-                          </span>
-                        </div>
+              {/* Body Content */}
+              <div className="p-6 flex flex-col flex-grow">
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">{item.title}</h3>
+                <p className="text-slate-500 text-sm mb-6 leading-relaxed line-clamp-2">
+                  {item.description}
+                </p>
 
-                        <div className="flex flex-wrap gap-1 mb-2">
-                          {accommodation.hasAC && (
-                            <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">AC</span>
-                          )}
-                          {accommodation.hasAttachedBath && (
-                            <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Attached Bath</span>
-                          )}
-                        </div>
+                {/* Capacity & Rooms Info */}
+                <div className="flex items-center gap-6 mb-6">
+                  <div className="flex items-center gap-2 text-slate-600 bg-blue-50/50 px-3 py-2 rounded-xl">
+                    <Users className="w-4 h-4 text-blue-500" />
+                    <span className="text-sm font-bold">{item.capacity} Guests</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-600 bg-emerald-50/50 px-3 py-2 rounded-xl">
+                    <BedDouble className="w-4 h-4 text-emerald-500" />
+                    <span className="text-sm font-bold">{item.rooms} Rooms</span>
+                  </div>
+                </div>
 
-                        <CardTitle>{accommodation.title}</CardTitle>
-                        <p className="text-black/70 mb-3">{accommodation.description}</p>
+                {/* Feature Tags */}
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {features.slice(0, 4).map((f, i) => (
+                    <span key={i} className="bg-slate-50 text-slate-500 text-[11px] font-bold px-3 py-1.5 rounded-lg border border-slate-100">
+                      {f}
+                    </span>
+                  ))}
+                  {features.length > 4 && (
+                    <span className="text-[11px] font-bold text-slate-400 py-1.5 px-2">+{features.length - 4} more</span>
+                  )}
+                </div>
 
-                        {features.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mb-4">
-                            {features.slice(0, 3).map((feature, i) => (
-                              <span key={i} className="text-xs px-2 py-1 bg-rose-taupe/10 text-rose-taupe rounded-full">
-                                {feature}
-                              </span>
-                            ))}
-                            {features.length > 3 && (
-                              <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
-                                +{features.length - 3} more
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        <p className="text-sm text-brunswick-green mb-2">
-                          {accommodation.availableRooms} rooms available
-                        </p>
-                      </div>
+                {/* Pricing Box - Styled to match image */}
+                <div className="mt-auto bg-[#F8FAFC] border border-slate-100 rounded-3xl p-5 mb-6 flex items-center justify-between">
+                  <div>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Starting From</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-black text-slate-900 leading-none">
+                        {formatCurrency(item.price)}
+                      </span>
+                      <span className="text-slate-400 text-sm font-medium">/night</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-2">For 2 persons • +₹500 per extra guest</p>
+                  </div>
 
-                      <div className="flex justify-between items-center mt-4">
-                        <p className="font-bold text-brunswick-green">
-                          {formatCurrency(accommodation.price)}
-                          <span className="text-black/60 font-normal text-sm"> / person</span>
-                        </p>
-                        <Link to={`/campsites/${accommodation.id}`}>
-                          <Button variant="primary" size="sm">Book Now</Button>
-                        </Link>
+                  {/* Promo Badge */}
+                  <div className="bg-blue-50 border border-blue-100 p-3 rounded-2xl text-center flex flex-col items-center">
+                    <div className="flex gap-1 mb-1">
+                      <Ticket className="w-3 h-3 text-blue-600" />
+                      <Sparkles className="w-3 h-3 text-blue-400" />
+                    </div>
+                    <span className="block text-[10px] font-black text-blue-700 tracking-wider">TENT15</span>
+                    <span className="block text-[11px] font-black text-blue-600 bg-white px-2 py-0.5 rounded-md mt-1">15% OFF</span>
+                  </div>
+                </div>
 
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
+                {/* Split Action Buttons */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Link to={`/campsites/${item.id}`} className="w-full">
+                    <button className="w-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-900 py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2">
+                      <Info className="w-4 h-4" />
+                      View Details
+                    </button>
+                  </Link>
+                  <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-blue-600/20 active:scale-95">
+                    Book Now
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );
